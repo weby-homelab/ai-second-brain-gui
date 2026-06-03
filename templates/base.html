@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Custom Style -->
-    <link rel="stylesheet" href="/static/style.css">
+    <!-- Custom Style with Cache Busting -->
+    <link rel="stylesheet" href="/static/style.css?v=3">
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -18,8 +18,11 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="brand">
-                <span class="brand-logo">🧠</span>
-                <span class="brand-name">Second Brain</span>
+                <div class="brand-info">
+                    <span class="brand-logo">🧠</span>
+                    <span class="brand-name">Second Brain</span>
+                </div>
+                <button id="sidebar-close" class="sidebar-close-btn" onclick="document.querySelector('.sidebar').classList.remove('active'); document.getElementById('sidebar-overlay').classList.remove('active');" aria-label="Close Navigation">×</button>
             </div>
             
             <div class="search-box">
@@ -80,13 +83,19 @@
             </div>
         </aside>
         
+        <!-- Sidebar Mobile Overlay -->
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+        
         <!-- Main Content Area -->
         <main class="main-content">
             <header class="content-header">
-                <div class="breadcrumb">
-                    {% block breadcrumb %}
-                    <span class="breadcrumb-item">Дашборд</span>
-                    {% endblock %}
+                <div class="header-left">
+                    <button id="sidebar-toggle" class="sidebar-toggle-btn" onclick="document.querySelector('.sidebar').classList.add('active'); document.getElementById('sidebar-overlay').classList.add('active');" aria-label="Toggle Navigation">☰</button>
+                    <div class="breadcrumb">
+                        {% block breadcrumb %}
+                        <span class="breadcrumb-item">Дашборд</span>
+                        {% endblock %}
+                    </div>
                 </div>
                 <div class="system-time">
                     🕒 2026-06-03
@@ -98,5 +107,45 @@
             </div>
         </main>
     </div>
+
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('sidebar-toggle');
+            const closeBtn = document.getElementById('sidebar-close');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            if (sidebar && overlay) {
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', () => {
+                        sidebar.classList.add('active');
+                        overlay.classList.add('active');
+                    });
+                }
+
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        sidebar.classList.remove('active');
+                        overlay.classList.remove('active');
+                    });
+                }
+
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+
+                // Close sidebar on navigation item click in mobile view
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        sidebar.classList.remove('active');
+                        overlay.classList.remove('active');
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>

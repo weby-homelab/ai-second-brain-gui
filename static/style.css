@@ -51,8 +51,14 @@ body {
 .brand {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
     margin-bottom: 30px;
+}
+
+.brand-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .brand-logo {
@@ -65,6 +71,26 @@ body {
     font-weight: 700;
     color: #ffffff;
     letter-spacing: -0.02em;
+}
+
+.sidebar-close-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 32px;
+    font-weight: 300;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease;
+    padding: 12px;
+    margin: -12px;
+    z-index: 1010;
+    pointer-events: auto;
+}
+
+.sidebar-close-btn:hover {
+    color: #ef4444;
 }
 
 .search-box {
@@ -566,11 +592,22 @@ body {
 
 /* Tables Styling */
 .note-content table {
+    display: block;
     width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     border-collapse: collapse;
     margin-bottom: 24px;
     border-radius: 8px;
-    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Image Scaling */
+.note-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 16px 0;
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -766,3 +803,147 @@ body {
 .animate-fade-in {
     animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/* ----------------- MOBILE NAVIGATION & RESPONSIVENESS ----------------- */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.sidebar-toggle-btn {
+    display: none;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f3f4f6;
+    font-size: 20px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.sidebar-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 768px) {
+    .sidebar-toggle-btn {
+        display: block;
+    }
+
+    .sidebar-close-btn {
+        display: block;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        height: 100vh;
+        z-index: 1000;
+        transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .main-content {
+        width: 100%;
+        min-width: 0;
+        overflow-x: hidden;
+    }
+
+    .content-header {
+        padding: 0 20px;
+    }
+
+    .content-body {
+        padding: 20px;
+    }
+
+    .welcome-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 20px;
+    }
+
+    .layout-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .note-container {
+        padding: 20px;
+    }
+
+    .note-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .note-title {
+        font-size: 26px;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-header {
+        flex-direction: column;
+        height: auto;
+        padding: 15px 20px;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .system-time {
+        align-self: flex-end;
+    }
+
+    .recent-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .recent-item-time {
+        align-self: flex-end;
+    }
+
+    .category-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .category-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
