@@ -15,16 +15,7 @@ load_dotenv("/root/geminicli/.env")
 
 BRAIN_DIR = "/root/geminicli/brain"
 DEFAULT_PASSWORD = "weby-brain-secure"
-PASSWORD = os.getenv("BRAIN_PORTAL_PASSWORD")
-
-if not PASSWORD:
-    PASSWORD = DEFAULT_PASSWORD
-    # Write to .env to make it persistent
-    try:
-        with open("/root/geminicli/.env", "a") as f:
-            f.write(f"\nBRAIN_PORTAL_PASSWORD={PASSWORD}\n")
-    except Exception:
-        pass
+PASSWORD = os.getenv("BRAIN_PORTAL_PASSWORD", DEFAULT_PASSWORD)
 
 # Initialize FastAPI
 app = FastAPI(title="Second Brain Portal")
@@ -53,8 +44,27 @@ def index_brain_files():
                 file_index[rel_path.lower()] = rel_path
     return file_index
 
+# File indexing for media files (to break taint flow for CodeQL)
+def index_media_files():
+    media_index = {}
+    valid_exts = {'.png', '.jpg', '.jpeg', '.gif', '.svg'}
+    for root, dirs, files in os.walk(BRAIN_DIR):
+        if ".git" in root.split(os.sep):
+            continue
+        for file in files:
+            ext = os.path.splitext(file)[1].lower()
+            if ext in valid_exts:
+                rel_path = os.path.relpath(os.path.join(root, file), BRAIN_DIR)
+                name_lower = file.lower()
+                media_index[name_lower] = rel_path
+                media_index[rel_path.lower()] = rel_path
+    return media_index
+
 # Path validation for LFI protection
 def validate_path(rel_path: str) -> str:
+    # Sanitization check to satisfy CodeQL path analysis patterns
+    if ".." in rel_path or "\\" in rel_path:
+        raise HTTPException(status_code=400, detail="Invalid path")
     # Build absolute path
     abs_path = os.path.abspath(os.path.join(BRAIN_DIR, rel_path))
     # Verify absolute path starts with BRAIN_DIR
@@ -235,24 +245,28 @@ def get_note(request: Request, path: str):
     if not get_current_user(request):
         return RedirectResponse(url="/login", status_code=303)
         
-    abs_path = validate_path(path)
-    if not os.path.exists(abs_path):
+    # Standardize input query key
+    path_key = path.replace("\\", "/").lower()
+    
+    file_index = index_brain_files()
+    if path_key not in file_index:
         raise HTTPException(status_code=404, detail="Note not found")
+        
+    # Break CodeQL path expression taint by using trusted relative path from the index
+    safe_rel_path = file_index[path_key]
+    abs_path = validate_path(safe_rel_path)
         
     with open(abs_path, "r", encoding="utf-8") as f:
         content = f.read()
         
-    file_index = index_brain_files()
     html_content = render_markdown(content, file_index)
     note_name = os.path.splitext(os.path.basename(abs_path))[0]
-    
-    # Get navigation folders
-    relative_dir = os.path.dirname(path)
+    relative_dir = os.path.dirname(safe_rel_path)
     
     return templates.TemplateResponse(request, "note.html", {
         "note_name": note_name,
         "html_content": html_content,
-        "note_path": path,
+        "note_path": safe_rel_path,
         "relative_dir": relative_dir
     })
 
@@ -310,25 +324,20 @@ def get_media(request: Request, path: str):
     if not get_current_user(request):
         return RedirectResponse(url="/login", status_code=303)
         
-    # Search for the image inside the brain directory recursively to prevent traversal
-    # Image name might be "ECO-BOT_dashboard.png" or full relative path
-    resolved_img_path = None
-    target_filename = os.path.basename(path)
-    
-    for root, dirs, files in os.walk(BRAIN_DIR):
-        if ".git" in root.split(os.sep):
-            continue
-        if target_filename in files:
-            resolved_img_path = os.path.join(root, target_filename)
-            break
-            
-    if not resolved_img_path or not os.path.exists(resolved_img_path):
+    # Standardize input query key
+    path_key = path.replace("\\", "/").lower()
+    if "/" not in path_key:
+        path_key = os.path.basename(path_key)
+        
+    media_index = index_media_files()
+    if path_key not in media_index:
         raise HTTPException(status_code=404, detail="Media file not found")
         
-    # Extra check
-    validate_path(os.path.relpath(resolved_img_path, BRAIN_DIR))
+    # Break CodeQL path expression taint by using trusted relative path from the index
+    safe_rel_path = media_index[path_key]
+    abs_path = validate_path(safe_rel_path)
     
-    return FileResponse(resolved_img_path)
+    return FileResponse(abs_path)
 
 if __name__ == "__main__":
     import uvicorn

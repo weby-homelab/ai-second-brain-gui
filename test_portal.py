@@ -5,7 +5,7 @@ import os
 load_dotenv("/root/geminicli/.env")
 PASSWORD = os.getenv("BRAIN_PORTAL_PASSWORD", "weby-brain-secure")
 
-print(f"Testing with password: {PASSWORD}")
+print("Testing portal authentication...")
 session = requests.Session()
 
 # 1. Access dashboard directly - should redirect to login
