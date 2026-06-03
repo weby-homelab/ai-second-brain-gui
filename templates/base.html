@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Second Brain Portal{% endblock %}</title>
+    <!-- Outfit & Inter Fonts from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="/static/style.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="mesh-glow"></div>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand-logo">🧠</span>
+                <span class="brand-name">Second Brain</span>
+            </div>
+            
+            <div class="search-box">
+                <form action="/search" method="get">
+                    <input type="text" name="q" placeholder="Пошук нотаток..." required>
+                    <button type="submit" class="search-btn">🔍</button>
+                </form>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item {% if request.url.path == '/' %}active{% endif %}">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Дашборд</span>
+                </a>
+                
+                <div class="nav-section-title">Розділи знань</div>
+                
+                <a href="/note?path=Home.md" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Головна (Home.md)</span>
+                </a>
+                
+                <a href="/note?path=Successor-Hub.md" class="nav-item">
+                    <span class="nav-icon">🚀</span>
+                    <span class="nav-label">Successor Hub</span>
+                </a>
+                
+                <a href="/note?path=02_Areas/Infrastructure/PROD_Safety_Mandate.md" class="nav-item">
+                    <span class="nav-icon">🛡️</span>
+                    <span class="nav-label">Safety Mandate</span>
+                </a>
+                
+                <a href="/note?path=02_Areas/Infrastructure/Servers.md" class="nav-item">
+                    <span class="nav-icon">🖥️</span>
+                    <span class="nav-label">Сервери</span>
+                </a>
+                
+                <a href="/note?path=02_Areas/Deployments/Deployment Protocol.md" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Протокол деплою</span>
+                </a>
+                
+                <a href="/note?path=06_Daily_Logs/MASTER-LESSONS-LEARNED.md" class="nav-item">
+                    <span class="nav-icon">🎓</span>
+                    <span class="nav-label">Lessons Learned</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <span class="user-avatar">👤</span>
+                    <div class="user-details">
+                        <span class="user-name">Weby-Homelab</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                </div>
+                <a href="/logout" class="logout-btn" title="Вийти">🚪</a>
+            </div>
+        </aside>
+        
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="content-header">
+                <div class="breadcrumb">
+                    {% block breadcrumb %}
+                    <span class="breadcrumb-item">Дашборд</span>
+                    {% endblock %}
+                </div>
+                <div class="system-time">
+                    🕒 2026-06-03
+                </div>
+            </header>
+            
+            <div class="content-body">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Пошук: "{{ query }}" — Second Brain Portal{% endblock %}
+
+{% block breadcrumb %}
+<a href="/" class="breadcrumb-link">Дашборд</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">Пошук: "{{ query }}"</span>
+{% endblock %}
+
+{% block content %}
+<div class="search-results-container glass-panel animate-fade-in">
+    <div class="panel-header">
+        <h1 class="panel-title">🔍 Результати пошуку для: "{{ query }}"</h1>
+        <span class="results-count">Знайдено {{ results|length }} співпадінь</span>
+    </div>
+    
+    {% if results %}
+    <div class="search-list">
+        {% for result in results %}
+        <div class="search-item">
+            <div class="search-item-header">
+                <a href="/note?path={{ result.path }}" class="search-item-name">{{ result.name }}</a>
+                <span class="search-item-path">{{ result.path }}</span>
+            </div>
+            <div class="search-item-snippet">
+                {{ result.snippet }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-results">
+        <div class="no-results-icon">🤷</div>
+        <h2>Нічого не знайдено</h2>
+        <p>Не вдалося знайти нотаток, які містять запит "{{ query }}". Спробуйте змінити ключові слова.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
