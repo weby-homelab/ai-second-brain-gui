@@ -947,3 +947,53 @@ body {
     }
 }
 
+/* ----------------- LANGUAGE SWITCHER ----------------- */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.lang-switcher {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.lang-link {
+    color: #6b7280;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.lang-link:hover {
+    color: #f3f4f6;
+}
+
+.lang-link.active {
+    color: #818cf8;
+}
+
+.lang-separator {
+    color: #4b5563;
+}
+
+.login-lang {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+}
+
+@media (max-width: 480px) {
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+

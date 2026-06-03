@@ -3,7 +3,7 @@
 {% block title %}{{ note_name }} — Second Brain Portal{% endblock %}
 
 {% block breadcrumb %}
-<a href="/" class="breadcrumb-link">Дашборд</a>
+<a href="/" class="breadcrumb-link">{{ t.dashboard }}</a>
 <span class="breadcrumb-separator">/</span>
 <span class="breadcrumb-item active">{{ note_name }}</span>
 {% endblock %}
@@ -13,7 +13,7 @@
     <div class="note-header">
         <h1 class="note-title">{{ note_name }}</h1>
         <div class="note-actions">
-            <span class="note-path">📂 {{ note_path }}</span>
+            <span class="note-path">📂 {{ t.note_path }}: {{ note_path }}</span>
         </div>
     </div>
     

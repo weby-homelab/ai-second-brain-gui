@@ -30,6 +30,82 @@ templates = Jinja2Templates(directory="/root/geminicli/projects/second-brain-por
 # In-memory sessions
 SESSIONS = set()
 
+# Translation dictionary
+TRANSLATIONS = {
+    "uk": {
+        "title_login": "Вхід — Second Brain Portal",
+        "login_header": "Second Brain",
+        "login_subtitle": "Авторизуйтеся для доступу до знань",
+        "login_label": "Пароль доступу",
+        "login_placeholder": "Введіть пароль...",
+        "login_btn": "Увійти",
+        "login_error": "Невірний пароль",
+        "dashboard": "Дашборд",
+        "knowledge_sections": "Розділи знань",
+        "logout": "Вийти",
+        "search_placeholder": "Пошук нотаток...",
+        "system_ok": "Система в нормі",
+        "welcome_user": "Привіт, Weby! 👋",
+        "welcome_text": "Ласкаво просимо до веб-порталу твого другого мозку. Тут зібрано знання, документацію, мандати та системний статус домашньої лабораторії.",
+        "stat_total_notes": "Всього нотаток",
+        "stat_active_projects": "Активних проєктів",
+        "stat_protected_services": "Служб під захистом",
+        "stat_total_logs": "Daily Logs всього",
+        "recent_updates": "🕒 Останні оновлення знань",
+        "structure_navigation": "📚 Навігація по структурі",
+        "view": "Переглянути",
+        "note_not_found": "Нотатку не знайдено",
+        "media_not_found": "Медіа-файл не знайдено",
+        "note_path": "Шлях до файлу",
+        "search_results": "Результати пошуку",
+        "search_found": "Знайдено {count} результатів для \"{query}\"",
+        "match_filename": "Збіг у назві файлу",
+        "no_results": "Нічого не знайдено",
+        "no_results_sub": "Спробуйте змінити запит або перевірити правопис",
+    },
+    "en": {
+        "title_login": "Login — Second Brain Portal",
+        "login_header": "Second Brain",
+        "login_subtitle": "Authenticate to access knowledge",
+        "login_label": "Access Password",
+        "login_placeholder": "Enter password...",
+        "login_btn": "Sign In",
+        "login_error": "Incorrect password",
+        "dashboard": "Dashboard",
+        "knowledge_sections": "Knowledge Base",
+        "logout": "Logout",
+        "search_placeholder": "Search notes...",
+        "system_ok": "System online",
+        "welcome_user": "Hello, Weby! 👋",
+        "welcome_text": "Welcome to your second brain web portal. Your knowledge, documentation, mandates, and home lab status, consolidated.",
+        "stat_total_notes": "Total notes",
+        "stat_active_projects": "Active projects",
+        "stat_protected_services": "Protected services",
+        "stat_total_logs": "Total Daily Logs",
+        "recent_updates": "🕒 Recent updates",
+        "structure_navigation": "📚 Structure Navigator",
+        "view": "View",
+        "note_not_found": "Note not found",
+        "media_not_found": "Media file not found",
+        "note_path": "File path",
+        "search_results": "Search Results",
+        "search_found": "Found {count} results for \"{query}\"",
+        "match_filename": "Match in filename",
+        "no_results": "No results found",
+        "no_results_sub": "Try changing your query or check your spelling",
+    }
+}
+
+def get_lang(request: Request) -> str:
+    return request.cookies.get("lang", "uk")
+
+def get_context(request: Request, **kwargs) -> dict:
+    lang = get_lang(request)
+    t = TRANSLATIONS.get(lang, TRANSLATIONS["uk"])
+    context = {"request": request, "lang": lang, "t": t}
+    context.update(kwargs)
+    return context
+
 # File indexing for wiki-links
 def index_brain_files():
     file_index = {}
@@ -141,7 +217,6 @@ def convert_wikilinks(text, file_index):
         
         # Check if it's an image link
         if any(target_lower.endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif', '.svg']):
-            # Render media link, which resolves to local media asset endpoint
             return f'<a href="/media?path={target}" target="_blank" class="media-link">🖼️ {label}</a>'
             
         resolved_path = None
@@ -175,7 +250,17 @@ def render_markdown(text, file_index):
 def get_login(request: Request, error: str = None):
     if get_current_user(request):
         return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse(request, "login.html", {"error": error})
+    
+    lang = get_lang(request)
+    t = TRANSLATIONS[lang]
+    translated_error = None
+    if error:
+        if "пароль" in error.lower() or "password" in error.lower():
+            translated_error = t["login_error"]
+        else:
+            translated_error = error
+            
+    return templates.TemplateResponse(request, "login.html", get_context(request, error=translated_error))
 
 @app.post("/login")
 def post_login(request: Request, password: str = Form(...)):
@@ -194,6 +279,14 @@ def get_logout(request: Request):
         SESSIONS.remove(session_token)
     response = RedirectResponse(url="/login", status_code=303)
     response.delete_cookie("session_token")
+    return response
+
+@app.get("/set-lang")
+def set_lang(request: Request, lang: str):
+    referer = request.headers.get("referer", "/")
+    response = RedirectResponse(url=referer, status_code=303)
+    if lang in ["uk", "en"]:
+        response.set_cookie(key="lang", value=lang, max_age=31536000, httponly=True, samesite="strict")
     return response
 
 @app.get("/", response_class=HTMLResponse)
@@ -234,11 +327,12 @@ def dashboard(request: Request):
                 
     recent_notes = sorted(recent_notes, key=lambda x: x["mtime_raw"], reverse=True)[:7]
     
-    return templates.TemplateResponse(request, "dashboard.html", {
-        "total_notes": total_notes,
-        "categories": note_categories,
-        "recent_notes": recent_notes
-    })
+    return templates.TemplateResponse(request, "dashboard.html", get_context(
+        request,
+        total_notes=total_notes,
+        categories=note_categories,
+        recent_notes=recent_notes
+    ))
 
 @app.get("/note", response_class=HTMLResponse)
 def get_note(request: Request, path: str):
@@ -263,12 +357,13 @@ def get_note(request: Request, path: str):
     note_name = os.path.splitext(os.path.basename(abs_path))[0]
     relative_dir = os.path.dirname(safe_rel_path)
     
-    return templates.TemplateResponse(request, "note.html", {
-        "note_name": note_name,
-        "html_content": html_content,
-        "note_path": safe_rel_path,
-        "relative_dir": relative_dir
-    })
+    return templates.TemplateResponse(request, "note.html", get_context(
+        request,
+        note_name=note_name,
+        html_content=html_content,
+        note_path=safe_rel_path,
+        relative_dir=relative_dir
+    ))
 
 @app.get("/search", response_class=HTMLResponse)
 def search_notes(request: Request, q: str):
@@ -297,7 +392,6 @@ def search_notes(request: Request, q: str):
                         for line_num, line in enumerate(f, 1):
                             if q_lower in line.lower():
                                 content_match = True
-                                # Build a clean snippet
                                 if not content_snippet:
                                     content_snippet = f"Line {line_num}: ... {line.strip()[:100]} ..."
                 except Exception:
@@ -314,10 +408,16 @@ def search_notes(request: Request, q: str):
                     
     results = sorted(results, key=lambda x: x["score"], reverse=True)
     
-    return templates.TemplateResponse(request, "search.html", {
-        "query": q,
-        "results": results
-    })
+    lang = get_lang(request)
+    t = TRANSLATIONS[lang]
+    found_text = t["search_found"].format(count=len(results), query=q)
+    
+    return templates.TemplateResponse(request, "search.html", get_context(
+        request,
+        query=q,
+        results=results,
+        found_text=found_text
+    ))
 
 @app.get("/media")
 def get_media(request: Request, path: str):
@@ -341,6 +441,4 @@ def get_media(request: Request, path: str):
 
 if __name__ == "__main__":
     import uvicorn
-    # Bind strictly to localhost (127.0.0.1) for security.
-    # Access can be tunnelled securely via Tailscale or Cloudflare.
     uvicorn.run("main:app", host="127.0.0.1", port=8008, reload=True)

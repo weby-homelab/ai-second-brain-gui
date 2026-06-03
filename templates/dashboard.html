@@ -1,22 +1,22 @@
 {% extends "base.html" %}
 
-{% block title %}Дашборд — Second Brain Portal{% endblock %}
+{% block title %}{{ t.dashboard }} — Second Brain Portal{% endblock %}
 
 {% block breadcrumb %}
-<span class="breadcrumb-item active">Дашборд</span>
+<span class="breadcrumb-item active">{{ t.dashboard }}</span>
 {% endblock %}
 
 {% block content %}
 <div class="welcome-banner glass-panel">
     <div class="welcome-text">
-        <h1>Привіт, Weby! 👋</h1>
-        <p>Ласкаво просимо до веб-порталу твого другого мозку. Тут зібрано знання, документацію, мандати та системний статус домашньої лабораторії.</p>
+        <h1>{{ t.welcome_user }}</h1>
+        <p>{{ t.welcome_text }}</p>
     </div>
     <div class="welcome-meta">
         <div class="status-indicator-container">
             <span class="status-indicator-ping"></span>
             <span class="status-indicator"></span>
-            <span class="status-text">Система в нормі</span>
+            <span class="status-text">{{ t.system_ok }}</span>
         </div>
     </div>
 </div>
@@ -27,7 +27,7 @@
         <div class="stat-icon">📄</div>
         <div class="stat-info">
             <div class="stat-value">{{ total_notes }}</div>
-            <div class="stat-label">Всього нотаток</div>
+            <div class="stat-label">{{ t.stat_total_notes }}</div>
         </div>
     </div>
     
@@ -35,7 +35,7 @@
         <div class="stat-icon">🚀</div>
         <div class="stat-info">
             <div class="stat-value">{{ categories['01_Projects'] }}</div>
-            <div class="stat-label">Активних проєктів</div>
+            <div class="stat-label">{{ t.stat_active_projects }}</div>
         </div>
     </div>
     
@@ -43,7 +43,7 @@
         <div class="stat-icon">🛡️</div>
         <div class="stat-info">
             <div class="stat-value">6</div>
-            <div class="stat-label">Служб під захистом</div>
+            <div class="stat-label">{{ t.stat_protected_services }}</div>
         </div>
     </div>
     
@@ -51,7 +51,7 @@
         <div class="stat-icon">📝</div>
         <div class="stat-info">
             <div class="stat-value">{{ categories['06_Daily_Logs'] }}</div>
-            <div class="stat-label">Daily Logs всього</div>
+            <div class="stat-label">{{ t.stat_total_logs }}</div>
         </div>
     </div>
 </div>
@@ -60,7 +60,7 @@
     <!-- Recent Logs and Notes -->
     <div class="grid-col glass-panel animate-fade-in" style="animation-delay: 0.2s;">
         <div class="panel-header">
-            <h2 class="panel-title">🕒 Останні оновлення знань</h2>
+            <h2 class="panel-title">{{ t.recent_updates }}</h2>
         </div>
         <div class="recent-list">
             {% for note in recent_notes %}
@@ -78,43 +78,43 @@
     <!-- Quick Explorer & Info -->
     <div class="grid-col glass-panel animate-fade-in" style="animation-delay: 0.25s;">
         <div class="panel-header">
-            <h2 class="panel-title">📚 Навігація по структурі</h2>
+            <h2 class="panel-title">{{ t.structure_navigation }}</h2>
         </div>
         <div class="category-list">
             <div class="category-item">
                 <span class="category-icon">🚀</span>
                 <div class="category-details">
-                    <span class="category-name">01 Projects (Проєкти)</span>
-                    <span class="category-count">{{ categories['01_Projects'] }} файлів</span>
+                    <span class="category-name">01 Projects ({% if lang == 'uk' %}Проєкти{% else %}Projects{% endif %})</span>
+                    <span class="category-count">{{ categories['01_Projects'] }} {% if lang == 'uk' %}файлів{% else %}files{% endif %}</span>
                 </div>
-                <a href="/note?path=Home.md" class="category-btn">Переглянути</a>
+                <a href="/note?path=Home.md" class="category-btn">{{ t.view }}</a>
             </div>
             
             <div class="category-item">
                 <span class="category-icon">🧭</span>
                 <div class="category-details">
-                    <span class="category-name">02 Areas (Сфери)</span>
-                    <span class="category-count">{{ categories['02_Areas'] }} файлів</span>
+                    <span class="category-name">02 Areas ({% if lang == 'uk' %}Сфери{% else %}Areas{% endif %})</span>
+                    <span class="category-count">{{ categories['02_Areas'] }} {% if lang == 'uk' %}файлів{% else %}files{% endif %}</span>
                 </div>
-                <a href="/note?path=Home.md" class="category-btn">Переглянути</a>
+                <a href="/note?path=Home.md" class="category-btn">{{ t.view }}</a>
             </div>
             
             <div class="category-item">
                 <span class="category-icon">📂</span>
                 <div class="category-details">
-                    <span class="category-name">03 Resources (Ресурси)</span>
-                    <span class="category-count">{{ categories['03_Resources'] }} файлів</span>
+                    <span class="category-name">03 Resources ({% if lang == 'uk' %}Ресурси{% else %}Resources{% endif %})</span>
+                    <span class="category-count">{{ categories['03_Resources'] }} {% if lang == 'uk' %}файлів{% else %}files{% endif %}</span>
                 </div>
-                <a href="/note?path=Home.md" class="category-btn">Переглянути</a>
+                <a href="/note?path=Home.md" class="category-btn">{{ t.view }}</a>
             </div>
             
             <div class="category-item">
                 <span class="category-icon">📅</span>
                 <div class="category-details">
-                    <span class="category-name">06 Daily Logs (Логи)</span>
-                    <span class="category-count">{{ categories['06_Daily_Logs'] }} файлів</span>
+                    <span class="category-name">06 Daily Logs ({% if lang == 'uk' %}Логи{% else %}Logs{% endif %})</span>
+                    <span class="category-count">{{ categories['06_Daily_Logs'] }} {% if lang == 'uk' %}файлів{% else %}files{% endif %}</span>
                 </div>
-                <a href="/note?path=06_Daily_Logs/MASTER-LESSONS-LEARNED.md" class="category-btn">Переглянути</a>
+                <a href="/note?path=06_Daily_Logs/MASTER-LESSONS-LEARNED.md" class="category-btn">{{ t.view }}</a>
             </div>
         </div>
     </div>

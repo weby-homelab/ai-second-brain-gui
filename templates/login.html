@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="{{ lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вхід — Second Brain Portal</title>
+    <title>{{ t.title_login }}</title>
     <!-- Outfit & Inter Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=3">
     <style>
         body {
             display: flex;
@@ -104,27 +104,41 @@
             margin-bottom: 24px;
             text-align: left;
         }
+        .login-lang {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+        }
     </style>
 </head>
 <body>
     <div class="mesh-glow"></div>
+    
+    <div class="login-lang">
+        <div class="lang-switcher">
+            <a href="/set-lang?lang=uk" class="lang-link {% if lang == 'uk' %}active{% endif %}">UA</a>
+            <span class="lang-separator">|</span>
+            <a href="/set-lang?lang=en" class="lang-link {% if lang == 'en' %}active{% endif %}">EN</a>
+        </div>
+    </div>
+
     <div class="login-card">
         <div class="login-logo">🧠</div>
-        <h1 class="login-title">Second Brain</h1>
-        <p class="login-subtitle">Авторизуйтеся для доступу до знань</p>
-        
+        <h1 class="login-title">{{ t.login_header }}</h1>
+        <p class="login-subtitle">{{ t.login_subtitle }}</p>
+
         {% if error %}
         <div class="error-message">
-            ⚠️ {{ error }}
+            {{ error }}
         </div>
         {% endif %}
-        
+
         <form action="/login" method="post">
             <div class="form-group">
-                <label class="form-label" for="password">Пароль доступу</label>
-                <input class="form-input" type="password" id="password" name="password" placeholder="Введіть пароль..." required autofocus>
+                <label class="form-label" for="password">{{ t.login_label }}</label>
+                <input class="form-input" type="password" id="password" name="password" placeholder="{{ t.login_placeholder }}" required autofocus>
             </div>
-            <button type="submit" class="login-btn">Увійти</button>
+            <button type="submit" class="login-btn">{{ t.login_btn }}</button>
         </form>
     </div>
 </body>

@@ -1,18 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Пошук: "{{ query }}" — Second Brain Portal{% endblock %}
+{% block title %}{{ t.search_results }}: "{{ query }}" — Second Brain Portal{% endblock %}
 
 {% block breadcrumb %}
-<a href="/" class="breadcrumb-link">Дашборд</a>
+<a href="/" class="breadcrumb-link">{{ t.dashboard }}</a>
 <span class="breadcrumb-separator">/</span>
-<span class="breadcrumb-item active">Пошук: "{{ query }}"</span>
+<span class="breadcrumb-item active">{{ t.search_results }}</span>
 {% endblock %}
 
 {% block content %}
 <div class="search-results-container glass-panel animate-fade-in">
     <div class="panel-header">
-        <h1 class="panel-title">🔍 Результати пошуку для: "{{ query }}"</h1>
-        <span class="results-count">Знайдено {{ results|length }} співпадінь</span>
+        <h1 class="panel-title">🔍 {{ found_text }}</h1>
     </div>
     
     {% if results %}
@@ -32,8 +31,8 @@
     {% else %}
     <div class="no-results">
         <div class="no-results-icon">🤷</div>
-        <h2>Нічого не знайдено</h2>
-        <p>Не вдалося знайти нотаток, які містять запит "{{ query }}". Спробуйте змінити ключові слова.</p>
+        <h2>{{ t.no_results }}</h2>
+        <p>{{ t.no_results_sub }}</p>
     </div>
     {% endif %}
 </div>
