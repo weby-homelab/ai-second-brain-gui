@@ -875,10 +875,35 @@ body {
 }
 
 /* Media Queries for Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .layout-grid {
         grid-template-columns: 1fr;
         gap: 20px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .welcome-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 20px;
+    }
+
+    .note-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .search-item-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .search-item-path {
+        align-self: flex-start;
     }
 }
 
@@ -919,35 +944,12 @@ body {
         padding: 20px;
     }
 
-    .welcome-banner {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-        padding: 20px;
-    }
-
     .note-container {
         padding: 20px;
     }
 
-    .note-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
     .note-title {
         font-size: 26px;
-    }
-
-    .search-item-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-    }
-
-    .search-item-path {
-        align-self: flex-start;
     }
 }
 
