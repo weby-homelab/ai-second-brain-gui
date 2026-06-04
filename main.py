@@ -21,11 +21,15 @@ PASSWORD = os.getenv("BRAIN_PORTAL_PASSWORD", DEFAULT_PASSWORD)
 app = FastAPI(title="Second Brain Portal")
 
 # Static files & Templates directory setup
-os.makedirs("/root/geminicli/projects/second-brain-portal/static", exist_ok=True)
-os.makedirs("/root/geminicli/projects/second-brain-portal/templates", exist_ok=True)
+BASE_DIR = pathlib.Path(__file__).parent.resolve()
+static_dir = os.path.join(BASE_DIR, "static")
+templates_dir = os.path.join(BASE_DIR, "templates")
 
-app.mount("/static", StaticFiles(directory="/root/geminicli/projects/second-brain-portal/static"), name="static")
-templates = Jinja2Templates(directory="/root/geminicli/projects/second-brain-portal/templates")
+os.makedirs(static_dir, exist_ok=True)
+os.makedirs(templates_dir, exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+templates = Jinja2Templates(directory=templates_dir)
 
 # In-memory sessions
 SESSIONS = set()
