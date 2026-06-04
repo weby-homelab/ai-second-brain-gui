@@ -7,7 +7,7 @@
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-![Second Brain Portal Dashboard](second-brain-portal.png)
+![Second Brain Portal Dashboard](second-brain-portal-ENG.png)
 
 A modern, highly secure, and aesthetically refined web interface to access, search, and monitor your personal Obsidian knowledge base (Second Brain). Powered by FastAPI, featuring a sleek Glassmorphism design and native Tailscale tunnel integration.
 
@@ -41,8 +41,8 @@ A modern, highly secure, and aesthetically refined web interface to access, sear
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/weby-homelab/second-brain-portal.git
-cd second-brain-portal
+git clone https://github.com/weby-homelab/ai-second-brain-gui.git
+cd ai-second-brain-gui
 ```
 
 ### 2. Prepare Python virtual environment

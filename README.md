@@ -41,8 +41,8 @@
 
 ### 1. Клонування репозиторію та оточення
 ```bash
-git clone https://github.com/weby-homelab/second-brain-portal.git
-cd second-brain-portal
+git clone https://github.com/weby-homelab/ai-second-brain-gui.git
+cd ai-second-brain-gui
 ```
 
 ### 2. Створення віртуального середовища
