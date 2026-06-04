@@ -426,15 +426,21 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 0;
+    flex: 1;
 }
 
 .recent-item-name {
     font-weight: 500;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .recent-item-time {
     font-size: 12px;
     color: #6b7280;
+    flex-shrink: 0;
+    margin-left: 12px;
 }
 
 /* Category Explorer List */
@@ -445,7 +451,8 @@ body {
 }
 
 .category-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 16px;
     padding: 12px;
@@ -466,14 +473,16 @@ body {
 }
 
 .category-details {
-    flex-grow: 1;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .category-name {
     font-weight: 500;
     color: #ffffff;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .category-count {
@@ -931,17 +940,21 @@ body {
         gap: 8px;
     }
 
+    .recent-item-info {
+        width: 100%;
+    }
+
     .recent-item-time {
         align-self: flex-end;
     }
 
     .category-item {
-        flex-direction: column;
-        align-items: flex-start;
+        grid-template-columns: auto 1fr;
         gap: 12px;
     }
 
     .category-btn {
+        grid-column: span 2;
         width: 100%;
         text-align: center;
     }
