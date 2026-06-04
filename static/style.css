@@ -857,6 +857,13 @@ body {
 }
 
 /* Media Queries for Responsive Design */
+@media (max-width: 1024px) {
+    .layout-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
 @media (max-width: 768px) {
     .sidebar-toggle-btn {
         display: block;
@@ -899,11 +906,6 @@ body {
         align-items: flex-start;
         gap: 16px;
         padding: 20px;
-    }
-
-    .layout-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
     }
 
     .note-container {
