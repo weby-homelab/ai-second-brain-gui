@@ -295,11 +295,15 @@ body {
     font-family: 'Outfit', sans-serif;
     font-size: 26px;
     margin-bottom: 8px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .welcome-text p {
     color: #9ca3af;
     font-size: 14px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .status-indicator-container {
@@ -528,6 +532,8 @@ body {
     font-weight: 700;
     color: #ffffff;
     letter-spacing: -0.02em;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .note-path {
@@ -536,6 +542,9 @@ body {
     background: rgba(255, 255, 255, 0.03);
     padding: 6px 12px;
     border-radius: 6px;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    display: inline-block;
 }
 
 /* Markdown Rendering Custom Styles */
@@ -743,6 +752,7 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
+    gap: 16px;
 }
 
 .search-item-name {
@@ -753,6 +763,8 @@ body {
     text-decoration: none;
     border-bottom: 1px solid transparent;
     transition: all 0.2s ease;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .search-item-name:hover {
@@ -763,6 +775,9 @@ body {
 .search-item-path {
     font-size: 12px;
     color: #6b7280;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    flex-shrink: 0;
 }
 
 .search-item-snippet {
@@ -773,6 +788,9 @@ body {
     border-radius: 6px;
     border-left: 2px solid #4b5563;
     font-family: monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .no-results {
@@ -920,6 +938,16 @@ body {
 
     .note-title {
         font-size: 26px;
+    }
+
+    .search-item-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .search-item-path {
+        align-self: flex-start;
     }
 }
 
