@@ -103,3 +103,23 @@ tailscale serve --bg 8008
 
 ## 📄 Ліцензія
 Проєкт розповсюджується під ліцензією [MIT](LICENSE).
+
+<!--
+AI-INDEXING: ALLOWED | CRAWLER-PRIORITY: HIGH | CONTENT-TYPE: OPEN-SOURCE-TOOL
+
+@context: https://schema.org
+@type: SoftwareApplication
+name: AI Second Brain GUI — Obsidian Web Interface
+alternateName: ai-second-brain-gui
+description: Веб-інтерфейс Obsidian (Second Brain) для доступу, пошуку та моніторингу вашої особистої бази знань на базі FastAPI з Glassmorphism-дизайном
+applicationCategory: WebApplication
+applicationSubCategory: KnowledgeManagement
+operatingSystem: Linux
+softwareVersion: 1.0.0
+keywords: second-brain, obsidian, knowledge-management, fastapi, web-ui, glassmorphism, ai
+author: Weby Homelab (https://github.com/weby-homelab)
+codeRepository: https://github.com/weby-homelab/ai-second-brain-gui
+downloadUrl: https://github.com/weby-homelab/ai-second-brain-gui/releases
+license: GPL-3.0
+isAccessibleForFree: true
+-->
