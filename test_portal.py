@@ -28,7 +28,7 @@ assert "Дашборд" in r.text or "Привіт" in r.text, "Dashboard conten
 print("Dashboard text matches expected elements.")
 
 # 4. View Home.md note
-r = session.get("http://127.0.0.1:8008/note?path=Home.md")
+r = session.get("http://127.0.0.1:8008/note?path=PROTOCOLS/Home.md")
 print("Home.md status code (expected 200):", r.status_code)
 assert r.status_code == 200, f"Failed: {r.status_code}"
 assert "Home" in r.text or "Index" in r.text, "Home.md note content not found!"

@@ -21,6 +21,14 @@
     </div>
 </div>
 
+<!-- Global Knowledge Map -->
+<div class="graph-wrapper animate-fade-in" style="animation-delay: 0.02s; margin-bottom: 2rem;">
+    <div class="graph-panel-header">
+        <h3 class="graph-title">🌐 Карта знань Second Brain</h3>
+    </div>
+    <div class="graph-container" id="global-graph" style="height: 380px;"></div>
+</div>
+
 <!-- Stats Grid -->
 <div class="stats-grid">
     <div class="stat-card glass-panel animate-fade-in" style="animation-delay: 0s;">
@@ -87,7 +95,7 @@
                     <span class="category-name">01 Projects ({% if lang == 'uk' %}Проєкти{% else %}Projects{% endif %})</span>
                     <span class="category-count">{{ categories['01_Projects'] }} {% if lang == 'uk' %}файлів{% else %}files{% endif %}</span>
                 </div>
-                <a href="/note?path=Home.md" class="category-btn">{{ t.view }}</a>
+                <a href="/note?path=01_Projects/_index.md" class="category-btn">{{ t.view }}</a>
             </div>
             
             <div class="category-item">
@@ -96,7 +104,7 @@
                     <span class="category-name">02 Areas ({% if lang == 'uk' %}Сфери{% else %}Areas{% endif %})</span>
                     <span class="category-count">{{ categories['02_Areas'] }} {% if lang == 'uk' %}файлів{% else %}files{% endif %}</span>
                 </div>
-                <a href="/note?path=Home.md" class="category-btn">{{ t.view }}</a>
+                <a href="/note?path=02_Areas/_index.md" class="category-btn">{{ t.view }}</a>
             </div>
             
             <div class="category-item">
@@ -105,7 +113,7 @@
                     <span class="category-name">03 Resources ({% if lang == 'uk' %}Ресурси{% else %}Resources{% endif %})</span>
                     <span class="category-count">{{ categories['03_Resources'] }} {% if lang == 'uk' %}файлів{% else %}files{% endif %}</span>
                 </div>
-                <a href="/note?path=Home.md" class="category-btn">{{ t.view }}</a>
+                <a href="/note?path=03_Resources/_index.md" class="category-btn">{{ t.view }}</a>
             </div>
             
             <div class="category-item">
@@ -119,4 +127,41 @@
         </div>
     </div>
 </div>
+
+<script src="/static/js/force-graph.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('global-graph');
+        const colors = {
+            "01_Projects": "#00f5ff",
+            "02_Areas": "#00ff87",
+            "03_Resources": "#bd00ff",
+            "06_Daily_Logs": "#ffdf00",
+            "Other": "#9e9e9e"
+        };
+        
+        fetch('/api/graph/global')
+            .then(res => res.json())
+            .then(data => {
+                const Graph = ForceGraph()(container)
+                    .graphData(data)
+                    .nodeId('id')
+                    .nodeLabel(node => `<div class="graph-tooltip-title">${node.title}</div><div class="graph-tooltip-meta">📂 ${node.group}</div>`)
+                    .nodeColor(node => colors[node.group] || colors.Other)
+                    .nodeVal(4)
+                    .linkColor(() => 'rgba(255,255,255,0.08)')
+                    .linkWidth(1)
+                    .backgroundColor('#08090d')
+                    .width(container.clientWidth)
+                    .height(container.clientHeight)
+                    .onNodeClick(node => {
+                        window.location.href = `/note?path=${encodeURIComponent(node.id)}`;
+                    });
+                    
+                window.addEventListener('resize', () => {
+                    Graph.width(container.clientWidth);
+                });
+            });
+    });
+</script>
 {% endblock %}

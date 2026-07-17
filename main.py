@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
 import markdown
+from graph_builder import build_graph_data, build_local_subgraph
 
 # Load environment variables
 load_dotenv("/root/geminicli/.env")
@@ -442,6 +443,19 @@ def get_media(request: Request, path: str):
     abs_path = validate_path(safe_rel_path)
     
     return FileResponse(abs_path)
+
+@app.get("/api/graph/global")
+def api_global_graph(request: Request):
+    if not get_current_user(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return build_graph_data(BRAIN_DIR)
+
+@app.get("/api/graph/local")
+def api_local_graph(request: Request, path: str, depth: int = 2):
+    if not get_current_user(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    graph_data = build_graph_data(BRAIN_DIR)
+    return build_local_subgraph(graph_data, path, depth)
 
 if __name__ == "__main__":
     import uvicorn

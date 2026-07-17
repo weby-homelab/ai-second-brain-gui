@@ -22,12 +22,23 @@
   - Рендеринг плоских Wiki-посилань (`[[Note Name]]`) із автоматичним розпізнаванням та побудовою внутрішньої карти зв'язків.
   - Підтримка кольорових блоків виділень Obsidian **Callouts** (`> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`, тощо).
   - Динамічне підвантаження медіа-файлів (зображень) безпосередньо з вашого Obsidian-сейфу.
+- 🌐 **Інтерактивний граф зв'язків (Graph View):** Динамічна 2D-карта знань на базі `Force-Graph` (D3 force-directed layout). Глобальний граф на головному дашборді та локальний граф зв'язків глибиною 2 рівня на сторінці кожної нотатки з можливістю переходу кліком по вузлах.
 - 🔍 **Глобальний пошук:** Миттєвий пошук нотаток як за назвою файлу, так і за його вмістом із виділенням фрагментів (snippets).
 - 📊 **Статистика дашборду:** Виведення загальної кількості записів, аналізу за основними папками (напр., Projects, Areas, Resources, Daily Logs) та списку нещодавно змінених файлів.
 - 💅 **Преміальний Glassmorphism UI:**
   - Естетика темної OLED-теми (`#08090d`) з інтегрованими неоновими світіннями (`mesh-glow`).
   - Тонкі рамки, розмиття фону (`backdrop-filter`) та сучасна типографіка Google Fonts (Outfit для заголовків, Inter для тексту).
   - 100% адаптивна верстка для смартфонів без горизонтального скролу сторінки.
+
+---
+
+## 🔌 Рекомендоване доповнення: P.O.W.E.R. Framework
+
+Для максимального розкриття потенціалу вашого другого мозку за допомогою ШІ-агентів (Claude, Cursor, OpenCode) та автоматизації його підтримки, рекомендуємо використовувати пов'язаний проєкт **[P.O.W.E.R. Framework](https://github.com/weby-homelab/power-framework)** — AI-Native Toolkit для Obsidian, що включає:
+- **🔍 Advanced Hybrid Search (BM25 + Dense Vectors):** Чотири режими семантичного пошуку з використанням моделей `BGE-M3` чи `Qwen3-Embedding`, підтримкою розширення запитів через LLM та синонімайзером.
+- **🤖 MCP Server (Model Context Protocol):** Надає 12 готових інструментів для ШІ-агентів, дозволяючи їм самостійно індексувати сейф, шукати інформацію, знаходити логічні суперечності та автономно синтезувати сесії (`synthesize_session`).
+- **🛡️ Валідація за стандартом OKF:** Перевірка метаданих (frontmatter) на рівні Pydantic v2 (поля `owner`, `status`, `expiry`) та автоматичне виправлення («лікування») структури через `power heal`.
+- **🔄 Freshness Monitoring & ROT Audit:** Автоматичне виявлення застарілих (expired) нотаток, дублікатів або неактуальних даних та їх відправка в архів.
 
 ---
 
@@ -52,7 +63,7 @@ cd ai-second-brain-gui
 
 ```bash
 python3 -m venv venv
-source venv/bin/bin/activate
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -79,8 +90,8 @@ After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/root/geminicli/projects/second-brain-portal
-ExecStart=/root/geminicli/projects/second-brain-portal/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8008 --reload
+WorkingDirectory=/root/geminicli/projects/ai-second-brain-gui
+ExecStart=/root/geminicli/projects/ai-second-brain-gui/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8008 --reload
 Restart=always
 
 [Install]
@@ -132,6 +143,6 @@ keywords: second-brain, obsidian, knowledge-management, fastapi, web-ui, glassmo
 author: Weby Homelab (https://github.com/weby-homelab)
 codeRepository: https://github.com/weby-homelab/ai-second-brain-gui
 downloadUrl: https://github.com/weby-homelab/ai-second-brain-gui/releases
-license: GPL-3.0
+license: MIT
 isAccessibleForFree: true
 -->
