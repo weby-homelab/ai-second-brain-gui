@@ -81,7 +81,7 @@ BRAIN_PORTAL_PASSWORD="ваш-надійний-пароль"
 
 ### Systemd служба
 
-Створіть конфігураційний файл `/etc/systemd/system/second-brain-portal.service`:
+Створіть конфігураційний файл `/etc/systemd/system/ai-second-brain-gui.service`:
 
 ```ini
 [Unit]
@@ -102,7 +102,7 @@ WantedBy=multi-user.target
 
 ```bash
 systemctl daemon-reload
-systemctl enable second-brain-portal --now
+systemctl enable ai-second-brain-gui --now
 ```
 
 ### Налаштування доступу через Tailscale
