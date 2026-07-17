@@ -251,6 +251,36 @@ def render_markdown(text, file_index):
 
 # ----------------- ROUTES -----------------
 
+@app.get("/robots.txt")
+def get_robots(request: Request):
+    base_url = str(request.base_url).rstrip("/")
+    robots_path = os.path.join(BASE_DIR, "robots.txt")
+    if os.path.exists(robots_path):
+        with open(robots_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        content = content.replace("Sitemap: /sitemap.xml", f"Sitemap: {base_url}/sitemap.xml")
+    else:
+        content = f"User-agent: *\nDisallow: /note\nDisallow: /search\nDisallow: /media\nDisallow: /api/\nDisallow: /logout\nAllow: /\nAllow: /login\nSitemap: {base_url}/sitemap.xml"
+    return Response(content=content, media_type="text/plain")
+
+@app.get("/sitemap.xml")
+def get_sitemap(request: Request):
+    base_url = str(request.base_url).rstrip("/")
+    xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{base_url}/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>{base_url}/login</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>"""
+    return Response(content=xml_content, media_type="application/xml")
+
 @app.get("/login", response_class=HTMLResponse)
 def get_login(request: Request, error: str = None):
     if get_current_user(request):

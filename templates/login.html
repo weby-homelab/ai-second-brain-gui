@@ -4,6 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ t.title_login }}</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="AI Second Brain GUI — modern, secure, and aesthetically refined web interface to access, search, and monitor your personal Obsidian knowledge base. Powered by FastAPI.">
+    <meta name="keywords" content="second brain, obsidian, fastapi, knowledge management, web interface, personal wiki, RAG, AI">
+    <meta name="author" content="Weby Homelab">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ t.title_login }}">
+    <meta property="og:description" content="Access, search, and monitor your Obsidian knowledge base securely with Glassmorphism UI.">
+    <meta property="og:image" content="/static/second-brain-portal.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="{{ t.title_login }}">
+    <meta property="twitter:description" content="Access, search, and monitor your Obsidian knowledge base securely with Glassmorphism UI.">
+    <meta property="twitter:image" content="/static/second-brain-portal.png">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "AI Second Brain GUI",
+      "alternateName": "ai-second-brain-gui",
+      "description": "FastAPI-based Glassmorphism Web Interface for Obsidian Second Brain",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Linux",
+      "author": {
+        "@type": "Organization",
+        "name": "Weby Homelab",
+        "url": "https://github.com/weby-homelab"
+      },
+      "softwareVersion": "1.1.0",
+      "license": "https://opensource.org/licenses/MIT"
+    }
+    </script>
+
     <!-- Outfit & Inter Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

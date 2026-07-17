@@ -79,3 +79,19 @@ def test_api_graph_authorized():
     
     # Clean up
     SESSIONS.remove(session_token)
+
+
+def test_robots_txt():
+    response = client.get("/robots.txt")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/plain")
+    assert "User-agent" in response.text
+    assert "Sitemap:" in response.text
+
+
+def test_sitemap_xml():
+    response = client.get("/sitemap.xml")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/xml")
+    assert "<urlset" in response.text
+    assert "<loc>" in response.text

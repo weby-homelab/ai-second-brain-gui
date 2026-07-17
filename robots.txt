@@ -3,11 +3,17 @@
 # ─────────────────────────────────────────────
 
 # Sitemap
-Sitemap: https://raw.githubusercontent.com/weby-homelab/ai-second-brain-gui/master/sitemap.xml
+Sitemap: /sitemap.xml
 
 # ─── General Rules ───────────────────────────
 User-agent: *
+Disallow: /note
+Disallow: /search
+Disallow: /media
+Disallow: /api/
+Disallow: /logout
 Allow: /
+Allow: /login
 Crawl-delay: 10
 
 # ─── Search-Specific Bots ────────────────────
