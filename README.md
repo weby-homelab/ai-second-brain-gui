@@ -7,7 +7,7 @@
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-![Second Brain Portal Dashboard](second-brain-portal.png)
+![Second Brain Portal Dashboard](second-brain-portal-UA.png)
 
 ![Second Brain Graph Dashboard](SB-Graph.gif)
 
