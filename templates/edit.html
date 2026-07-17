@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.edit_note }}: {{ note_name }} — Second Brain Portal{% endblock %}
+
+{% block breadcrumb %}
+<a href="/" class="breadcrumb-link">{{ t.dashboard }}</a>
+<span class="breadcrumb-separator">/</span>
+<a href="/note?path={{ note_path }}" class="breadcrumb-link">{{ note_name }}</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">{{ t.edit }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="note-container glass-panel animate-fade-in">
+    <div class="note-header" style="margin-bottom: 20px;">
+        <h1 class="note-title">✏️ {{ t.edit_note }}: {{ note_name }}</h1>
+        <div class="note-actions">
+            <span class="note-path">📂 {{ t.note_path }}: {{ note_path }}</span>
+        </div>
+    </div>
+    
+    <form action="/edit?path={{ note_path }}" method="post" class="editor-form">
+        <input type="hidden" name="path" value="{{ note_path }}">
+        
+        <div class="editor-container">
+            <textarea name="content" class="editor-textarea" spellcheck="false" placeholder="Write markdown content here...">{{ content }}</textarea>
+            
+            <div class="editor-actions">
+                <button type="submit" class="btn-primary">💾 {{ t.save }}</button>
+                <a href="/note?path={{ note_path }}" class="btn-secondary">❌ {{ t.cancel }}</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

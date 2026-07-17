@@ -95,3 +95,51 @@ def test_sitemap_xml():
     assert response.headers["content-type"].startswith("application/xml")
     assert "<urlset" in response.text
     assert "<loc>" in response.text
+
+
+def test_edit_unauthorized():
+    response = client.get("/edit?path=protocols/home.md", follow_redirects=False)
+    assert response.status_code == 303
+    assert "/login" in response.headers["location"]
+
+
+def test_edit_authorized_get_and_post():
+    session_token = "test-session-1234"
+    SESSIONS.add(session_token)
+    client.cookies.set("session_token", session_token)
+    
+    from main import index_brain_files
+    file_index = index_brain_files()
+    if file_index:
+        # Get one real test path
+        test_path = list(file_index.values())[0]
+        
+        # Read current content to restore it later
+        from main import validate_path
+        abs_path = validate_path(test_path)
+        with open(abs_path, "r", encoding="utf-8") as f:
+            original_content = f.read()
+            
+        try:
+            # Test GET /edit
+            response = client.get(f"/edit?path={test_path}")
+            assert response.status_code == 200
+            assert "editor-textarea" in response.text
+            
+            # Test POST /edit
+            new_content = original_content + "\n\n<!-- test edit edit_authorized_post -->"
+            response = client.post("/edit", data={"path": test_path, "content": new_content}, follow_redirects=False)
+            assert response.status_code == 303
+            
+            # Verify file was written
+            with open(abs_path, "r", encoding="utf-8") as f:
+                updated_content = f.read()
+            assert "test edit edit_authorized_post" in updated_content
+            
+        finally:
+            # Restore original content
+            with open(abs_path, "w", encoding="utf-8") as f:
+                f.write(original_content)
+                
+    SESSIONS.remove(session_token)
+
