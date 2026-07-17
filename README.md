@@ -23,6 +23,7 @@ A modern, highly secure, and aesthetically refined web interface to access, sear
   - Native parsing for Obsidian **Callouts** (`> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`, etc.).
   - Dynamic asset streaming to render vault media (images, graphics) securely.
 - 🌐 **Interactive Graph View:** Visualizes note relations with a dynamic 2D knowledge graph powered by `Force-Graph` (D3 force-directed layout). Displays a global graph on the dashboard and a local 2-depth graph on note pages, allowing click-to-navigate.
+- ✏️ **Markdown Note Editing:** Allows editing and saving any markdown note directly from the web dashboard. Features secure Path Traversal (`validate_path`) protection.
 - 🔍 **Global Search:** Search through notes by both filename and contents in real time with context snippet highlighting.
 - 📊 **Interactive Dashboard:** Live stats including total notes count, directory-based breakdowns (e.g. Projects, Areas, Resources, Daily Logs), and a feed of recently updated documents.
 - 💅 **Premium Glassmorphism UI:**
