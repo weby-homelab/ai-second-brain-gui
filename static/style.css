@@ -1127,4 +1127,82 @@ body {
     border-radius: 50%;
 }
 
+/* ----------------- EDITOR STYLES ----------------- */
+.editor-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.editor-textarea {
+    width: 100%;
+    min-height: 550px;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #f3f4f6;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    resize: vertical;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.editor-textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+.editor-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-start;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.03);
+    color: #f3f4f6;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+
 

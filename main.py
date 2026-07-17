@@ -67,6 +67,10 @@ TRANSLATIONS = {
         "match_filename": "Збіг у назві файлу",
         "no_results": "Нічого не знайдено",
         "no_results_sub": "Спробуйте змінити запит або перевірити правопис",
+        "edit": "Редагувати",
+        "save": "Зберегти",
+        "cancel": "Скасувати",
+        "edit_note": "Редагування нотатки",
     },
     "en": {
         "title_login": "Login — Second Brain Portal",
@@ -98,6 +102,10 @@ TRANSLATIONS = {
         "match_filename": "Match in filename",
         "no_results": "No results found",
         "no_results_sub": "Try changing your query or check your spelling",
+        "edit": "Edit",
+        "save": "Save",
+        "cancel": "Cancel",
+        "edit_note": "Edit Note",
     }
 }
 
@@ -486,6 +494,51 @@ def api_local_graph(request: Request, path: str, depth: int = 2):
         raise HTTPException(status_code=401, detail="Unauthorized")
     graph_data = build_graph_data(BRAIN_DIR)
     return build_local_subgraph(graph_data, path, depth)
+
+@app.get("/edit", response_class=HTMLResponse)
+def get_edit(request: Request, path: str):
+    if not get_current_user(request):
+        return RedirectResponse(url="/login", status_code=303)
+        
+    path_key = path.replace("\\", "/").lower()
+    file_index = index_brain_files()
+    if path_key not in file_index:
+        raise HTTPException(status_code=404, detail="Note not found")
+        
+    safe_rel_path = file_index[path_key]
+    abs_path = validate_path(safe_rel_path)
+        
+    with open(abs_path, "r", encoding="utf-8") as f:
+        content = f.read()
+        
+    note_name = os.path.splitext(os.path.basename(abs_path))[0]
+    
+    return templates.TemplateResponse(request, "edit.html", get_context(
+        request,
+        note_name=note_name,
+        note_path=safe_rel_path,
+        content=content
+    ))
+
+@app.post("/edit")
+def post_edit(request: Request, path: str = Form(...), content: str = Form(...)):
+    if not get_current_user(request):
+        return RedirectResponse(url="/login", status_code=303)
+        
+    path_key = path.replace("\\", "/").lower()
+    file_index = index_brain_files()
+    if path_key not in file_index:
+        raise HTTPException(status_code=404, detail="Note not found")
+        
+    safe_rel_path = file_index[path_key]
+    abs_path = validate_path(safe_rel_path)
+    
+    # Normalize line endings to avoid git diff noise
+    normalized_content = content.replace("\r\n", "\n")
+    with open(abs_path, "w", encoding="utf-8") as f:
+        f.write(normalized_content)
+        
+    return RedirectResponse(url=f"/note?path={safe_rel_path}", status_code=303)
 
 if __name__ == "__main__":
     import uvicorn

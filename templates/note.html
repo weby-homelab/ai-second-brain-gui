@@ -12,8 +12,11 @@
 <div class="note-container glass-panel animate-fade-in">
     <div class="note-header">
         <h1 class="note-title">{{ note_name }}</h1>
-        <div class="note-actions">
+        <div class="note-actions" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
             <span class="note-path">📂 {{ t.note_path }}: {{ note_path }}</span>
+            <a href="/edit?path={{ note_path }}" class="category-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 12px;">
+                <span>✏️</span> {{ t.edit }}
+            </a>
         </div>
     </div>
     
