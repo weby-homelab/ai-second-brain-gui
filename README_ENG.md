@@ -81,7 +81,7 @@ BRAIN_PORTAL_PASSWORD="your-strong-password"
 
 ### Systemd Service Setup
 
-Create a service config `/etc/systemd/system/second-brain-portal.service`:
+Create a service config `/etc/systemd/system/ai-second-brain-gui.service`:
 
 ```ini
 [Unit]
@@ -102,7 +102,7 @@ Reload daemon and enable the service:
 
 ```bash
 systemctl daemon-reload
-systemctl enable second-brain-portal --now
+systemctl enable ai-second-brain-gui --now
 ```
 
 ### Exposing Securely with Tailscale
