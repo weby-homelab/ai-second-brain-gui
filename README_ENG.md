@@ -22,12 +22,23 @@ A modern, highly secure, and aesthetically refined web interface to access, sear
   - Renders flat Wiki-links (`[[Note Name]]`) with automatic resolution and link path mapping.
   - Native parsing for Obsidian **Callouts** (`> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`, etc.).
   - Dynamic asset streaming to render vault media (images, graphics) securely.
+- 🌐 **Interactive Graph View:** Visualizes note relations with a dynamic 2D knowledge graph powered by `Force-Graph` (D3 force-directed layout). Displays a global graph on the dashboard and a local 2-depth graph on note pages, allowing click-to-navigate.
 - 🔍 **Global Search:** Search through notes by both filename and contents in real time with context snippet highlighting.
 - 📊 **Interactive Dashboard:** Live stats including total notes count, directory-based breakdowns (e.g. Projects, Areas, Resources, Daily Logs), and a feed of recently updated documents.
 - 💅 **Premium Glassmorphism UI:**
   - Elegant dark OLED theme (`#08090d`) with neon mesh-glow overlay backgrounds.
   - Border highlights, backdrop-filter blur effects, and Google Fonts typography (Outfit for headings, Inter for body).
   - 100% mobile-friendly responsive layout with touch-optimized margins and safe horizontal table scrolling.
+
+---
+
+## 🔌 Recommended Extension: P.O.W.E.R. Framework
+
+To fully unlock the potential of your Obsidian Second Brain using AI agents (Claude, Cursor, OpenCode) and automate its maintenance, we highly recommend integrating the **[P.O.W.E.R. Framework](https://github.com/weby-homelab/power-framework)** — an AI-Native Toolkit for Obsidian:
+- **🔍 Advanced Hybrid Search (BM25 + Dense Vectors):** Supports 4 search modes using models like `BGE-M3` or `Qwen3-Embedding`, with LLM query expansion and synonym processing.
+- **🤖 MCP Server (Model Context Protocol):** Exposes 12 autonomous tools for AI agents, allowing them to index your vault, retrieve documents, identify logical contradictions, and auto-ingest sessions (`synthesize_session`).
+- **🛡️ OKF Metadata Verification:** Enforces strict frontmatter schemas powered by Pydantic v2 (governance fields: `owner`, `status`, `expiry`) with auto-healing capabilities via `power heal`.
+- **🔄 Freshness Monitoring & ROT Audit:** Automatically flags expired, redundant, outdated, and trivial notes, streamlining cleanup and archiving to `04_Archive/`.
 
 ---
 
@@ -79,8 +90,8 @@ After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/root/geminicli/projects/second-brain-portal
-ExecStart=/root/geminicli/projects/second-brain-portal/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8008 --reload
+WorkingDirectory=/root/geminicli/projects/ai-second-brain-gui
+ExecStart=/root/geminicli/projects/ai-second-brain-gui/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8008 --reload
 Restart=always
 
 [Install]
