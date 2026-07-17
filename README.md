@@ -1,65 +1,65 @@
 # 🧠 Second Brain Web Portal
 
-[🇺🇸 English](README_ENG.md) | [🇺🇦 Українська](README.md)
+[🇺🇸 English](README.md) | [🇺🇦 Українська](README.ua.md)
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-![Second Brain Portal Dashboard](second-brain-portal-UA.png)
+![Second Brain Portal Dashboard](second-brain-portal-EN.png)
 
 ![Second Brain Graph Dashboard](SB-Graph.gif)
 
-Сучасний, безпечний та естетично бездоганний веб-інтерфейс для доступу, пошуку та моніторингу вашої особистої бази знань Obsidian (Second Brain). Побудований на базі FastAPI з використанням сучасного Glassmorphism-дизайну та інтегрованого проксування через Tailscale.
+A modern, highly secure, and aesthetically refined web interface to access, search, and monitor your personal Obsidian knowledge base (Second Brain). Powered by FastAPI, featuring a sleek Glassmorphism design and native Tailscale tunnel integration.
 
 ---
 
-## ✨ Особливості (Features)
+## ✨ Features
 
-- 🚀 **Швидкість та Асинхронність:** Сервер на базі FastAPI та Uvicorn з миттєвим завантаженням сторінок.
-- 🎨 **Сумісність з Obsidian:**
-  - Рендеринг плоских Wiki-посилань (`[[Note Name]]`) із автоматичним розпізнаванням та побудовою внутрішньої карти зв'язків.
-  - Підтримка кольорових блоків виділень Obsidian **Callouts** (`> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`, тощо).
-  - Динамічне підвантаження медіа-файлів (зображень) безпосередньо з вашого Obsidian-сейфу.
-- 🌐 **Інтерактивний граф зв'язків (Graph View):** Динамічна 2D-карта знань на базі `Force-Graph` (D3 force-directed layout). Глобальний граф на головному дашборді та локальний граф зв'язків глибиною 2 рівня на сторінці кожної нотатки з можливістю переходу кліком по вузлах.
-- 🔍 **Глобальний пошук:** Миттєвий пошук нотаток як за назвою файлу, так і за його вмістом із виділенням фрагментів (snippets).
-- 📊 **Статистика дашборду:** Виведення загальної кількості записів, аналізу за основними папками (напр., Projects, Areas, Resources, Daily Logs) та списку нещодавно змінених файлів.
-- 💅 **Преміальний Glassmorphism UI:**
-  - Естетика темної OLED-теми (`#08090d`) з інтегрованими неоновими світіннями (`mesh-glow`).
-  - Тонкі рамки, розмиття фону (`backdrop-filter`) та сучасна типографіка Google Fonts (Outfit для заголовків, Inter для тексту).
-  - 100% адаптивна верстка для смартфонів без горизонтального скролу сторінки.
-
----
-
-## 🔌 Рекомендоване доповнення: P.O.W.E.R. Framework
-
-Для максимального розкриття потенціалу вашого другого мозку за допомогою ШІ-агентів (Claude, Cursor, OpenCode) та автоматизації його підтримки, рекомендуємо використовувати пов'язаний проєкт **[P.O.W.E.R. Framework](https://github.com/weby-homelab/power-framework)** — AI-Native Toolkit для Obsidian, що включає:
-- **🔍 Advanced Hybrid Search (BM25 + Dense Vectors):** Чотири режими семантичного пошуку з використанням моделей `BGE-M3` чи `Qwen3-Embedding`, підтримкою розширення запитів через LLM та синонімайзером.
-- **🤖 MCP Server (Model Context Protocol):** Надає 12 готових інструментів для ШІ-агентів, дозволяючи їм самостійно індексувати сейф, шукати інформацію, знаходити логічні суперечності та автономно синтезувати сесії (`synthesize_session`).
-- **🛡️ Валідація за стандартом OKF:** Перевірка метаданих (frontmatter) на рівні Pydantic v2 (поля `owner`, `status`, `expiry`) та автоматичне виправлення («лікування») структури через `power heal`.
-- **🔄 Freshness Monitoring & ROT Audit:** Автоматичне виявлення застарілих (expired) нотаток, дублікатів або неактуальних даних та їх відправка в архів.
+- 🚀 **Speed & Asynchrony:** Powered by FastAPI and Uvicorn for lightweight, instant page loading.
+- 🎨 **Obsidian Compatibility:**
+  - Renders flat Wiki-links (`[[Note Name]]`) with automatic resolution and link path mapping.
+  - Native parsing for Obsidian **Callouts** (`> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`, etc.).
+  - Dynamic asset streaming to render vault media (images, graphics) securely.
+- 🌐 **Interactive Graph View:** Visualizes note relations with a dynamic 2D knowledge graph powered by `Force-Graph` (D3 force-directed layout). Displays a global graph on the dashboard and a local 2-depth graph on note pages, allowing click-to-navigate.
+- 🔍 **Global Search:** Search through notes by both filename and contents in real time with context snippet highlighting.
+- 📊 **Interactive Dashboard:** Live stats including total notes count, directory-based breakdowns (e.g. Projects, Areas, Resources, Daily Logs), and a feed of recently updated documents.
+- 💅 **Premium Glassmorphism UI:**
+  - Elegant dark OLED theme (`#08090d`) with neon mesh-glow overlay backgrounds.
+  - Border highlights, backdrop-filter blur effects, and Google Fonts typography (Outfit for headings, Inter for body).
+  - 100% mobile-friendly responsive layout with touch-optimized margins and safe horizontal table scrolling.
 
 ---
 
-## 🔒 Безпека та Ізоляція (Security first)
+## 🔌 Recommended Extension: P.O.W.E.R. Framework
 
-- 🛡️ **LFI (Local File Inclusion) Protection:** Кожен запит на отримання нотатки перевіряється функцією `validate_path` за допомогою `os.path.commonpath`. Спроби Path Traversal (на кшталт `../../etc/passwd`) гарантовано блокуються з кодом `403 Forbidden`.
-- ⚓ **Host Isolation:** Сервер за замовчуванням слухає виключно інтерфейс localhost `127.0.0.1:8008`, що робить його невидимим для сканерів із глобальної мережі.
-- 🔑 **HttpOnly Cookie Sessions:** Авторизація реалізована за допомогою куки `session_token` із прапорцями `HttpOnly` та `SameSite=Strict`. Пароль зчитується із системних змінних середовища (`.env`).
+To fully unlock the potential of your Obsidian Second Brain using AI agents (Claude, Cursor, OpenCode) and automate its maintenance, we highly recommend integrating the **[P.O.W.E.R. Framework](https://github.com/weby-homelab/power-framework)** — an AI-Native Toolkit for Obsidian:
+- **🔍 Advanced Hybrid Search (BM25 + Dense Vectors):** Supports 4 search modes using models like `BGE-M3` or `Qwen3-Embedding`, with LLM query expansion and synonym processing.
+- **🤖 MCP Server (Model Context Protocol):** Exposes 12 autonomous tools for AI agents, allowing them to index your vault, retrieve documents, identify logical contradictions, and auto-ingest sessions (`synthesize_session`).
+- **🛡️ OKF Metadata Verification:** Enforces strict frontmatter schemas powered by Pydantic v2 (governance fields: `owner`, `status`, `expiry`) with auto-healing capabilities via `power heal`.
+- **🔄 Freshness Monitoring & ROT Audit:** Automatically flags expired, redundant, outdated, and trivial notes, streamlining cleanup and archiving to `04_Archive/`.
 
 ---
 
-## 🛠️ Встановлення та Налаштування
+## 🔒 Security & Isolation
 
-### 1. Клонування репозиторію та оточення
+- 🛡️ **LFI (Local File Inclusion) Protection:** All requested document paths are strictly verified by a `validate_path` wrapper using `os.path.commonpath`. Any Path Traversal attempt (e.g., `../../etc/passwd`) is immediately dropped returning a `403 Forbidden` error.
+- ⚓ **Host Isolation:** The web server binds strictly to the loopback interface `127.0.0.1:8008`, ensuring it is invisible to external internet port scanners.
+- 🔑 **HttpOnly Cookie Sessions:** Client-side authentication is handled via a randomized `session_token` cookie configured with `HttpOnly` and `SameSite=Strict` flags. Passwords are securely parsed from local system environment variables (`.env`).
+
+---
+
+## 🛠️ Installation & Setup
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/weby-homelab/ai-second-brain-gui.git
 cd ai-second-brain-gui
 ```
 
-### 2. Створення віртуального середовища
+### 2. Prepare Python virtual environment
 
 ```bash
 python3 -m venv venv
@@ -67,21 +67,21 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Змінні середовища `.env`
+### 3. Setup configuration `.env`
 
-Створіть файл `.env` у кореневій директорії проєкту (або вкажіть шлях у коді):
+Create a `.env` file in the root directory (or direct the path to your existing configs):
 
 ```env
-BRAIN_PORTAL_PASSWORD="ваш-надійний-пароль"
+BRAIN_PORTAL_PASSWORD="your-strong-password"
 ```
 
 ---
 
-## 🚀 Деплоймент (Deployment)
+## 🚀 Deployment
 
-### Systemd служба
+### Systemd Service Setup
 
-Створіть конфігураційний файл `/etc/systemd/system/ai-second-brain-gui.service`:
+Create a service config `/etc/systemd/system/ai-second-brain-gui.service`:
 
 ```ini
 [Unit]
@@ -98,51 +98,31 @@ Restart=always
 WantedBy=multi-user.target
 ```
 
-Активуйте та запустіть службу:
+Reload daemon and enable the service:
 
 ```bash
 systemctl daemon-reload
 systemctl enable ai-second-brain-gui --now
 ```
 
-### Налаштування доступу через Tailscale
+### Exposing Securely with Tailscale
 
-Для безпечного доступу з будь-якого пристрою у вашій мережі VPN Tailscale виконайте:
+To access your portal securely from any device in your Tailnet, run:
 
 ```bash
 tailscale serve --bg 8008
 ```
 
-Це автоматично створить HTTPS-сервер за адресою `https://<ваша-нода>.tailnet-name.ts.net/` із автоматичним керуванням SSL-сертифікатами.
+This sets up an HTTPS reverse proxy at `https://<your-node>.<tailnet-name>.ts.net/` with automated TLS certificate management.
 
 ---
 
-## 🤝 Внесок у проєкт (Contributing)
+## 🤝 Contributing
 
-Будь-які пропозиції щодо покращення стилів чи розширення сумісності з іншими плагінами Obsidian вітаються. Створюйте Issue або Pull Request!
+Contributions to improve styling, parsing rules, or support for additional Obsidian syntax extensions are welcome. Feel free to open an Issue or a Pull Request!
 
 ---
 
-## 📄 Ліцензія
+## 📄 License
 
-Проєкт розповсюджується під ліцензією [MIT](LICENSE).
-
-<!--
-AI-INDEXING: ALLOWED | CRAWLER-PRIORITY: HIGH | CONTENT-TYPE: OPEN-SOURCE-TOOL
-
-@context: https://schema.org
-@type: SoftwareApplication
-name: AI Second Brain GUI — Obsidian Web Interface
-alternateName: ai-second-brain-gui
-description: Веб-інтерфейс Obsidian (Second Brain) для доступу, пошуку та моніторингу вашої особистої бази знань на базі FastAPI з Glassmorphism-дизайном
-applicationCategory: WebApplication
-applicationSubCategory: KnowledgeManagement
-operatingSystem: Linux
-softwareVersion: 1.0.0
-keywords: second-brain, obsidian, knowledge-management, fastapi, web-ui, glassmorphism, ai
-author: Weby Homelab (https://github.com/weby-homelab)
-codeRepository: https://github.com/weby-homelab/ai-second-brain-gui
-downloadUrl: https://github.com/weby-homelab/ai-second-brain-gui/releases
-license: MIT
-isAccessibleForFree: true
--->
+This project is distributed under the [MIT](LICENSE) license.
