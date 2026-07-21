@@ -67,6 +67,11 @@ def build_graph_data(brain_dir: str):
                 })
                 node_ids.add(node_id)
                 
+                # Add structural link to PARA category _index.md hub
+                category_index_id = f"{group.lower()}/_index.md"
+                if group != "Other" and node_id != category_index_id:
+                    related_links.append(category_index_id)
+
                 # Temporarily save raw links for validation
                 for target in related_links:
                     links.append({"source": node_id, "target": target})
@@ -88,7 +93,7 @@ def build_graph_data(brain_dir: str):
                 target = target_resolved
         
         # Re-verify and append
-        if target in node_ids:
+        if target in node_ids and source != target:
             # Avoid duplicate links
             link_entry = {"source": source, "target": target}
             if link_entry not in valid_links:

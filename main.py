@@ -54,7 +54,7 @@ TRANSLATIONS = {
         "welcome_text": "Ласкаво просимо до веб-порталу твого другого мозку. Тут зібрано знання, документацію, мандати та системний статус домашньої лабораторії.",
         "stat_total_notes": "Всього нотаток",
         "stat_active_projects": "Активних проєктів",
-        "stat_protected_services": "Служб під захистом",
+        "stat_archive_notes": "В архіві",
         "stat_total_logs": "Daily Logs всього",
         "recent_updates": "🕒 Останні оновлення знань",
         "structure_navigation": "📚 Навігація по структурі",
@@ -89,7 +89,7 @@ TRANSLATIONS = {
         "welcome_text": "Welcome to your second brain web portal. Your knowledge, documentation, mandates, and home lab status, consolidated.",
         "stat_total_notes": "Total notes",
         "stat_active_projects": "Active projects",
-        "stat_protected_services": "Protected services",
+        "stat_archive_notes": "Archived notes",
         "stat_total_logs": "Total Daily Logs",
         "recent_updates": "🕒 Recent updates",
         "structure_navigation": "📚 Structure Navigator",
@@ -339,7 +339,7 @@ def dashboard(request: Request):
         
     # Build statistics
     total_notes = 0
-    note_categories = {"01_Projects": 0, "02_Areas": 0, "03_Resources": 0, "06_Daily_Logs": 0, "Other": 0}
+    note_categories = {"01_Projects": 0, "02_Areas": 0, "03_Resources": 0, "04_Archive": 0, "06_Daily_Logs": 0, "Other": 0}
     recent_notes = []
     
     for root, dirs, files in os.walk(BRAIN_DIR):
