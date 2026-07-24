@@ -42,20 +42,24 @@ def build_graph_data(brain_dir: str):
                                     title = metadata["title"]
                                 if "related" in metadata:
                                     raw_related = metadata["related"]
-                                    if isinstance(raw_related, list):
-                                        related_links.extend(raw_related)
-                                    elif isinstance(raw_related, str):
-                                        related_links.append(raw_related)
+                                    rel_items = raw_related if isinstance(raw_related, list) else [raw_related]
+                                    for item in rel_items:
+                                        if isinstance(item, str):
+                                            related_links.append(item)
+                                        elif isinstance(item, dict):
+                                            t_val = item.get("path") or item.get("target") or item.get("link")
+                                            if isinstance(t_val, str):
+                                                related_links.append(t_val)
 
                         # Extract inline [[Wiki-links]]
                         inline_links = re.findall(r"\[\[([^\]|]+)(?:\|[^\]]+)?\]\]", content)
                         for link in inline_links:
-                            link_id = link.strip().replace("\\", "/").lower()
+                            link_clean = link.strip().split("#")[0].replace("\\", "/").lower()
                             # Ignore media and links with protocols
-                            if not any(link_id.endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif', '.svg']) and "://" not in link_id:
-                                if not link_id.endswith(".md"):
-                                    link_id += ".md"
-                                related_links.append(link_id)
+                            if link_clean and not any(link_clean.endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif', '.svg']) and "://" not in link_clean:
+                                if not link_clean.endswith(".md"):
+                                    link_clean += ".md"
+                                related_links.append(link_clean)
                 except Exception:
                     pass
 
@@ -80,13 +84,20 @@ def build_graph_data(brain_dir: str):
     valid_links = []
     for link in links:
         source = link["source"]
-        target = link["target"].lower()
+        raw_target = link["target"]
+        if not isinstance(raw_target, str):
+            if isinstance(raw_target, dict):
+                raw_target = raw_target.get("path") or raw_target.get("target") or raw_target.get("link")
+            if not isinstance(raw_target, str):
+                continue
+
+        target = raw_target.strip().split("#")[0].replace("\\", "/").lower()
         
         # If target has no path prefix, try to resolve it from node filenames
         if "/" not in target:
             target_resolved = None
             for n_id in node_ids:
-                if os.path.basename(n_id) == target or os.path.splitext(os.path.basename(n_id))[0] == target:
+                if os.path.basename(n_id) == target or os.path.splitext(os.path.basename(n_id))[0] == target or os.path.splitext(os.path.basename(n_id))[0] == os.path.splitext(target)[0]:
                     target_resolved = n_id
                     break
             if target_resolved:
