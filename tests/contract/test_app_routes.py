@@ -275,10 +275,17 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
     assert resp.status_code == 303
     assert resp.headers["location"] == "/login"
 
-    # 2. Login page itself is accessible
+    # 2. Login page itself is accessible with zero info-leak (stealth pre-auth)
     resp_login_page = auth_client.get("/login")
     assert resp_login_page.status_code == 200
     assert "Authorization" in resp_login_page.text
+    assert "<nav" not in resp_login_page.text
+    assert 'href="/notes"' not in resp_login_page.text
+    assert 'href="/graph"' not in resp_login_page.text
+    assert 'href="/tasks"' not in resp_login_page.text
+    assert "ai-second-brain-gui" not in resp_login_page.text
+    assert "Fail-Closed" not in resp_login_page.text
+    assert "3.6.0" not in resp_login_page.text
     csrf_login = _extract_csrf(resp_login_page)
 
     # 3. Invalid password fails with 401
@@ -300,12 +307,16 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
     cookie = resp_valid.cookies.get("power_gui_session")
     assert cookie is not None
 
-    # 5. Authenticated request with session cookie succeeds
+    # 5. Authenticated request with session cookie succeeds and displays full UI
     auth_client.cookies.set("power_gui_session", cookie)
     resp_authed = auth_client.get("/dashboard")
     assert resp_authed.status_code == 200
     assert "P.O.W.E.R." in resp_authed.text
     assert "3.6.0" in resp_authed.text
+    assert "<nav" in resp_authed.text
+    assert 'href="/notes"' in resp_authed.text
+    assert "ai-second-brain-gui" in resp_authed.text
+    assert "Fail-Closed" in resp_authed.text
 
 
 

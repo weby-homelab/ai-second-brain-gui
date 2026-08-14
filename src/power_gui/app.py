@@ -40,6 +40,14 @@ def jinja_csrf_token(context: dict) -> str:
     return get_csrf_token(request, settings)
 
 
+def jinja_is_authenticated(context: dict) -> bool:
+    """Jinja helper to check if current request has authenticated session."""
+    request: Request | None = context.get("request")
+    if not request:
+        return False
+    return bool(getattr(request.state, "is_authenticated", False))
+
+
 def _maybe_set_csrf_cookie(request: Request, response: Response, settings: Settings) -> None:
     """Set ephemeral CSRF cookie if generated during request lifecycle."""
     new_csrf = getattr(request.state, "csrf_cookie_val", None)
@@ -61,9 +69,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         title="POWER-GUI",
         description=f"Secure, accessible local-first web cockpit for P.O.W.E.R {POWER_VERSION}",
-        version="0.6.0",
+        version="0.6.1",
         docs_url=None,
-
         redoc_url=None,
     )
 
@@ -77,6 +84,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     templates.env.globals["get_lang"] = get_request_lang
     templates.env.globals["get_theme"] = get_request_theme
     templates.env.globals["power_version"] = POWER_VERSION
+    templates.env.globals["is_authenticated"] = pass_context(jinja_is_authenticated)
 
     app.state.templates = templates
     app.state.settings = app_settings
@@ -93,6 +101,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         request.state.lang = lang
         request.state.theme = theme
 
+        is_auth = False
+        if not app_settings.auth_enabled:
+            is_auth = True
+        else:
+            cookie = request.cookies.get(app_settings.session_cookie_name)
+            if cookie:
+                session_mgr = SessionManager(app_settings.secret_key)
+                user_id = session_mgr.verify_session(cookie)
+                if user_id:
+                    is_auth = True
+
+        request.state.is_authenticated = is_auth
+
         if app_settings.auth_enabled:
             path = request.url.path
             # Allow public assets, login, language switch, theme switch, and healthcheck
@@ -101,13 +122,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 _maybe_set_csrf_cookie(request, response, app_settings)
                 return response
 
-            cookie = request.cookies.get(app_settings.session_cookie_name)
-            if not cookie:
-                return RedirectResponse(url="/login", status_code=303)
-
-            session_mgr = SessionManager(app_settings.secret_key)
-            user_id = session_mgr.verify_session(cookie)
-            if not user_id:
+            if not is_auth:
                 return RedirectResponse(url="/login", status_code=303)
 
         response = await call_next(request)
