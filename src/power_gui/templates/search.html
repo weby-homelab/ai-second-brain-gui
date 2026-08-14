@@ -1,38 +1,38 @@
 {% extends "base.html" %}
 
-{% block title %}Пошук{% endblock %}
+{% block title %}{{ t('search') }}{% endblock %}
 
 {% block content %}
 <div style="margin-bottom: 24px;">
-    <h1 style="font-size: 1.75rem; font-weight: 700;">Мультимодальний пошук знань</h1>
+    <h1 style="font-size: 1.75rem; font-weight: 700;">{{ t('search_title') }}</h1>
     <p style="color: var(--text-secondary); font-size: 0.9rem;">
-        Пошук через семантичний, щільний (dense) та повнотекстовий (FTS) рушії POWER 3.7
+        {{ t('search_subtitle') }}
     </p>
 </div>
 
 <!-- Search Form -->
 <form action="/search" method="GET" class="card" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-    <input type="text" name="q" value="{{ query }}" placeholder="Введіть пошуковий запит..." style="flex: 1; min-width: 250px; padding: 10px 14px; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem;">
+    <input type="text" name="q" value="{{ query }}" placeholder="{{ t('search_input_placeholder') }}" style="flex: 1; min-width: 250px; padding: 10px 14px; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem;">
     
     <select name="mode" style="padding: 10px 14px; background: var(--bg-surface-elevated); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem;">
-        <option value="auto" {% if mode == 'auto' %}selected{% endif %}>Режим: Auto (Dense + FTS fallback)</option>
-        <option value="fts" {% if mode == 'fts' %}selected{% endif %}>Режим: FTS (Deterministic)</option>
-        <option value="semantic" {% if mode == 'semantic' %}selected{% endif %}>Режим: Semantic (Dense only)</option>
-        <option value="reranked" {% if mode == 'reranked' %}selected{% endif %}>Режим: Reranked (Cross-Encoder)</option>
+        <option value="auto" {% if mode == 'auto' %}selected{% endif %}>{{ t('mode_auto') }}</option>
+        <option value="fts" {% if mode == 'fts' %}selected{% endif %}>{{ t('mode_fts') }}</option>
+        <option value="semantic" {% if mode == 'semantic' %}selected{% endif %}>{{ t('mode_semantic') }}</option>
+        <option value="reranked" {% if mode == 'reranked' %}selected{% endif %}>{{ t('mode_reranked') }}</option>
     </select>
 
-    <button type="submit" class="btn btn-primary">🔍 Шукати</button>
+    <button type="submit" class="btn btn-primary">{{ t('search_btn') }}</button>
 </form>
 
 <!-- Results Section -->
 {% if query %}
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
-        <h2 style="font-size: 1.15rem;">Результати пошуку для: <em>"{{ query }}"</em></h2>
-        <div style="font-size: 0.85rem; color: var(--text-secondary);">
-            Режим: <span class="badge badge-info">{{ results.get('actual_mode', mode) }}</span>
+        <h2 style="font-size: 1.15rem;">{{ t('search_results_for') }}: <em>"{{ query }}"</em></h2>
+        <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; gap: 8px; align-items: center;">
+            <span>{{ t('mode_label') }}: <span class="badge badge-info">{{ results.get('actual_mode', mode) }}</span></span>
             {% if results.get('fallback_reason') %}
-            <span class="badge badge-warning">Fallback: {{ results.get('fallback_reason') }}</span>
+            <span class="badge badge-warning">{{ t('fallback_label') }}: {{ results.get('fallback_reason') }}</span>
             {% endif %}
         </div>
     </div>
@@ -41,28 +41,39 @@
     {% if items %}
     <ul style="list-style: none;">
         {% for item in items %}
+        {% set note_path = item.path or item.rel_path or (item.source.path if item.source is defined and item.source else '') %}
+        {% set note_title = item.title or (item.metadata.title if item.metadata is defined and item.metadata else '') or note_path or 'Note' %}
+        {% set note_snippet = item.snippet or item.matched_text or item.description or (item.metadata.description if item.metadata is defined and item.metadata else '') %}
         <li style="padding: 14px 0; border-bottom: 1px solid var(--border);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <a href="/notes/read?path={{ item.path or item.rel_path }}" style="color: var(--accent); font-weight: 600; font-size: 1.05rem; text-decoration: none;">
-                    {{ item.title or item.path or item.rel_path or 'Note' }}
+                {% if note_path %}
+                <a href="/notes/read?path={{ note_path }}" style="color: var(--accent); font-weight: 600; font-size: 1.05rem; text-decoration: none;">
+                    {{ note_title }}
                 </a>
+                {% else %}
+                <span style="color: var(--text-primary); font-weight: 600; font-size: 1.05rem;">
+                    {{ note_title }}
+                </span>
+                {% endif %}
                 <span class="badge" style="background: var(--bg-surface-elevated); color: var(--text-secondary); font-family: monospace;">
-                    Score: {{ (item.score or 0)|round(3) }}
+                    {{ t('score_label') }}: {{ (item.score or 0)|round(3) }}
                 </span>
             </div>
+            {% if note_path %}
             <div style="font-family: monospace; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px;">
-                {{ item.path or item.rel_path }}
+                {{ note_path }}
             </div>
-            {% if item.snippet or item.description %}
-            <div style="font-size: 0.9rem; color: var(--text-primary); line-height: 1.5; background: rgba(15, 23, 42, 0.6); padding: 8px 12px; border-radius: 4px; border-left: 3px solid var(--accent);">
-                {{ item.snippet or item.description }}
+            {% endif %}
+            {% if note_snippet %}
+            <div style="font-size: 0.9rem; color: var(--text-primary); line-height: 1.5; background: rgba(15, 23, 42, 0.6); padding: 8px 12px; border-radius: 4px; border-left: 3px solid var(--accent); white-space: pre-wrap;">
+                {{ note_snippet }}
             </div>
             {% endif %}
         </li>
         {% endfor %}
     </ul>
     {% else %}
-    <p style="color: var(--text-secondary); padding: 16px 0;">За вашим запитом нічого не знайдено.</p>
+    <p style="color: var(--text-secondary); padding: 16px 0;">{{ t('no_results_found') }}</p>
     {% endif %}
 </div>
 {% endif %}
