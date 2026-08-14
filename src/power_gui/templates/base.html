@@ -1,25 +1,50 @@
 {% set current_lang = get_lang(request) if request is defined else 'en' %}
+{% set current_theme = get_theme(request) if request is defined else 'dark' %}
 <!DOCTYPE html>
-<html lang="{{ current_lang }}" class="dark">
+<html lang="{{ current_lang }}" class="{{ current_theme }}" data-theme="{{ current_theme }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ t('dashboard', current_lang) }}{% endblock %} | Weby Homelab</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
-        :root {
-            --bg-primary: #0f172a;
-            --bg-surface: #1e293b;
-            --bg-surface-elevated: #334155;
+        :root, html.dark {
+            --bg-primary: #0b0f19;
+            --bg-surface: #131d31;
+            --bg-surface-elevated: #1e293b;
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --accent: #38bdf8;
             --accent-hover: #0ea5e9;
-            --border: #334155;
+            --accent-subtle: rgba(56, 189, 248, 0.15);
+            --border: #1e293b;
+            --border-hover: #334155;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             --success: #22c55e;
             --warning: #eab308;
             --danger: #ef4444;
             --focus-ring: 2px solid #38bdf8;
+            --table-hover: rgba(255, 255, 255, 0.02);
+            --code-bg: #0f172a;
+        }
+        html.light {
+            --bg-primary: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-elevated: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent: #0284c7;
+            --accent-hover: #0369a1;
+            --accent-subtle: rgba(2, 132, 199, 0.1);
+            --border: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+            --focus-ring: 2px solid #0284c7;
+            --table-hover: rgba(0, 0, 0, 0.02);
+            --code-bg: #f1f5f9;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -30,6 +55,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: background 0.2s, color 0.2s;
         }
         .skip-link {
             position: absolute;
@@ -88,7 +114,7 @@
             outline: none;
         }
         nav a.active {
-            background: #1e3a8a;
+            background: var(--accent-subtle);
             color: var(--accent);
             font-weight: 600;
         }
@@ -99,7 +125,7 @@
             font-size: 0.85rem;
             color: var(--text-secondary);
         }
-        .lang-switcher {
+        .theme-switcher, .lang-switcher {
             display: flex;
             align-items: center;
             gap: 2px;
@@ -110,18 +136,20 @@
             font-weight: 700;
             font-size: 0.75rem;
         }
-        .lang-btn {
+        .theme-btn, .lang-btn {
             text-decoration: none;
             padding: 3px 8px;
             border-radius: 4px;
             color: var(--text-secondary);
             transition: background 0.15s, color 0.15s;
+            cursor: pointer;
+            line-height: 1;
         }
-        .lang-btn:hover {
+        .theme-btn:hover, .lang-btn:hover {
             color: var(--text-primary);
         }
-        .lang-btn.active {
-            background: #1e3a8a;
+        .theme-btn.active, .lang-btn.active {
+            background: var(--accent-subtle);
             color: var(--accent);
         }
         .live-clock {
@@ -154,6 +182,7 @@
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
         }
         .btn {
             display: inline-flex;
@@ -171,7 +200,7 @@
         .btn-primary { background: #2563eb; color: #fff; }
         .btn-primary:hover { background: #1d4ed8; }
         .btn-secondary { background: var(--bg-surface-elevated); color: var(--text-primary); border-color: var(--border); }
-        .btn-secondary:hover { background: #475569; }
+        .btn-secondary:hover { background: var(--border-hover); }
         .btn-success { background: #16a34a; color: #fff; }
         .btn-danger { background: #dc2626; color: #fff; }
         .badge {
@@ -181,10 +210,18 @@
             font-size: 0.75rem;
             font-weight: 600;
         }
-        .badge-success { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); }
-        .badge-warning { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.4); }
-        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
-        .badge-info { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+        .badge-success { background: rgba(34, 197, 94, 0.15); color: var(--success); border: 1px solid rgba(34, 197, 94, 0.3); }
+        .badge-warning { background: rgba(234, 179, 8, 0.15); color: var(--warning); border: 1px solid rgba(234, 179, 8, 0.3); }
+        .badge-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-info { background: var(--accent-subtle); color: var(--accent); border: 1px solid var(--border); }
+        code {
+            background: var(--code-bg);
+            color: var(--accent);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid var(--border);
+        }
         a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
             outline: var(--focus-ring);
             outline-offset: 2px;
@@ -210,6 +247,11 @@
             <a href="/federation">{{ t('federation', current_lang) }}</a>
         </nav>
         <div class="header-meta">
+            <div class="theme-switcher" role="group" aria-label="Theme selection">
+                <a href="/set-theme?theme=dark&next={{ request.url.path if request is defined else '/dashboard' }}" class="theme-btn {% if current_theme == 'dark' %}active{% endif %}" title="{{ t('theme_dark', current_lang) }}" id="themeDarkBtn">🌙</a>
+                <span style="color: var(--border);">|</span>
+                <a href="/set-theme?theme=light&next={{ request.url.path if request is defined else '/dashboard' }}" class="theme-btn {% if current_theme == 'light' %}active{% endif %}" title="{{ t('theme_light', current_lang) }}" id="themeLightBtn">☀️</a>
+            </div>
             <div class="lang-switcher" aria-label="Language selection">
                 <a href="/set-lang?lang=en&next={{ request.url.path if request is defined else '/dashboard' }}" class="lang-btn {% if current_lang == 'en' %}active{% endif %}" title="English">ENG</a>
                 <span style="color: var(--border);">|</span>

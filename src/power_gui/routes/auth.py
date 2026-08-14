@@ -92,6 +92,25 @@ async def set_language(
     return response
 
 
+@router.get("/set-theme")
+async def set_theme(
+    theme: str = "dark",
+    next: str = "/dashboard",
+) -> RedirectResponse:
+    """Set theme preference (dark/light) in cookie and redirect back to previous page."""
+    clean_theme = "light" if theme.lower() in {"light", "day", "white"} else "dark"
+    target = next if next.startswith("/") and not next.startswith("//") else "/dashboard"
+    response = RedirectResponse(url=target, status_code=303)
+    response.set_cookie(
+        key="power_gui_theme",
+        value=clean_theme,
+        max_age=31536000,
+        httponly=False,
+        samesite="lax",
+    )
+    return response
+
+
 @router.post("/logout")
 async def logout_action(
     request: Request,

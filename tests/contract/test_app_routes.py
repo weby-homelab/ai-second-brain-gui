@@ -275,3 +275,31 @@ def test_language_switch_and_defaults(client: TestClient) -> None:
     assert resp_switch_en.cookies.get("power_gui_lang") == "en"
 
 
+def test_theme_switch_and_defaults(client: TestClient) -> None:
+    """Test default Dark theme and switching to Light theme via /set-theme."""
+    # 1. Default request without cookies uses Dark mode
+    resp_dark = client.get("/dashboard")
+    assert resp_dark.status_code == 200
+    assert 'class="dark"' in resp_dark.text
+    assert 'data-theme="dark"' in resp_dark.text
+
+    # 2. Switch to Light theme via /set-theme
+    resp_switch = client.get("/set-theme?theme=light&next=/dashboard", follow_redirects=False)
+    assert resp_switch.status_code == 303
+    assert resp_switch.headers["location"] == "/dashboard"
+    theme_cookie = resp_switch.cookies.get("power_gui_theme")
+    assert theme_cookie == "light"
+
+    # 3. Request with Light theme cookie renders light mode
+    client.cookies.set("power_gui_theme", "light")
+    resp_light = client.get("/dashboard")
+    assert resp_light.status_code == 200
+    assert 'class="light"' in resp_light.text
+    assert 'data-theme="light"' in resp_light.text
+
+    # 4. Switch back to Dark theme
+    resp_switch_dark = client.get("/set-theme?theme=dark&next=/dashboard", follow_redirects=False)
+    assert resp_switch_dark.cookies.get("power_gui_theme") == "dark"
+
+
+
