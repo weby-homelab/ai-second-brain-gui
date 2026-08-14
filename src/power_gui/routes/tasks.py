@@ -1,0 +1,173 @@
+"""Task Manager v2 cockpit routes and SSE event streaming."""
+
+from __future__ import annotations
+
+import asyncio
+import json
+from typing import TYPE_CHECKING
+
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+
+from ..clients.power import PowerClient
+from ..config import Settings, get_client, get_settings
+
+if TYPE_CHECKING:
+    from fastapi.templating import Jinja2Templates
+
+router = APIRouter(prefix="/tasks")
+
+
+@router.get("", response_class=HTMLResponse)
+async def tasks_board_view(
+    request: Request,
+    state: str | None = Query(None),
+    owner: str | None = Query(None),
+    client: PowerClient = Depends(get_client),
+    settings: Settings = Depends(get_settings),
+) -> HTMLResponse:
+    """Render Task Manager v2 board with status swimlanes."""
+    templates: Jinja2Templates = request.app.state.templates
+
+    tasks = client.list_tasks(state=state, owner=owner, limit=200)
+
+    # Group tasks by state for Kanban columns
+    lanes = {
+        "backlog": [t for t in tasks if t.state == "backlog"],
+        "ready": [t for t in tasks if t.state in {"ready", "submitted"}],
+        "working": [t for t in tasks if t.state == "working"],
+        "blocked": [t for t in tasks if t.state in {"blocked", "input-required", "auth-required"}],
+        "completed": [t for t in tasks if t.state == "completed"],
+        "failed": [t for t in tasks if t.state in {"failed", "canceled", "rejected"}],
+    }
+
+    return templates.TemplateResponse(
+        request=request,
+        name="tasks.html",
+        context={
+            "tasks": tasks,
+            "lanes": lanes,
+            "filter_state": state,
+            "filter_owner": owner,
+            "settings": settings,
+        },
+    )
+
+
+@router.get("/new", response_class=HTMLResponse)
+async def new_task_view(
+    request: Request,
+    settings: Settings = Depends(get_settings),
+) -> HTMLResponse:
+    """Render new task creation form."""
+    templates: Jinja2Templates = request.app.state.templates
+    return templates.TemplateResponse(
+        request=request,
+        name="task_new.html",
+        context={
+            "settings": settings,
+        },
+    )
+
+
+@router.post("/new")
+async def create_task_action(
+    request: Request,
+    task_id: str = Form(...),
+    title: str = Form(...),
+    objective: str = Form(""),
+    owner: str = Form("local"),
+    priority: str = Form("normal"),
+    authority: str = Form("read-only"),
+    client: PowerClient = Depends(get_client),
+) -> RedirectResponse:
+    """Create a new PowerTask v2."""
+    try:
+        client.create_task(
+            task_id=task_id.strip(),
+            title=title.strip(),
+            objective=objective.strip(),
+            owner=owner.strip(),
+            priority=priority,  # type: ignore[arg-type]
+            authority=authority,  # type: ignore[arg-type]
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return RedirectResponse(url=f"/tasks/{task_id.strip()}", status_code=303)
+
+
+@router.get("/{task_id}", response_class=HTMLResponse)
+async def task_detail_view(
+    request: Request,
+    task_id: str,
+    client: PowerClient = Depends(get_client),
+    settings: Settings = Depends(get_settings),
+) -> HTMLResponse:
+    """Render task detail page with timeline, events journal, and actions."""
+    templates: Jinja2Templates = request.app.state.templates
+
+    try:
+        task = client.get_task(task_id)
+        events = client.get_task_events(task_id)
+    except Exception as exc:
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found") from exc
+
+    return templates.TemplateResponse(
+        request=request,
+        name="task_detail.html",
+        context={
+            "task": task,
+            "events": events,
+            "settings": settings,
+        },
+    )
+
+
+@router.post("/{task_id}/transition")
+async def transition_task_action(
+    request: Request,
+    task_id: str,
+    new_state: str = Form(...),
+    expected_revision: int = Form(...),
+    next_action: str | None = Form(None),
+    receipt_id: str | None = Form(None),
+    client: PowerClient = Depends(get_client),
+) -> RedirectResponse:
+    """Advance task state machine."""
+    try:
+        client.transition_task(
+            task_id,
+            new_state=new_state,
+            expected_revision=expected_revision,
+            next_action=next_action,
+            receipt_id=receipt_id or (f"rec_{task_id}_{expected_revision}" if new_state == "completed" else None),
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return RedirectResponse(url=f"/tasks/{task_id}", status_code=303)
+
+
+@router.get("/api/events/stream")
+async def sse_task_events_stream(
+    task_id: str | None = Query(None),
+    client: PowerClient = Depends(get_client),
+) -> StreamingResponse:
+    """Server-Sent Events stream for real-time task state and event updates."""
+
+    async def event_generator():
+        last_seen_seq = 0
+        while True:
+            if task_id:
+                events = client.get_task_events(task_id, since_sequence=last_seen_seq)
+                for ev in events:
+                    last_seen_seq = max(last_seen_seq, ev.sequence)
+                    yield f"event: task_event\ndata: {json.dumps(ev.model_dump())}\n\n"
+            else:
+                tasks = client.list_tasks(limit=10)
+                summary = [{"id": t.task_id, "state": t.state, "revision": t.revision} for t in tasks]
+                yield f"event: tasks_summary\ndata: {json.dumps(summary)}\n\n"
+            await asyncio.sleep(2)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
