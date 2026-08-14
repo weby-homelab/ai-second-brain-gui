@@ -46,6 +46,10 @@ class Settings(BaseSettings):
     cookie_samesite: str = "lax"
     max_upload_bytes: int = 5_000_000
     read_only_mode: bool = False
+    federation_nodes: str = Field(
+        default="",
+        description="Optional JSON string of custom federated nodes to probe",
+    )
 
     model_config = SettingsConfigDict(
         env_prefix="POWER_GUI_",
