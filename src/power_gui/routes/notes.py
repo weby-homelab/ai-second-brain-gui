@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings
@@ -23,16 +23,20 @@ async def list_notes_view(
     category: str | None = Query(None),
     tag: str | None = Query(None),
     prefix: str = Query(""),
-    cursor: str | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
+    cursor: str | None = Query(None),
     client: PowerClient = Depends(get_client),
     settings: Settings = Depends(get_settings),
 ) -> HTMLResponse:
-    """Browse notes in the vault with category/tag filtering and pagination."""
+    """Render notes list with category filtering, search chips, and pagination."""
     templates: Jinja2Templates = request.app.state.templates
 
     source_list = client.list_sources(
-        prefix=prefix, category=category, tag=tag, limit=limit, cursor=cursor
+        prefix=prefix,
+        category=category,
+        tag=tag,
+        limit=limit,
+        cursor=cursor,
     )
     stats = client.get_source_stats()
 
@@ -53,17 +57,21 @@ async def list_notes_view(
 @router.get("/read", response_class=HTMLResponse)
 async def read_note_view(
     request: Request,
-    path: str = Query(..., description="Relative path to note"),
+    path: str = Query("", description="Relative path to note"),
     client: PowerClient = Depends(get_client),
     settings: Settings = Depends(get_settings),
-) -> HTMLResponse:
+) -> Response:
     """View note content with sanitized HTML rendering, metadata chips, and ETag."""
     templates: Jinja2Templates = request.app.state.templates
 
+    clean_path = path.strip()
+    if not clean_path:
+        return RedirectResponse(url="/notes", status_code=303)
+
     try:
-        source_data = client.read_source(path)
+        source_data = client.read_source(clean_path)
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=f"Note '{path}' not found") from exc
+        raise HTTPException(status_code=404, detail=f"Note '{clean_path}' not found") from exc
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail="Path traversal forbidden") from exc
     except Exception as exc:
@@ -85,17 +93,21 @@ async def read_note_view(
 @router.get("/edit", response_class=HTMLResponse)
 async def edit_note_view(
     request: Request,
-    path: str = Query(..., description="Relative path to note"),
+    path: str = Query("", description="Relative path to note"),
     client: PowerClient = Depends(get_client),
     settings: Settings = Depends(get_settings),
-) -> HTMLResponse:
+) -> Response:
     """Transactional note editor interface with diff preview and preimage ETag."""
     templates: Jinja2Templates = request.app.state.templates
 
+    clean_path = path.strip()
+    if not clean_path:
+        return RedirectResponse(url="/notes", status_code=303)
+
     try:
-        source_data = client.read_source(path)
+        source_data = client.read_source(clean_path)
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=f"Note '{path}' not found") from exc
+        raise HTTPException(status_code=404, detail=f"Note '{clean_path}' not found") from exc
 
     return templates.TemplateResponse(
         request=request,

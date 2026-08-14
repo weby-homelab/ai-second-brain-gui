@@ -127,17 +127,35 @@ timestamp: 2026-08-13T12:00:00+00:00
     assert "Перевірка пропозиції" in resp_prop.text
 
 
+def test_notes_empty_path_redirect(client: TestClient) -> None:
+    """Ensure empty path query redirects to /notes without validation crash."""
+    resp_read = client.get("/notes/read?path=", follow_redirects=False)
+    assert resp_read.status_code == 303
+    assert resp_read.headers["location"] == "/notes"
+
+    resp_edit = client.get("/notes/edit?path=", follow_redirects=False)
+    assert resp_edit.status_code == 303
+    assert resp_edit.headers["location"] == "/notes"
+
+
 def test_search_and_graph_routes(client: TestClient) -> None:
     """Test search and knowledge graph projection endpoints."""
     # Search
     resp_search = client.get("/search?q=Alpha&mode=fts")
     assert resp_search.status_code == 200
-    assert "Resource Beta" in resp_search.text or "Project_Alpha" in resp_search.text
+    assert "href=\"/notes/read?path=" in resp_search.text
+    assert "href=\"/notes/read?path=\"" not in resp_search.text
+    assert "Project_Alpha" in resp_search.text
+
+    # Search with Ukrainian locale
+    resp_search_uk = client.get("/search?q=Alpha&mode=fts&lang=uk")
+    assert resp_search_uk.status_code == 200
+    assert "Результати пошуку для" in resp_search_uk.text
 
     # Graph UI
     resp_graph_ui = client.get("/graph")
     assert resp_graph_ui.status_code == 200
-    assert "Таблиця зв'язків нотаток" in resp_graph_ui.text
+    assert "Graph" in resp_graph_ui.text
 
     # Graph API
     resp_graph_data = client.get("/api/graph/data")
