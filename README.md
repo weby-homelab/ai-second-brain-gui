@@ -31,7 +31,7 @@ P.O.W.E.R-GUI adopts the **Backend-For-Frontend (BFF)** pattern built on FastAPI
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        P.O.W.E.R-GUI (Docker)                          │
 │   [Dashboard]  [Notes Editor]  [Task Manager v2]  [Decision Queue]     │
-│   [Bleach Sanitizer]  [CSRF Defense]  [Strict CSP]  [WCAG 2.2 AA]      │
+│   [Auth Guard] [i18n ENG/UKR]  [Theme Switcher]   [WCAG 2.2 AA]        │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │ PowerClient Port
                                     ▼
@@ -51,34 +51,39 @@ P.O.W.E.R-GUI adopts the **Backend-For-Frontend (BFF)** pattern built on FastAPI
 
 ## ✨ Key Capabilities
 
-### 1. 📋 Canonical Task Manager v2 Cockpit
-- **Interactive Kanban Swimlanes:** Seamlessly track tasks across lifecycle states: `backlog` ➔ `ready` ➔ `in-progress` ➔ `blocked` / `input-required` / `auth-required` ➔ `completed` / `failed`.
+### 1. 🎨 Modern 2026 Theme System & Multilingual Support (i18n)
+- **Lifted Dark Mode (Default):** Deep slate-navy base (`#0b0f19`/`#131d31`) with progressive surface lightness steps and high-contrast electric sky blue accents (`#38bdf8`).
+- **Minimalist Light Mode:** Clean slate-50 base (`#f8fafc`), pure white card surfaces (`#ffffff`), and crisp ocean sky blue accents (`#0284c7`).
+- **Theme Toggle `[ 🌙 | ☀️ ]`:** Instant toggle in the top navigation bar with persistent cookie state (`power_gui_theme`).
+- **Multilingual `[ ENG | UKR ]`:** English by default with instantaneous toggle to Ukrainian via header switch or `/set-lang` endpoint.
+
+### 2. 🔒 Enterprise-Grade Security & Authentication Gate
+- **Compulsory Auth Middleware:** Unauthenticated traffic to all private routes (`/`, `/dashboard`, `/notes`, `/tasks`, `/decisions`, `/receipts`) is automatically redirected to `/login` (303).
+- **Constant-Time Verification:** Password authentication via `secrets.compare_digest` with signed `HttpOnly` session cookies.
+- **Bleach HTML Sanitization & Strict CSP:** Zero external CDN dependencies; all scripts, fonts, and stylesheets are self-hosted with rigorous protection against XSS and CSRF attacks.
+
+### 3. 📋 Canonical Task Manager v2 Cockpit
+- **Interactive Kanban Swimlanes:** Track tasks across lifecycle states: `backlog` ➔ `ready` ➔ `in-progress` ➔ `blocked` / `input-required` / `auth-required` ➔ `completed` / `failed`.
 - **Monotonic Revision Control:** Concurrency is protected via `expected_revision` checks to eliminate lost updates.
 - **Append-Only Event Ledger:** Every task transition produces an immutable audit event with a SHA-256 payload digest.
 - **Real-Time SSE Streaming:** Live status updates streamed directly to the browser via Server-Sent Events (`/tasks/api/events/stream`).
 
-### 2. 🛡️ Transactional Note Editor & Proposal Gate
+### 4. 🛡️ Transactional Note Editor & Proposal Gate
 - **Human-in-the-Loop Workflow:** AI agents and operators submit mutations via proposals (`Edit` ➔ `Propose` ➔ `Lint Validation` ➔ `Human Approval` ➔ `Apply`).
 - **Zero Full Overwrites:** Protects against unintentional data wipeouts by enforcing atomic diff reviews and immutable receipts.
-- **ETag Concurrency Guard:** Prevents mid-air collision when editing notes simultaneously.
+- **Obsidian Wikilink & Stem Lookup:** Resolves note references by stem title (e.g., `[[Infrastructure]]`) without requiring explicit folder paths.
 
-### 3. 🌐 Dynamic 2D Force-Directed Knowledge Graph
+### 5. 🌐 Dynamic 2D Force-Directed Knowledge Graph
 - Visualizes vault topologies and note relations in real time using D3 force layout.
 - Provides global vault views as well as localized 2-depth subtrees for individual notes.
 - **WCAG 2.2 AA Accessibility:** Includes high-contrast matrix fallbacks for screen readers and keyboard navigation.
 
-### 4. 🔍 Multi-Modal Hybrid Search
+### 6. 🔍 Multi-Modal Hybrid Search
 - Seamlessly query notes across four search backends:
   - `Auto`: Hybrid dense semantic retrieval with full-text fallback.
   - `FTS`: Lean BM25 full-text search with token proximity matching.
   - `Semantic`: Dense vector embeddings (e.g., `BGE-M3` 1024d).
   - `Reranked`: Cross-encoder scoring for deep contextual relevance.
-
-### 5. 🔒 Enterprise-Grade Security & Sanitization
-- **Bleach HTML Sanitization:** Comprehensive protection against XSS injections, malformed links, and adversarial payloads.
-- **HMAC-SHA256 CSRF Tokens:** Enforced on all mutating HTTP POST endpoints.
-- **Strict Content-Security-Policy (CSP):** Zero external CDN dependencies; all scripts, fonts, and stylesheets are self-hosted.
-- **Path Traversal Defense:** Strict `PermissionError` enforcement preventing directory escapes outside the vault boundary.
 
 ---
 
@@ -93,11 +98,13 @@ docker run -d \
   --name power-gui \
   --restart unless-stopped \
   -p 8008:8080 \
+  -e POWER_GUI_AUTH_ENABLED=true \
+  -e POWER_GUI_ADMIN_PASSWORD="your-strong-password" \
   -v /path/to/your/obsidian/brain:/brain:rw \
   webyhomelab/power-gui:latest
 ```
 
-Open your browser at `http://<your-host-ip>:8008`.
+Open your browser at `http://<your-host-ip>:8008` (or your reverse proxy/Cloudflare Tunnel URL).
 
 ---
 
@@ -119,7 +126,10 @@ services:
       - POWER_GUI_HOST=0.0.0.0
       - POWER_GUI_PORT=8080
       - POWER_GUI_VAULT_PATH=/brain
-      - POWER_GUI_AUTH_ENABLED=false
+      - POWER_GUI_AUTH_ENABLED=true
+      - POWER_GUI_ADMIN_PASSWORD=your-secure-admin-password
+      - POWER_GUI_SECRET_KEY=your-random-secret-key
+      - POWER_GUI_COOKIE_SECURE=true
     volumes:
       - /path/to/your/obsidian/brain:/brain:rw
 ```
@@ -147,6 +157,8 @@ When running inside an unprivileged Proxmox LXC container (e.g. `LXC 200`):
      --name power-gui \
      --restart unless-stopped \
      -p 8008:8080 \
+     -e POWER_GUI_AUTH_ENABLED=true \
+     -e POWER_GUI_ADMIN_PASSWORD="your-strong-password" \
      -v /mnt/brain:/brain:rw \
      webyhomelab/power-gui:latest
    ```
@@ -162,9 +174,11 @@ Configuration is managed entirely via environment variables (with the `POWER_GUI
 | `POWER_GUI_HOST` | `str` | `0.0.0.0` | IP address for Uvicorn to bind. |
 | `POWER_GUI_PORT` | `int` | `8080` | Internal listening port. |
 | `POWER_GUI_VAULT_PATH` | `Path` | `/brain` | Absolute path to mounted Obsidian vault. |
-| `POWER_GUI_AUTH_ENABLED` | `bool` | `false` | Enable session cookie authentication. |
-| `POWER_GUI_ADMIN_PASSWORD_HASH` | `str` | `""` | SHA256 / PBKDF2 hash of admin password. |
+| `POWER_GUI_AUTH_ENABLED` | `bool` | `true` | Enable mandatory session authentication. |
+| `POWER_GUI_ADMIN_PASSWORD` | `str` | `""` | Plain-text admin password (validated in constant-time). |
+| `POWER_GUI_ADMIN_PASSWORD_HASH` | `str` | `""` | Optional SHA256 / PBKDF2 hash of admin password. |
 | `POWER_GUI_SECRET_KEY` | `str` | `"power-secret-key-12345"` | Secret key used for signing session and CSRF tokens. |
+| `POWER_GUI_SESSION_COOKIE_NAME` | `str` | `"power_gui_session"` | Session cookie identifier. |
 | `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Session lifetime (default: 24 hours). |
 | `POWER_GUI_COOKIE_SECURE` | `bool` | `false` | Set to `true` when serving over HTTPS. |
 | `POWER_GUI_COOKIE_SAMESITE` | `str` | `lax` | Cookie SameSite policy (`lax`, `strict`, `none`). |
@@ -176,7 +190,7 @@ Configuration is managed entirely via environment variables (with the `POWER_GUI
 Run the test suite and linters locally:
 
 ```bash
-# Run contract and unit test suite
+# Run contract and unit test suite (20+ tests)
 pytest tests/ -v
 
 # Run code style & security linter

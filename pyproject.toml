@@ -8,7 +8,7 @@ version = "0.5.2"
 description = "Secure, accessible, local-first web cockpit and decision center for P.O.W.E.R. 3.7"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "GPL-3.0-only" }
+license = { text = "MIT" }
 authors = [{ name = "Weby Homelab", email = "rekvizitor.ua@gmail.com" }]
 dependencies = [
     "fastapi>=0.115.0",

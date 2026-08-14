@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "uk-UA"
+early_access: true
+tone_instructions: "Проводь ретельне та конструктивне код-рев'ю українською мовою згідно з вимогами Zero-Error Mandate."
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    ignore_title_keywords:
+      - "WIP"
+      - "draft"
+  path_instructions:
+    - path: "src/power_gui/**"
+      instructions: |
+        Перевіряй сувору валідацію вхідних даних (Pydantic v2), безпеку маршрутів, CSP заголовки, захист від XSS та CSRF. Заборонено використання плейсхолдерів (...) або затінених try/except.
+    - path: "tests/**"
+      instructions: |
+        Перевіряй повноту покриття контрактних та модульних тестів (pytest).
+    - path: "templates/**"
+      instructions: |
+        Перевіряй відповідність WCAG 2.2 AA доступності, коректне використання токенів тем (Dark/Light) та функцій інтернаціоналізації t().
+
+chat:
+  auto_reply: true
