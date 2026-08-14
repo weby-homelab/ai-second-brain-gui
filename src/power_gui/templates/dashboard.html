@@ -2,6 +2,21 @@
 
 {% block title %}{{ t('dashboard', current_lang) }}{% endblock %}
 
+{% block head %}
+<style>
+    .dashboard-split-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+    }
+    @media (max-width: 900px) {
+        .dashboard-split-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
     <div>
@@ -10,7 +25,7 @@
             Vault: <code>{{ settings.vault_path }}</code> &middot; Vault ID: <code>{{ stats.vault_id }}</code>
         </p>
     </div>
-    <div style="display: flex; gap: 10px;">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <a href="/tasks/new" class="btn btn-primary">{{ t('new_task', current_lang) }}</a>
         <a href="/search" class="btn btn-secondary">🔍 {{ t('search', current_lang) }}</a>
         <a href="/graph" class="btn btn-secondary">🕸️ {{ t('graph', current_lang) }}</a>
@@ -18,21 +33,21 @@
 </div>
 
 <!-- Stats Grid -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 24px;">
     <div class="card" style="margin-bottom: 0;">
-        <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">{{ t('total_notes', current_lang) }}</div>
-        <div style="font-size: 2rem; font-weight: 700; color: var(--accent);">{{ stats.total_notes }}</div>
+        <div style="color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">{{ t('total_notes', current_lang) }}</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: var(--accent);">{{ stats.total_notes }}</div>
     </div>
     {% for cat, count in stats.category_counts.items() %}
     <div class="card" style="margin-bottom: 0;">
-        <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">{{ cat }}</div>
-        <div style="font-size: 2rem; font-weight: 700; color: var(--text-primary);">{{ count }}</div>
+        <div style="color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">{{ cat }}</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: var(--text-primary);">{{ count }}</div>
     </div>
     {% endfor %}
 </div>
 
 <!-- Main Split: Tasks & Recent Activity -->
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+<div class="dashboard-split-grid">
     <div>
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -40,32 +55,34 @@
                 <a href="/tasks" style="color: var(--accent); text-decoration: none; font-size: 0.85rem;">{{ t('view_all', current_lang) }}</a>
             </div>
             {% if active_tasks %}
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                <thead>
-                    <tr style="border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 0.8rem;">
-                        <th style="padding: 8px;">ID</th>
-                        <th style="padding: 8px;">{{ t('task_title', current_lang) }}</th>
-                        <th style="padding: 8px;">{{ t('status', current_lang) }}</th>
-                        <th style="padding: 8px;">Priority</th>
-                        <th style="padding: 8px;">{{ t('revision', current_lang) }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for task_item in active_tasks %}
-                    <tr style="border-bottom: 1px solid var(--border);">
-                        <td style="padding: 10px 8px; font-family: monospace; font-size: 0.85rem;">
-                            <a href="/tasks/{{ task_item.task_id }}" style="color: var(--accent); text-decoration: none;">{{ task_item.task_id }}</a>
-                        </td>
-                        <td style="padding: 10px 8px; font-weight: 500;">{{ task_item.title }}</td>
-                        <td style="padding: 10px 8px;">
-                            <span class="badge badge-info">{{ task_item.state }}</span>
-                        </td>
-                        <td style="padding: 10px 8px; font-size: 0.85rem;">{{ task_item.priority }}</td>
-                        <td style="padding: 10px 8px; font-family: monospace; font-size: 0.85rem;">v{{ task_item.revision }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 500px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 0.8rem;">
+                            <th style="padding: 8px;">ID</th>
+                            <th style="padding: 8px;">{{ t('task_title', current_lang) }}</th>
+                            <th style="padding: 8px;">{{ t('status', current_lang) }}</th>
+                            <th style="padding: 8px;">Priority</th>
+                            <th style="padding: 8px;">{{ t('revision', current_lang) }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task_item in active_tasks %}
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 10px 8px; font-family: monospace; font-size: 0.85rem;">
+                                <a href="/tasks/{{ task_item.task_id }}" style="color: var(--accent); text-decoration: none;">{{ task_item.task_id }}</a>
+                            </td>
+                            <td style="padding: 10px 8px; font-weight: 500;">{{ task_item.title }}</td>
+                            <td style="padding: 10px 8px;">
+                                <span class="badge badge-info">{{ task_item.state }}</span>
+                            </td>
+                            <td style="padding: 10px 8px; font-size: 0.85rem;">{{ task_item.priority }}</td>
+                            <td style="padding: 10px 8px; font-family: monospace; font-size: 0.85rem;">v{{ task_item.revision }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
             <p style="color: var(--text-secondary); padding: 16px 0;">No active tasks in queue.</p>
             {% endif %}

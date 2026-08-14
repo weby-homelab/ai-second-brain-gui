@@ -7,9 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Pin power-framework core to audited immutable commit
+# Pin power-framework core with semantic dense embeddings
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir "git+https://github.com/weby-homelab/power-framework.git@e0a1804858fa58781180d1dfe1eb601629199973"
+    pip install --no-cache-dir "power-framework[semantic] @ git+https://github.com/weby-homelab/power-framework.git@main"
 
 COPY pyproject.toml .
 COPY src/ ./src/
@@ -17,11 +17,11 @@ COPY src/ ./src/
 RUN pip install --no-cache-dir .
 
 
-# Create dedicated non-root application user and group
+# Create dedicated non-root application user, group, and cache directories
 RUN groupadd -g 10001 appgroup && \
     useradd -u 10001 -g appgroup -s /bin/bash -m appuser && \
-    mkdir -p /brain && \
-    chown -R appuser:appgroup /app /brain
+    mkdir -p /brain /tmp/cache /tmp/power_cache /home/appuser/.cache && \
+    chown -R appuser:appgroup /app /brain /tmp/cache /tmp/power_cache /home/appuser
 
 USER 10001:10001
 
@@ -29,6 +29,8 @@ ENV POWER_GUI_HOST=0.0.0.0
 ENV POWER_GUI_PORT=8080
 ENV POWER_GUI_VAULT_PATH=/brain
 ENV POWER_GUI_AUTH_ENABLED=true
+ENV XDG_CACHE_HOME=/tmp/cache
+ENV POWER_CACHE_DIR=/tmp/power_cache
 
 EXPOSE 8080
 
