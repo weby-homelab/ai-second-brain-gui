@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Граф знань{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 style="font-size: 1.75rem; font-weight: 700;">Граф зв'язків знань (Knowledge Graph)</h1>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            Візуалізація зв'язків: {{ projection.total_nodes }} вузлів &middot; {{ projection.total_edges }} ребер
+        </p>
+    </div>
+    <div>
+        <button id="toggleTableBtn" class="btn btn-secondary" onclick="toggleTableView()">📋 Показати таблицю доступності</button>
+    </div>
+</div>
+
+<!-- Interactive Graph Canvas Container -->
+<div class="card" style="padding: 0; overflow: hidden; height: 600px; position: relative; background: #0b0f19;">
+    <div id="graphContainer" style="width: 100%; height: 100%;"></div>
+</div>
+
+<!-- Accessible Table Fallback (WCAG 2.2 AA) -->
+<div id="accessibleTableContainer" class="card" style="display: none; margin-top: 20px;">
+    <h2 style="font-size: 1.2rem; margin-bottom: 12px;">Таблиця зв'язків нотаток (Accessible Matrix)</h2>
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+        <thead>
+            <tr style="border-bottom: 1px solid var(--border); color: var(--text-secondary);">
+                <th style="padding: 8px;">Нотатка</th>
+                <th style="padding: 8px;">Категорія</th>
+                <th style="padding: 8px;">Ступінь зв'язків (Degree)</th>
+                <th style="padding: 8px; text-align: right;">Дія</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for node in projection.nodes %}
+            <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 8px; font-weight: 600;">
+                    <a href="/notes/read?path={{ node.id }}" style="color: var(--accent); text-decoration: none;">{{ node.label }}</a>
+                    <div style="font-family: monospace; font-size: 0.75rem; color: var(--text-secondary);">{{ node.id }}</div>
+                </td>
+                <td style="padding: 8px;">
+                    <span class="badge badge-info">{{ node.category }}</span>
+                </td>
+                <td style="padding: 8px; font-family: monospace;">{{ node.degree }}</td>
+                <td style="padding: 8px; text-align: right;">
+                    <a href="/notes/read?path={{ node.id }}" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;">Відкрити</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/force-graph.min.js"></script>
+<script src="/static/js/graph.js"></script>
+{% endblock %}
+

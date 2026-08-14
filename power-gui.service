@@ -1,0 +1,19 @@
+[Unit]
+Description=P.O.W.E.R. GUI Web Cockpit
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/power-gui
+ExecStart=/usr/local/bin/power-gui --host 127.0.0.1 --port 8080
+Restart=always
+RestartSec=3
+Environment=POWER_GUI_VAULT_PATH=/var/lib/power/vault
+Environment=POWER_GUI_HOST=127.0.0.1
+Environment=POWER_GUI_PORT=8080
+Environment=POWER_GUI_AUTH_ENABLED=true
+
+[Install]
+WantedBy=multi-user.target

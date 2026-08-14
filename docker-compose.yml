@@ -1,0 +1,27 @@
+services:
+  power-gui:
+    image: webyhomelab/power-gui:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: power-gui
+    restart: unless-stopped
+    user: "10001:10001"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    ports:
+      - "127.0.0.1:8008:8080"
+    environment:
+      - POWER_GUI_HOST=0.0.0.0
+      - POWER_GUI_PORT=8080
+      - POWER_GUI_VAULT_PATH=/brain
+      - POWER_GUI_AUTH_ENABLED=true
+      - POWER_GUI_ADMIN_PASSWORD=${POWER_GUI_ADMIN_PASSWORD:-}
+    volumes:
+      - /mnt/brain:/brain:rw
+

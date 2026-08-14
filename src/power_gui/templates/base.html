@@ -1,0 +1,286 @@
+{% set current_lang = get_lang(request) if request is defined else 'en' %}
+{% set current_theme = get_theme(request) if request is defined else 'dark' %}
+<!DOCTYPE html>
+<html lang="{{ current_lang }}" class="{{ current_theme }}" data-theme="{{ current_theme }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ t('dashboard', current_lang) }}{% endblock %} | P.O.W.E.R. {{ power_version }} — GUI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        :root, html.dark {
+            --bg-primary: #0b0f19;
+            --bg-surface: #131d31;
+            --bg-surface-elevated: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --accent-subtle: rgba(56, 189, 248, 0.15);
+            --border: #1e293b;
+            --border-hover: #334155;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --focus-ring: 2px solid #38bdf8;
+            --table-hover: rgba(255, 255, 255, 0.02);
+            --code-bg: #0f172a;
+        }
+        html.light {
+            --bg-primary: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-elevated: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent: #0284c7;
+            --accent-hover: #0369a1;
+            --accent-subtle: rgba(2, 132, 199, 0.1);
+            --border: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+            --focus-ring: 2px solid #0284c7;
+            --table-hover: rgba(0, 0, 0, 0.02);
+            --code-bg: #f1f5f9;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.2s, color 0.2s;
+        }
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--accent);
+            color: #000;
+            padding: 8px 16px;
+            font-weight: 700;
+            z-index: 9999;
+            transition: top 0.2s;
+        }
+        .skip-link:focus { top: 0; }
+        header {
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .logo-badge {
+            background: #2563eb;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+        nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.15s, color 0.15s;
+        }
+        nav a:hover, nav a:focus-visible {
+            background: var(--bg-surface-elevated);
+            color: var(--text-primary);
+            outline: none;
+        }
+        nav a.active {
+            background: var(--accent-subtle);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .theme-switcher, .lang-switcher {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 2px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+        .theme-btn, .lang-btn {
+            text-decoration: none;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            transition: background 0.15s, color 0.15s;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .theme-btn:hover, .lang-btn:hover {
+            color: var(--text-primary);
+        }
+        .theme-btn.active, .lang-btn.active {
+            background: var(--accent-subtle);
+            color: var(--accent);
+        }
+        .live-clock {
+            font-family: monospace;
+            background: var(--bg-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+        main {
+            flex: 1;
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        footer {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            padding: 16px 24px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .btn-primary { background: #2563eb; color: #fff; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-secondary { background: var(--bg-surface-elevated); color: var(--text-primary); border-color: var(--border); }
+        .btn-secondary:hover { background: var(--border-hover); }
+        .btn-success { background: #16a34a; color: #fff; }
+        .btn-danger { background: #dc2626; color: #fff; }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success { background: rgba(34, 197, 94, 0.15); color: var(--success); border: 1px solid rgba(34, 197, 94, 0.3); }
+        .badge-warning { background: rgba(234, 179, 8, 0.15); color: var(--warning); border: 1px solid rgba(234, 179, 8, 0.3); }
+        .badge-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-info { background: var(--accent-subtle); color: var(--accent); border: 1px solid var(--border); }
+        code {
+            background: var(--code-bg);
+            color: var(--accent);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid var(--border);
+        }
+        a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+            outline: var(--focus-ring);
+            outline-offset: 2px;
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <a href="#main-content" class="skip-link">{{ t('skip_to_content', current_lang) }}</a>
+    <header>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <a href="/dashboard" class="logo-group" aria-label="P.O.W.E.R. GUI Dashboard">
+                <span class="logo-badge">P.O.W.E.R. {{ power_version }} &mdash; GUI</span>
+            </a>
+            <a href="https://github.com/weby-homelab/ai-second-brain-gui" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem; text-decoration: none;" title="GitHub Repository">
+                <svg height="14" width="14" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: text-bottom; margin-right: 4px;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>GitHub
+            </a>
+        </div>
+        <nav aria-label="Main Navigation">
+            <a href="/dashboard">{{ t('dashboard', current_lang) }}</a>
+            <a href="/notes">{{ t('notes', current_lang) }}</a>
+            <a href="/search">{{ t('search', current_lang) }}</a>
+            <a href="/graph">{{ t('graph', current_lang) }}</a>
+            <a href="/tasks">{{ t('tasks', current_lang) }}</a>
+            <a href="/decisions">{{ t('decisions', current_lang) }}</a>
+            <a href="/receipts">{{ t('receipts', current_lang) }}</a>
+            <a href="/federation">{{ t('federation', current_lang) }}</a>
+        </nav>
+        <div class="header-meta">
+            <div class="theme-switcher" role="group" aria-label="Theme selection">
+                <a href="/set-theme?theme=dark&next={{ request.url.path if request is defined else '/dashboard' }}" class="theme-btn {% if current_theme == 'dark' %}active{% endif %}" title="{{ t('theme_dark', current_lang) }}" id="themeDarkBtn" aria-label="Switch to dark theme">🌙</a>
+                <span style="color: var(--border);">|</span>
+                <a href="/set-theme?theme=light&next={{ request.url.path if request is defined else '/dashboard' }}" class="theme-btn {% if current_theme == 'light' %}active{% endif %}" title="{{ t('theme_light', current_lang) }}" id="themeLightBtn" aria-label="Switch to light theme">☀️</a>
+            </div>
+            <div class="lang-switcher" aria-label="Language selection">
+                <a href="/set-lang?lang=en&next={{ request.url.path if request is defined else '/dashboard' }}" class="lang-btn {% if current_lang == 'en' %}active{% endif %}" title="English">ENG</a>
+                <span style="color: var(--border);">|</span>
+                <a href="/set-lang?lang=uk&next={{ request.url.path if request is defined else '/dashboard' }}" class="lang-btn {% if current_lang == 'uk' %}active{% endif %}" title="Українська">UKR</a>
+            </div>
+            <span id="liveClock" class="live-clock" aria-label="Current UTC Time">--:--:-- UTC</span>
+            {% if request is defined and request.cookies.get(settings.session_cookie_name if settings is defined else 'power_gui_session') %}
+            <form action="/logout" method="POST" style="display: inline; margin: 0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">{{ t('logout', current_lang) }}</button>
+            </form>
+            {% endif %}
+        </div>
+    </header>
+
+    <main id="main-content" tabindex="-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div>P.O.W.E.R. {{ power_version }} &mdash; GUI &middot; Local-First Knowledge Cockpit &middot; <a href="https://github.com/weby-homelab/ai-second-brain-gui" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none;">GitHub</a></div>
+        <div>Audited &middot; Fail-Closed Security Plane</div>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

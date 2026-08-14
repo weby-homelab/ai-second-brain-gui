@@ -1,0 +1,53 @@
+# ─────────────────────────────────────────────
+# AI Second Brain GUI — Obsidian Web Interface: SEO & Crawler Directives
+# ─────────────────────────────────────────────
+
+# Sitemap
+Sitemap: /sitemap.xml
+
+# ─── General Rules ───────────────────────────
+User-agent: *
+Disallow: /note
+Disallow: /search
+Disallow: /media
+Disallow: /api/
+Disallow: /logout
+Allow: /
+Allow: /login
+Crawl-delay: 10
+
+# ─── Search-Specific Bots ────────────────────
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 5
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 10
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 10
+
+# ─── AI Training Crawlers (Opt-Out) ──────────
+User-agent: GPTBot
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+# ─── Documentation Crawlers (Allowed) ────────
+User-agent: ReadableBot
+Allow: /
+
+User-agent: Diffbot
+Allow: /
