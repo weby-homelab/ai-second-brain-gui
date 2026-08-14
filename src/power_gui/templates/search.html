@@ -197,10 +197,25 @@
         {% endfor %}
     </div>
     {% else %}
-    <div style="text-align: center; padding: 36px 16px;">
-        <div style="font-size: 2.5rem; margin-bottom: 8px;">🔍</div>
-        <p style="color: var(--text-secondary); font-size: 1rem; margin-bottom: 12px;">{{ t('no_results_found') }}</p>
-        <p style="color: var(--text-secondary); font-size: 0.85rem;">Спробуйте змінити пошуковий запит або перемкнути режим пошуку (наприклад, FTS або Semantic).</p>
+    <div style="text-align: center; padding: 40px 16px;">
+        <div style="font-size: 2.5rem; margin-bottom: 10px;">🔍</div>
+        <p style="color: var(--text-primary); font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;">{{ t('no_results_found') }}</p>
+        {% if results.get('fallback_reason') %}
+        <div style="margin: 14px auto; max-width: 480px; background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); border-radius: 8px; padding: 12px 16px; text-align: left; font-size: 0.88rem;">
+            <strong style="color: var(--warning);">⚠️ Режим пошуку деградований:</strong>
+            <code style="display: block; margin-top: 6px; font-size: 0.82rem;">{{ results.get('fallback_reason') }}</code>
+            <p style="color: var(--text-secondary); margin-top: 8px;">Семантичний індекс ще не побудовано. FTS пошук активний.</p>
+        </div>
+        {% endif %}
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 10px;">
+            Спробуйте:
+            <strong>змінити запит</strong>,
+            перемкнути режим на <strong>FTS</strong> або скористайтесь <strong>переглядом нотаток</strong>.
+        </p>
+        <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="/notes" class="btn btn-secondary" style="font-size: 0.88rem;">📝 Переглянути нотатки</a>
+            <a href="/search?q={{ query }}&mode=fts" class="btn btn-secondary" style="font-size: 0.88rem;">📄 Спробувати FTS</a>
+        </div>
     </div>
     {% endif %}
 </div>
