@@ -33,6 +33,7 @@ P.O.W.E.R-GUI реалізує архітектурний патерн **Backend
 │     [Дашборд]  [Редактор нотаток]  [Task Manager v2]  [Черга рішень]   │
 │     [Auth Guard] [i18n ENG/UKR]    [Темна/Світла тема] [WCAG 2.2 AA]   │
 └───────────────────────────────────┬────────────────────────────────────┘
+
                                     │ PowerClient Port
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -58,9 +59,11 @@ P.O.W.E.R-GUI реалізує архітектурний патерн **Backend
 - **Багатомовність `[ ENG | UKR ]`:** Англійська мова встановлена базовою з можливістю швидкого перемикання на українську через панель навігації або роут `/set-lang`.
 
 ### 2. 🔒 Комплексна Безпека та Бар'єр Автентифікації
-- **Обов'язковий Auth Middleware:** Неавторизований трафік до всіх приватних розділів (`/`, `/dashboard`, `/notes`, `/tasks`, `/decisions`, `/receipts`) автоматично перенаправляється на `/login` (303).
-- **Константний час перевірки:** Валідація пароля через `secrets.compare_digest` із встановленням криптографічно підписаної `HttpOnly` сесійної cookie.
-- **Санітизація Bleach та суворий CSP:** Повна автономність без зовнішніх CDN, захист від XSS-ін'єкцій та CSRF-атак.
+- **Обов'язковий Auth Middleware та Fail-Closed захист:** Неавторизований трафік до всіх приватних розділів (`/`, `/dashboard`, `/notes`, `/tasks`, `/decisions`, `/receipts`) автоматично перенаправляється на `/login` (303). За відсутності налаштованих облікових даних система надійно блокує вхід (500).
+- **Константний час перевірки та сучасне хешування:** Підтримка константного часу порівняння через `secrets.compare_digest` та криптографічних хешів (PBKDF2-HMAC-SHA256, Argon2id, Bcrypt).
+- **Захист від підбору (Brute-Force Lockout):** Обмеження невдалих спроб входу (ліміт 5 спроб у вікні часу) з прогресивним експоненційним блокуванням та моніторингом.
+- **CSRF-захист на рівні запитів:** Double-submit / session-bound HMAC-SHA256 CSRF токени на всіх мутаційних POST-роутах (`/notes/propose`, `/notes/apply`, `/tasks/new`, `/tasks/{id}/transition`, `/decisions/{id}/resolve`, `/logout`, `/login`).
+- **Ізольований контейнер та суворий CSP:** Запуск під виділеним користувачем `10001:10001` зі скиданням прав `cap_drop: [ALL]`, `read_only` rootfs та суворою політикою Content-Security-Policy без інлайн-скриптів.
 
 ### 3. 📋 Канонічний Task Manager v2 Cockpit
 - **Інтерактивна Канбан-дошка:** Візуальне відстеження завдань по станах: `backlog` ➔ `ready` ➔ `in-progress` ➔ `blocked` / `input-required` / `auth-required` ➔ `completed` / `failed`.
@@ -97,12 +100,18 @@ P.O.W.E.R-GUI завжди та всюди розгортається у виг�
 docker run -d \
   --name power-gui \
   --restart unless-stopped \
-  -p 8008:8080 \
+  --user 10001:10001 \
+  --cap-drop ALL \
+  --security-opt no-new-privileges:true \
+  --read-only \
+  --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+  -p 127.0.0.1:8008:8080 \
   -e POWER_GUI_AUTH_ENABLED=true \
-  -e POWER_GUI_ADMIN_PASSWORD="ваш-надійний-пароль" \
-  -v /шлях/до/вашого/obsidian/brain:/brain:rw \
+  -e POWER_GUI_ADMIN_PASSWORD="${POWER_GUI_ADMIN_PASSWORD}" \
+  -v /path/to/your/obsidian/brain:/brain:rw \
   webyhomelab/power-gui:latest
 ```
+
 
 Відкрийте у браузері: `http://<ip-вашого-сервера>:8008` (або адресу вашого зворотного проксі / Cloudflare Tunnel).
 

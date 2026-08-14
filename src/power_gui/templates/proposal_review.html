@@ -20,9 +20,11 @@
 </div>
 
 <form action="/notes/apply" method="POST" class="card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="proposal_id" value="{{ proposal.get('proposal_id', '') }}">
     <input type="hidden" name="rel_path" value="{{ rel_path }}">
     <input type="hidden" name="approved" value="true">
+
 
     <div style="margin-bottom: 16px;">
         <h3 style="font-size: 1rem; margin-bottom: 8px;">Підтвердження застосування:</h3>

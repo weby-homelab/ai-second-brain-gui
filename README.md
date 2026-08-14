@@ -58,9 +58,11 @@ P.O.W.E.R-GUI adopts the **Backend-For-Frontend (BFF)** pattern built on FastAPI
 - **Multilingual `[ ENG | UKR ]`:** English by default with instantaneous toggle to Ukrainian via header switch or `/set-lang` endpoint.
 
 ### 2. 🔒 Enterprise-Grade Security & Authentication Gate
-- **Compulsory Auth Middleware:** Unauthenticated traffic to all private routes (`/`, `/dashboard`, `/notes`, `/tasks`, `/decisions`, `/receipts`) is automatically redirected to `/login` (303).
-- **Constant-Time Verification:** Password authentication via `secrets.compare_digest` with signed `HttpOnly` session cookies.
-- **Bleach HTML Sanitization & Strict CSP:** Zero external CDN dependencies; all scripts, fonts, and stylesheets are self-hosted with rigorous protection against XSS and CSRF attacks.
+- **Compulsory Auth Middleware & Fail-Closed Gate:** Unauthenticated traffic to all private routes (`/`, `/dashboard`, `/notes`, `/tasks`, `/decisions`, `/receipts`) is automatically redirected to `/login` (303). If auth is enabled without credentials, the system fails closed (500).
+- **Constant-Time Verification & Modern Hashing:** Supports plaintext constant-time comparison via `secrets.compare_digest` as well as secure password hashes (PBKDF2-HMAC-SHA256, Argon2id, and Bcrypt).
+- **Login Throttling & Exponential Lockout:** Brute-force protection limits failed login attempts (5 attempts window) and enforces progressive lockout delays with failed-attempt monitoring.
+- **Request-Bound CSRF Defense:** Double-submit / session-bound HMAC-SHA256 CSRF protection on all state-changing endpoints (`/notes/propose`, `/notes/apply`, `/tasks/new`, `/tasks/{id}/transition`, `/decisions/{id}/resolve`, `/logout`, `/login`).
+- **Hardened Container & Strict CSP:** Runs as dedicated non-root user `10001:10001` with `cap_drop: [ALL]`, `read_only` rootfs, and strict Content-Security-Policy without inline scripts.
 
 ### 3. 📋 Canonical Task Manager v2 Cockpit
 - **Interactive Kanban Swimlanes:** Track tasks across lifecycle states: `backlog` ➔ `ready` ➔ `in-progress` ➔ `blocked` / `input-required` / `auth-required` ➔ `completed` / `failed`.
@@ -97,14 +99,20 @@ P.O.W.E.R-GUI is designed to run exclusively in Docker.
 docker run -d \
   --name power-gui \
   --restart unless-stopped \
-  -p 8008:8080 \
+  --user 10001:10001 \
+  --cap-drop ALL \
+  --security-opt no-new-privileges:true \
+  --read-only \
+  --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+  -p 127.0.0.1:8008:8080 \
   -e POWER_GUI_AUTH_ENABLED=true \
-  -e POWER_GUI_ADMIN_PASSWORD="your-strong-password" \
+  -e POWER_GUI_ADMIN_PASSWORD="${POWER_GUI_ADMIN_PASSWORD}" \
   -v /path/to/your/obsidian/brain:/brain:rw \
   webyhomelab/power-gui:latest
 ```
 
-Open your browser at `http://<your-host-ip>:8008` (or your reverse proxy/Cloudflare Tunnel URL).
+
+Open your browser at `http://127.0.0.1:8008` (or your reverse proxy/Tailscale/Cloudflare Tunnel URL).
 
 ---
 
@@ -113,26 +121,32 @@ Open your browser at `http://<your-host-ip>:8008` (or your reverse proxy/Cloudfl
 Create a `docker-compose.yml` file:
 
 ```yaml
-version: '3.8'
-
 services:
   power-gui:
     image: webyhomelab/power-gui:latest
     container_name: power-gui
     restart: unless-stopped
+    user: "10001:10001"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
     ports:
-      - "8008:8080"
+      - "127.0.0.1:8008:8080"
     environment:
       - POWER_GUI_HOST=0.0.0.0
       - POWER_GUI_PORT=8080
       - POWER_GUI_VAULT_PATH=/brain
       - POWER_GUI_AUTH_ENABLED=true
-      - POWER_GUI_ADMIN_PASSWORD=your-secure-admin-password
-      - POWER_GUI_SECRET_KEY=your-random-secret-key
-      - POWER_GUI_COOKIE_SECURE=true
+      - POWER_GUI_ADMIN_PASSWORD=${POWER_GUI_ADMIN_PASSWORD}
+      - POWER_GUI_SECRET_KEY=${POWER_GUI_SECRET_KEY}
     volumes:
       - /path/to/your/obsidian/brain:/brain:rw
 ```
+
 
 Start the service:
 

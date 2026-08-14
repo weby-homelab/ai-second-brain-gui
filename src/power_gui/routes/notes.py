@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
+from ..auth.csrf import validate_csrf
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings
 from ..view_models.markdown_render import render_markdown
@@ -120,7 +121,7 @@ async def edit_note_view(
     )
 
 
-@router.post("/propose", response_class=HTMLResponse)
+@router.post("/propose", response_class=HTMLResponse, dependencies=[Depends(validate_csrf)])
 async def propose_note_view(
     request: Request,
     path: str = Form(...),
@@ -148,7 +149,7 @@ async def propose_note_view(
     )
 
 
-@router.post("/apply")
+@router.post("/apply", dependencies=[Depends(validate_csrf)])
 async def apply_note_view(
     request: Request,
     proposal_id: str = Form(...),
@@ -163,3 +164,4 @@ async def apply_note_view(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return RedirectResponse(url=f"/notes/read?path={rel_path}", status_code=303)
+

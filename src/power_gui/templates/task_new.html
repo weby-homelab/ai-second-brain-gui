@@ -9,7 +9,9 @@
 </div>
 
 <form action="/tasks/new" method="POST" class="card" style="max-width: 800px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div style="margin-bottom: 16px;">
+
         <label for="taskId" style="display: block; font-weight: 600; margin-bottom: 6px;">ID завдання (унікальний):</label>
         <input type="text" id="taskId" name="task_id" required placeholder="task_2026_08_14_01" style="width: 100%; padding: 10px; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font-family: monospace;">
     </div>

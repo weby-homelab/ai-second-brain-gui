@@ -69,7 +69,9 @@
             <h2 style="font-size: 1.15rem; margin-bottom: 12px;">{{ t('transition_gate') }}</h2>
             {% if task.state not in ['completed', 'failed', 'canceled', 'rejected'] %}
             <form action="/tasks/{{ task.task_id }}/transition" method="POST" style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="expected_revision" value="{{ task.revision }}">
+
 
                 {% if task.state == 'backlog' %}
                 <button type="submit" name="new_state" value="working" class="btn btn-primary">{{ t('start_working') }}</button>

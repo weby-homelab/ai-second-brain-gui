@@ -31,7 +31,9 @@
         </div>
 
         <form action="/decisions/{{ t.task_id }}/resolve" method="POST" style="display: flex; gap: 12px; align-items: center;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="expected_revision" value="{{ t.revision }}">
+
             <input type="text" name="input_value" placeholder="Введіть відповідь / значення (опціонально)..." style="flex: 1; padding: 8px 12px; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem;">
             <button type="submit" name="action" value="approve" class="btn btn-success" style="padding: 8px 16px;">✅ Затвердити</button>
             <button type="submit" name="action" value="reject" class="btn btn-danger" style="padding: 8px 16px;">❌ Відхилити</button>

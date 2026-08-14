@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,14 @@ from fastapi.testclient import TestClient
 
 from power_gui.app import create_app
 from power_gui.config import Settings
+
+
+def _extract_csrf(response) -> str:
+    """Helper to extract csrf_token value from HTML form response."""
+    match = re.search(r'name="csrf_token"\s+value="([^"]+)"', response.text)
+    return match.group(1) if match else ""
+
+
 
 
 @pytest.fixture
@@ -106,11 +115,13 @@ def test_notes_edit_and_proposal_flow(client: TestClient) -> None:
     resp_edit = client.get("/notes/edit?path=01_Projects/Project_Alpha.md")
     assert resp_edit.status_code == 200
     assert "Транзакційний редактор" in resp_edit.text
+    csrf = _extract_csrf(resp_edit)
 
     # Submit proposal
     resp_prop = client.post(
         "/notes/propose",
         data={
+            "csrf_token": csrf,
             "path": "01_Projects/Project_Alpha.md",
             "content": """---
 type: Project
@@ -176,11 +187,13 @@ def test_task_manager_cockpit(client: TestClient) -> None:
     # New task form
     resp_new = client.get("/tasks/new")
     assert resp_new.status_code == 200
+    csrf_new = _extract_csrf(resp_new)
 
     # Create task
     resp_create = client.post(
         "/tasks/new",
         data={
+            "csrf_token": csrf_new,
             "task_id": "test_gui_task_01",
             "title": "GUI Integration Task",
             "objective": "Verify task creation from GUI",
@@ -197,6 +210,7 @@ def test_task_manager_cockpit(client: TestClient) -> None:
     resp_detail = client.get("/tasks/test_gui_task_01")
     assert resp_detail.status_code == 200
     assert "Event Journal" in resp_detail.text
+    csrf_detail = _extract_csrf(resp_detail)
 
     # Detail page (Ukrainian)
     resp_detail_uk = client.get("/tasks/test_gui_task_01?lang=uk")
@@ -206,7 +220,7 @@ def test_task_manager_cockpit(client: TestClient) -> None:
     # Direct transition state: backlog -> working
     resp_trans = client.post(
         "/tasks/test_gui_task_01/transition",
-        data={"new_state": "working", "expected_revision": 1},
+        data={"csrf_token": csrf_detail, "new_state": "working", "expected_revision": 1},
         follow_redirects=True,
     )
     assert resp_trans.status_code == 200
@@ -265,16 +279,20 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
     resp_login_page = auth_client.get("/login")
     assert resp_login_page.status_code == 200
     assert "Authorization" in resp_login_page.text
+    csrf_login = _extract_csrf(resp_login_page)
 
     # 3. Invalid password fails with 401
-    resp_invalid = auth_client.post("/login", data={"password": "wrong-password"})
+    resp_invalid = auth_client.post(
+        "/login",
+        data={"password": "wrong-password", "csrf_token": csrf_login},
+    )
     assert resp_invalid.status_code == 401
     assert "Invalid access password" in resp_invalid.text
 
     # 4. Correct password redirects to /dashboard with session cookie
     resp_valid = auth_client.post(
         "/login",
-        data={"password": "test-secret-password"},
+        data={"password": "test-secret-password", "csrf_token": csrf_login},
         follow_redirects=False,
     )
     assert resp_valid.status_code == 303
@@ -288,6 +306,7 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
     assert resp_authed.status_code == 200
     assert "P.O.W.E.R." in resp_authed.text
     assert "3.6.0" in resp_authed.text
+
 
 
 def test_language_switch_and_defaults(client: TestClient) -> None:

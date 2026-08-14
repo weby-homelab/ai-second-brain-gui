@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jinja2 import pass_context
 
+from .auth.csrf import get_csrf_token
 from .auth.session import SessionManager
 from .config import Settings, get_global_settings
 from .i18n import get_request_lang, get_request_theme, jinja_translate
@@ -30,6 +31,29 @@ from .routes import (
 POWER_VERSION = getattr(power_framework, "__version__", "3.6.0")
 
 
+def jinja_csrf_token(context: dict) -> str:
+    """Jinja helper to obtain request-bound CSRF token."""
+    request: Request | None = context.get("request")
+    if not request:
+        return ""
+    settings: Settings = getattr(request.app.state, "settings", None) or get_global_settings()
+    return get_csrf_token(request, settings)
+
+
+def _maybe_set_csrf_cookie(request: Request, response: Response, settings: Settings) -> None:
+    """Set ephemeral CSRF cookie if generated during request lifecycle."""
+    new_csrf = getattr(request.state, "csrf_cookie_val", None)
+    if new_csrf and not request.cookies.get(settings.csrf_cookie_name):
+        response.set_cookie(
+            key=settings.csrf_cookie_name,
+            value=new_csrf,
+            httponly=True,
+            samesite=settings.cookie_samesite,  # type: ignore[arg-type]
+            secure=settings.cookie_secure,
+            max_age=86400,
+        )
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     """Instantiate and configure the POWER-GUI FastAPI application."""
     app_settings = settings or get_global_settings()
@@ -37,8 +61,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         title="POWER-GUI",
         description=f"Secure, accessible local-first web cockpit for P.O.W.E.R {POWER_VERSION}",
-        version="0.5.9",
+        version="0.6.0",
         docs_url=None,
+
         redoc_url=None,
     )
 
@@ -48,6 +73,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     templates = Jinja2Templates(directory=str(templates_dir))
     templates.env.globals["t"] = pass_context(jinja_translate)
+    templates.env.globals["csrf_token"] = pass_context(jinja_csrf_token)
     templates.env.globals["get_lang"] = get_request_lang
     templates.env.globals["get_theme"] = get_request_theme
     templates.env.globals["power_version"] = POWER_VERSION
@@ -71,7 +97,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             path = request.url.path
             # Allow public assets, login, language switch, theme switch, and healthcheck
             if path in {"/login", "/healthz", "/set-lang", "/set-theme"} or path.startswith("/static/"):
-                return await call_next(request)
+                response = await call_next(request)
+                _maybe_set_csrf_cookie(request, response, app_settings)
+                return response
 
             cookie = request.cookies.get(app_settings.session_cookie_name)
             if not cookie:
@@ -82,7 +110,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if not user_id:
                 return RedirectResponse(url="/login", status_code=303)
 
-        return await call_next(request)
+        response = await call_next(request)
+        _maybe_set_csrf_cookie(request, response, app_settings)
+        return response
 
     # Security headers middleware
     @app.middleware("http")
@@ -93,12 +123,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline'; "
+            "script-src 'self'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data:; "
-            "connect-src 'self'"
+            "connect-src 'self'; "
+            "frame-ancestors 'self'; "
+            "base-uri 'self'; "
+            "form-action 'self'"
         )
         return response
+
 
     # Register Routers
     app.include_router(dashboard_router)
@@ -111,7 +145,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(federation_router)
     app.include_router(auth_router)
 
+    @app.get("/healthz")
+    async def health_check() -> dict[str, str]:
+        """Unauthenticated healthcheck endpoint for load balancers and container probes."""
+        return {"status": "ok", "version": POWER_VERSION}
+
     return app
+
 
 
 def main() -> None:

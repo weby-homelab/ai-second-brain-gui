@@ -252,9 +252,9 @@
         </nav>
         <div class="header-meta">
             <div class="theme-switcher" role="group" aria-label="Theme selection">
-                <a href="/set-theme?theme=dark&next={{ request.url.path if request is defined else '/dashboard' }}" class="theme-btn {% if current_theme == 'dark' %}active{% endif %}" title="{{ t('theme_dark', current_lang) }}" id="themeDarkBtn">🌙</a>
+                <a href="/set-theme?theme=dark&next={{ request.url.path if request is defined else '/dashboard' }}" class="theme-btn {% if current_theme == 'dark' %}active{% endif %}" title="{{ t('theme_dark', current_lang) }}" id="themeDarkBtn" aria-label="Switch to dark theme">🌙</a>
                 <span style="color: var(--border);">|</span>
-                <a href="/set-theme?theme=light&next={{ request.url.path if request is defined else '/dashboard' }}" class="theme-btn {% if current_theme == 'light' %}active{% endif %}" title="{{ t('theme_light', current_lang) }}" id="themeLightBtn">☀️</a>
+                <a href="/set-theme?theme=light&next={{ request.url.path if request is defined else '/dashboard' }}" class="theme-btn {% if current_theme == 'light' %}active{% endif %}" title="{{ t('theme_light', current_lang) }}" id="themeLightBtn" aria-label="Switch to light theme">☀️</a>
             </div>
             <div class="lang-switcher" aria-label="Language selection">
                 <a href="/set-lang?lang=en&next={{ request.url.path if request is defined else '/dashboard' }}" class="lang-btn {% if current_lang == 'en' %}active{% endif %}" title="English">ENG</a>
@@ -264,6 +264,7 @@
             <span id="liveClock" class="live-clock" aria-label="Current UTC Time">--:--:-- UTC</span>
             {% if request is defined and request.cookies.get(settings.session_cookie_name if settings is defined else 'power_gui_session') %}
             <form action="/logout" method="POST" style="display: inline; margin: 0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">{{ t('logout', current_lang) }}</button>
             </form>
             {% endif %}
@@ -279,16 +280,7 @@
         <div>Audited &middot; Fail-Closed Security Plane</div>
     </footer>
 
-    <script>
-        function updateClock() {
-            const now = new Date();
-            const utcString = now.toISOString().substring(11, 19) + ' UTC';
-            const clockEl = document.getElementById('liveClock');
-            if (clockEl) clockEl.textContent = utcString;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-    </script>
+    <script src="/static/js/app.js"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

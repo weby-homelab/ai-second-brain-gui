@@ -9,11 +9,13 @@ from typing import TYPE_CHECKING
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 
+from ..auth.csrf import validate_csrf
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings
 
 if TYPE_CHECKING:
     from fastapi.templating import Jinja2Templates
+
 
 router = APIRouter(prefix="/tasks")
 
@@ -70,7 +72,7 @@ async def new_task_view(
     )
 
 
-@router.post("/new")
+@router.post("/new", dependencies=[Depends(validate_csrf)])
 async def create_task_action(
     request: Request,
     task_id: str = Form(...),
@@ -124,7 +126,7 @@ async def task_detail_view(
     )
 
 
-@router.post("/{task_id}/transition")
+@router.post("/{task_id}/transition", dependencies=[Depends(validate_csrf)])
 async def transition_task_action(
     request: Request,
     task_id: str,
@@ -134,6 +136,7 @@ async def transition_task_action(
     receipt_id: str | None = Form(None),
     client: PowerClient = Depends(get_client),
 ) -> RedirectResponse:
+
     """Advance task state machine."""
     try:
         client.transition_task(

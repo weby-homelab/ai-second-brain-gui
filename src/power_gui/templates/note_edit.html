@@ -18,7 +18,9 @@
 </div>
 
 <form action="/notes/propose" method="POST" class="card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="path" value="{{ note.rel_path }}">
+
     
     <div style="margin-bottom: 16px;">
         <label for="editorContent" style="display: block; font-weight: 600; margin-bottom: 8px;">Вміст нотатки (Markdown + OKF Frontmatter):</label>

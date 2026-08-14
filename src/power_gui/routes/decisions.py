@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from ..auth.csrf import validate_csrf
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings
 
@@ -39,7 +40,7 @@ async def decisions_view(
     )
 
 
-@router.post("/{task_id}/resolve")
+@router.post("/{task_id}/resolve", dependencies=[Depends(validate_csrf)])
 async def resolve_decision_action(
     request: Request,
     task_id: str,
@@ -61,3 +62,4 @@ async def resolve_decision_action(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return RedirectResponse(url="/decisions", status_code=303)
+
