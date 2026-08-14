@@ -64,11 +64,11 @@ jobs:
 
       - name: Update Docker Hub Description
         uses: peter-evans/dockerhub-description@v4
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: webyhomelab/power-gui
-          readme-filepath: ./README.md
-          short-description: "AI-native web cockpit & decision center for Obsidian Second Brain (P.O.W.E.R)"
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_TOKEN }}
+            repository: webyhomelab/power-gui
+            readme-filepath: ./README.md
+            short-description: "AI-native web cockpit & decision center for Obsidian Second Brain (P.O.W.E.R)"
 
