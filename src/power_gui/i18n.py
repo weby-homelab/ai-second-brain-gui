@@ -13,7 +13,7 @@ SUPPORTED_LANGS = {"en", "uk"}
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "en": {
         "html_lang": "en",
-        "app_name": "Weby Second Brain",
+        "app_name": "P.O.W.E.R. — GUI",
         "skip_to_content": "Skip to content",
         "dashboard": "Dashboard",
         "notes": "Notes",
@@ -138,7 +138,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     },
     "uk": {
         "html_lang": "uk",
-        "app_name": "Weby Second Brain",
+        "app_name": "P.O.W.E.R. — GUI",
         "skip_to_content": "Перейти до вмісту",
         "dashboard": "Дашборд",
         "notes": "Нотатки",
