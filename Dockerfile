@@ -7,13 +7,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Pin power-framework core to audited immutable release tag
-RUN pip install --no-cache-dir "git+https://github.com/weby-homelab/power-framework.git@v3.6.0"
+# Pin power-framework core to audited immutable commit
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir "git+https://github.com/weby-homelab/power-framework.git@e0a1804858fa58781180d1dfe1eb601629199973"
 
 COPY pyproject.toml .
 COPY src/ ./src/
 
 RUN pip install --no-cache-dir .
+
 
 # Create dedicated non-root application user and group
 RUN groupadd -g 10001 appgroup && \

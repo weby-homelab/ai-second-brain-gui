@@ -28,8 +28,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install "git+https://github.com/weby-homelab/power-framework.git@v3.6.0"
+          pip install "git+https://github.com/weby-homelab/power-framework.git@e0a1804858fa58781180d1dfe1eb601629199973"
           pip install -e ".[dev]"
+
 
 
       - name: Run Ruff Lint
