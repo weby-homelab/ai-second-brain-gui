@@ -1,0 +1,19 @@
+[Unit]
+Description=POWER-GUI Cockpit & Task Manager v2
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/geminicli/projects/POWER-GUI
+ExecStart=/usr/bin/python3 -m power_gui.app --host 100.86.120.114 --port 8080 --vault /root/geminicli/brain
+Restart=always
+RestartSec=3
+Environment=PYTHONPATH=/root/geminicli/projects/POWER-GUI/src:/root/geminicli/projects/P.O.W.E.R/src
+Environment=POWER_GUI_VAULT_PATH=/root/geminicli/brain
+Environment=POWER_GUI_HOST=100.86.120.114
+Environment=POWER_GUI_PORT=8080
+Environment=POWER_GUI_AUTH_ENABLED=false
+
+[Install]
+WantedBy=multi-user.target
