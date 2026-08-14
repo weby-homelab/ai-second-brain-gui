@@ -35,6 +35,15 @@ def test_password_pbkdf2_hash_and_verification() -> None:
     assert verify_password("", admin_password_hash=pwd_hash) is False
 
 
+def test_brain_portal_password_env_fallback(monkeypatch) -> None:
+    """Test BRAIN_PORTAL_PASSWORD environment variable fallback."""
+    monkeypatch.delenv("POWER_GUI_ADMIN_PASSWORD", raising=False)
+    monkeypatch.setenv("BRAIN_PORTAL_PASSWORD", "SecretFromPortalEnv")
+    settings = Settings()
+    assert settings.admin_password == "SecretFromPortalEnv"
+    assert is_auth_configured(settings) is True
+    assert verify_password("SecretFromPortalEnv", admin_password=settings.admin_password) is True
+
 
 def test_rate_limiter_lockout_lifecycle() -> None:
     """Test rate limiter attempt counting, lockout triggering, and reset."""

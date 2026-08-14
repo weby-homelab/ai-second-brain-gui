@@ -17,8 +17,9 @@
     {% endif %}
 
     <form action="/login" method="POST" style="display: flex; flex-direction: column; gap: 16px;">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div>
+
             <label for="pwd" style="display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 6px;">{{ t('admin_password', current_lang) }}</label>
             <input type="password" id="pwd" name="password" required autofocus autocomplete="current-password" style="width: 100%; padding: 10px; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font-size: 1rem;">
         </div>

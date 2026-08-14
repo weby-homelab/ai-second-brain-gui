@@ -30,13 +30,12 @@ async def login_view(
 ) -> HTMLResponse:
     """Render login form with request-bound CSRF token."""
     templates: Jinja2Templates = request.app.state.templates
-    csrf_val = get_csrf_token(request, settings)
+    get_csrf_token(request, settings)
     response = templates.TemplateResponse(
         request=request,
         name="login.html",
         context={
             "settings": settings,
-            "csrf_token": csrf_val,
         },
     )
 
@@ -71,14 +70,12 @@ async def login_action(
     is_locked, remaining = global_login_rate_limiter.is_locked(client_ip)
     if is_locked:
         logger.warning("Locked out client %s attempted login (%ds remaining)", client_ip, remaining)
-        current_csrf = get_csrf_token(request, settings)
         return templates.TemplateResponse(
             request=request,
             name="login.html",
             context={
                 "error": f"Too many failed login attempts. Please wait {remaining} seconds before trying again.",
                 "settings": settings,
-                "csrf_token": current_csrf,
             },
             status_code=429,
         )
@@ -87,14 +84,12 @@ async def login_action(
     session_id = request.cookies.get(settings.session_cookie_name) or request.cookies.get(settings.csrf_cookie_name)
     if not session_id or not csrf_token or not verify_csrf_token(settings.secret_key, session_id, csrf_token):
         logger.warning("Login CSRF verification failed from client %s", client_ip)
-        current_csrf = get_csrf_token(request, settings)
         return templates.TemplateResponse(
             request=request,
             name="login.html",
             context={
                 "error": "Invalid or expired CSRF token. Please refresh the page and try again.",
                 "settings": settings,
-                "csrf_token": current_csrf,
             },
             status_code=403,
         )
@@ -102,14 +97,12 @@ async def login_action(
     # Fail closed if auth is enabled but credentials are not configured
     if not is_auth_configured(settings):
         logger.critical("Authentication enabled but no password or hash configured! Fail-closed.")
-        current_csrf = get_csrf_token(request, settings)
         return templates.TemplateResponse(
             request=request,
             name="login.html",
             context={
                 "error": "Authentication server error: Administrator credentials unconfigured (fail-closed).",
                 "settings": settings,
-                "csrf_token": current_csrf,
             },
             status_code=500,
         )
@@ -117,7 +110,6 @@ async def login_action(
     # Constant-time verification against plain password or hash
     if not verify_password(password, settings.admin_password, settings.admin_password_hash):
         failure_count, is_now_locked, lockout_dur = global_login_rate_limiter.record_failure(client_ip)
-        current_csrf = get_csrf_token(request, settings)
         if is_now_locked:
             return templates.TemplateResponse(
                 request=request,
@@ -125,7 +117,6 @@ async def login_action(
                 context={
                     "error": f"Account locked due to {failure_count} failed attempts. Locked for {lockout_dur}s.",
                     "settings": settings,
-                    "csrf_token": current_csrf,
                 },
                 status_code=429,
             )
@@ -135,10 +126,10 @@ async def login_action(
             context={
                 "error": translate("invalid_password", lang),
                 "settings": settings,
-                "csrf_token": current_csrf,
             },
             status_code=401,
         )
+
 
     # Successful authentication
     global_login_rate_limiter.record_success(client_ip)

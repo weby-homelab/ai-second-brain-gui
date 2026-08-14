@@ -30,6 +30,12 @@ def _default_vault_path() -> Path:
     return Path.cwd()
 
 
+def _default_admin_password() -> str:
+
+    """Resolve admin password supporting both standard and legacy environment variables."""
+    return os.environ.get("POWER_GUI_ADMIN_PASSWORD") or os.environ.get("BRAIN_PORTAL_PASSWORD") or ""
+
+
 class Settings(BaseSettings):
     """Fail-closed configuration settings for POWER-GUI application."""
 
@@ -48,13 +54,14 @@ class Settings(BaseSettings):
         description="Enable authentication requirements (redirects to /login)",
     )
     admin_password: str = Field(
-        default="",
+        default_factory=_default_admin_password,
         description="Password for web access",
     )
     admin_password_hash: str | None = Field(
         default=None,
         description="Optional password hash for local web access",
     )
+
     session_cookie_name: str = "power_gui_session"
     csrf_cookie_name: str = "power_gui_csrf"
     cookie_secure: bool = False
