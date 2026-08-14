@@ -1,117 +1,190 @@
-# 🧠 Second Brain Web Portal
+# 🧠 P.O.W.E.R-GUI
 
 [🇺🇸 English](README.md) | [🇺🇦 Українська](README.ua.md)
 
+[![Docker Image](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/webyhomelab/power-gui)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.7+-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-![Second Brain Portal Dashboard](second-brain-portal-EN.png)
+![P.O.W.E.R-GUI Dashboard](second-brain-portal-EN.png)
 
-![Second Brain Graph Dashboard](SB-Graph.gif)
+![P.O.W.E.R-GUI Knowledge Graph](SB-Graph.gif)
 
-A modern, highly secure, and aesthetically refined web interface to access, search, and monitor your personal Obsidian knowledge base (Second Brain). Powered by FastAPI, featuring a sleek Glassmorphism design and native Tailscale tunnel integration.
-
----
-
-## ✨ Features
-
-- 🚀 **Speed & Asynchrony:** Powered by FastAPI and Uvicorn for lightweight, instant page loading.
-- 🎨 **Obsidian Compatibility:**
-  - Renders flat Wiki-links (`[[Note Name]]`) with automatic resolution and link path mapping.
-  - Native parsing for Obsidian **Callouts** (`> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`, etc.).
-  - Dynamic asset streaming to render vault media (images, graphics) securely.
-- 🌐 **Interactive Graph View:** Visualizes note relations with a dynamic 2D knowledge graph powered by `Force-Graph` (D3 force-directed layout). Displays a global graph on the dashboard and a local 2-depth graph on note pages, allowing click-to-navigate.
-- ✏️ **Markdown Note Editing:** Allows editing and saving any markdown note directly from the web dashboard. Features secure Path Traversal (`validate_path`) protection.
-- 🔍 **Global Search:** Search through notes by both filename and contents in real time with context snippet highlighting.
-- 📊 **Interactive Dashboard:** Live stats including total notes count, directory-based breakdowns (e.g. Projects, Areas, Resources, Daily Logs), and a feed of recently updated documents.
-- 💅 **Premium Glassmorphism UI:**
-  - Elegant dark OLED theme (`#08090d`) with neon mesh-glow overlay backgrounds.
-  - Border highlights, backdrop-filter blur effects, and Google Fonts typography (Outfit for headings, Inter for body).
-  - 100% mobile-friendly responsive layout with touch-optimized margins and safe horizontal table scrolling.
+**P.O.W.E.R-GUI** is the production-grade, AI-native web cockpit and decision center for your personal [Obsidian](https://obsidian.md) knowledge base (Second Brain). Designed strictly as a **Docker-First** application, it bridges human operators and autonomous AI agents through the **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
 ---
 
-## 🔌 Recommended Extension: P.O.W.E.R. Framework
+## 🏛️ Architecture & Core Principles
 
-To fully unlock the potential of your Obsidian Second Brain using AI agents (Claude, Cursor, OpenCode) and automate its maintenance, we highly recommend integrating the **[P.O.W.E.R. Framework](https://github.com/weby-homelab/power-framework)** — an AI-Native Toolkit for Obsidian:
-- **🔍 Advanced Hybrid Search (BM25 + Dense Vectors):** Supports 4 search modes using models like `BGE-M3` or `Qwen3-Embedding`, with LLM query expansion and synonym processing.
-- **🤖 MCP Server (Model Context Protocol):** Exposes 12 autonomous tools for AI agents, allowing them to index your vault, retrieve documents, identify logical contradictions, and auto-ingest sessions (`synthesize_session`).
-- **🛡️ OKF Metadata Verification:** Enforces strict frontmatter schemas powered by Pydantic v2 (governance fields: `owner`, `status`, `expiry`) with auto-healing capabilities via `power heal`.
-- **🔄 Freshness Monitoring & ROT Audit:** Automatically flags expired, redundant, outdated, and trivial notes, streamlining cleanup and archiving to `04_Archive/`.
+P.O.W.E.R-GUI adopts the **Backend-For-Frontend (BFF)** pattern built on FastAPI and Pydantic v2 Settings. It communicates exclusively through the canonical `PowerClient` boundary to the P.O.W.E.R `ApplicationService`, guaranteeing zero unvalidated direct writes to your knowledge vault.
 
----
-
-## 🔒 Security & Isolation
-
-- 🛡️ **LFI (Local File Inclusion) Protection:** All requested document paths are strictly verified by a `validate_path` wrapper using `os.path.commonpath`. Any Path Traversal attempt (e.g., `../../etc/passwd`) is immediately dropped returning a `403 Forbidden` error.
-- ⚓ **Host Isolation:** The web server binds strictly to the loopback interface `127.0.0.1:8008`, ensuring it is invisible to external internet port scanners.
-- 🔑 **HttpOnly Cookie Sessions:** Client-side authentication is handled via a randomized `session_token` cookie configured with `HttpOnly` and `SameSite=Strict` flags. Passwords are securely parsed from local system environment variables (`.env`).
-
----
-
-## 🛠️ Installation & Setup
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/weby-homelab/ai-second-brain-gui.git
-cd ai-second-brain-gui
 ```
-
-### 2. Prepare Python virtual environment
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -e ".[dev]"
-```
-
-### 3. Setup configuration `.env`
-
-Configuration is managed via Pydantic Settings (`POWER_GUI_` prefix):
-
-```bash
-# Optional password hash for authenticated mode
-POWER_GUI_AUTH_ENABLED=false
-POWER_GUI_VAULT_PATH=/root/geminicli/brain
-POWER_GUI_PORT=8080
+┌────────────────────────────────────────────────────────────────────────┐
+│                               OPERATOR                                 │
+│        (Knowledge Graph / Hybrid Search / Task & Decision Queue)       │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ HTTP / SSE (Tailscale Protected)
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        P.O.W.E.R-GUI (Docker)                          │
+│   [Dashboard]  [Notes Editor]  [Task Manager v2]  [Decision Queue]     │
+│   [Bleach Sanitizer]  [CSRF Defense]  [Strict CSP]  [WCAG 2.2 AA]      │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ PowerClient Port
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                     P.O.W.E.R Application API v2                       │
+│        • Proposal Gate      • OKF Metadata Linter   • Event Ledger     │
+│        • Task Store (flock) • Source Service        • Receipts Engine  │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ Direct / Inode I/O
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                         /brain (Obsidian Vault)                        │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Running POWER-GUI
+## ✨ Key Capabilities
 
-```bash
-power-gui --host 127.0.0.1 --port 8080 --vault /root/geminicli/brain
-```
+### 1. 📋 Canonical Task Manager v2 Cockpit
+- **Interactive Kanban Swimlanes:** Seamlessly track tasks across lifecycle states: `backlog` ➔ `ready` ➔ `in-progress` ➔ `blocked` / `input-required` / `auth-required` ➔ `completed` / `failed`.
+- **Monotonic Revision Control:** Concurrency is protected via `expected_revision` checks to eliminate lost updates.
+- **Append-Only Event Ledger:** Every task transition produces an immutable audit event with a SHA-256 payload digest.
+- **Real-Time SSE Streaming:** Live status updates streamed directly to the browser via Server-Sent Events (`/tasks/api/events/stream`).
 
-Reload daemon and enable the service:
+### 2. 🛡️ Transactional Note Editor & Proposal Gate
+- **Human-in-the-Loop Workflow:** AI agents and operators submit mutations via proposals (`Edit` ➔ `Propose` ➔ `Lint Validation` ➔ `Human Approval` ➔ `Apply`).
+- **Zero Full Overwrites:** Protects against unintentional data wipeouts by enforcing atomic diff reviews and immutable receipts.
+- **ETag Concurrency Guard:** Prevents mid-air collision when editing notes simultaneously.
 
-```bash
-systemctl daemon-reload
-systemctl enable ai-second-brain-gui --now
-```
+### 3. 🌐 Dynamic 2D Force-Directed Knowledge Graph
+- Visualizes vault topologies and note relations in real time using D3 force layout.
+- Provides global vault views as well as localized 2-depth subtrees for individual notes.
+- **WCAG 2.2 AA Accessibility:** Includes high-contrast matrix fallbacks for screen readers and keyboard navigation.
 
-### Exposing Securely with Tailscale
+### 4. 🔍 Multi-Modal Hybrid Search
+- Seamlessly query notes across four search backends:
+  - `Auto`: Hybrid dense semantic retrieval with full-text fallback.
+  - `FTS`: Lean BM25 full-text search with token proximity matching.
+  - `Semantic`: Dense vector embeddings (e.g., `BGE-M3` 1024d).
+  - `Reranked`: Cross-encoder scoring for deep contextual relevance.
 
-To access your portal securely from any device in your Tailnet, run:
-
-```bash
-tailscale serve --bg 8008
-```
-
-This sets up an HTTPS reverse proxy at `https://<your-node>.<tailnet-name>.ts.net/` with automated TLS certificate management.
+### 5. 🔒 Enterprise-Grade Security & Sanitization
+- **Bleach HTML Sanitization:** Comprehensive protection against XSS injections, malformed links, and adversarial payloads.
+- **HMAC-SHA256 CSRF Tokens:** Enforced on all mutating HTTP POST endpoints.
+- **Strict Content-Security-Policy (CSP):** Zero external CDN dependencies; all scripts, fonts, and stylesheets are self-hosted.
+- **Path Traversal Defense:** Strict `PermissionError` enforcement preventing directory escapes outside the vault boundary.
 
 ---
 
-## 🤝 Contributing
+## 🐳 Docker Deployment (Standard & Recommended)
 
-Contributions to improve styling, parsing rules, or support for additional Obsidian syntax extensions are welcome. Feel free to open an Issue or a Pull Request!
+P.O.W.E.R-GUI is designed to run exclusively in Docker.
+
+### 1. One-Line Quickstart
+
+```bash
+docker run -d \
+  --name power-gui \
+  --restart unless-stopped \
+  -p 8008:8080 \
+  -v /path/to/your/obsidian/brain:/brain:rw \
+  webyhomelab/power-gui:latest
+```
+
+Open your browser at `http://<your-host-ip>:8008`.
+
+---
+
+### 2. Docker Compose Setup
+
+Create a `docker-compose.yml` file:
+
+```yaml
+version: '3.8'
+
+services:
+  power-gui:
+    image: webyhomelab/power-gui:latest
+    container_name: power-gui
+    restart: unless-stopped
+    ports:
+      - "8008:8080"
+    environment:
+      - POWER_GUI_HOST=0.0.0.0
+      - POWER_GUI_PORT=8080
+      - POWER_GUI_VAULT_PATH=/brain
+      - POWER_GUI_AUTH_ENABLED=false
+    volumes:
+      - /path/to/your/obsidian/brain:/brain:rw
+```
+
+Start the service:
+
+```bash
+docker compose up -d
+```
+
+---
+
+### 3. Proxmox VE (LXC Container) Deployment
+
+When running inside an unprivileged Proxmox LXC container (e.g. `LXC 200`):
+
+1. **Mount host vault to the container from Proxmox host:**
+   ```bash
+   pct set 200 -mp0 /root/geminicli/brain,mp=/mnt/brain
+   ```
+
+2. **Run container inside LXC with mapped volume:**
+   ```bash
+   docker run -d \
+     --name power-gui \
+     --restart unless-stopped \
+     -p 8008:8080 \
+     -v /mnt/brain:/brain:rw \
+     webyhomelab/power-gui:latest
+   ```
+
+---
+
+## ⚙️ Configuration Reference
+
+Configuration is managed entirely via environment variables (with the `POWER_GUI_` prefix):
+
+| Variable | Type | Default | Description |
+| :--- | :---: | :---: | :--- |
+| `POWER_GUI_HOST` | `str` | `0.0.0.0` | IP address for Uvicorn to bind. |
+| `POWER_GUI_PORT` | `int` | `8080` | Internal listening port. |
+| `POWER_GUI_VAULT_PATH` | `Path` | `/brain` | Absolute path to mounted Obsidian vault. |
+| `POWER_GUI_AUTH_ENABLED` | `bool` | `false` | Enable session cookie authentication. |
+| `POWER_GUI_ADMIN_PASSWORD_HASH` | `str` | `""` | SHA256 / PBKDF2 hash of admin password. |
+| `POWER_GUI_SECRET_KEY` | `str` | `"power-secret-key-12345"` | Secret key used for signing session and CSRF tokens. |
+| `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Session lifetime (default: 24 hours). |
+| `POWER_GUI_COOKIE_SECURE` | `bool` | `false` | Set to `true` when serving over HTTPS. |
+| `POWER_GUI_COOKIE_SAMESITE` | `str` | `lax` | Cookie SameSite policy (`lax`, `strict`, `none`). |
+
+---
+
+## 🧪 Testing & Verification
+
+Run the test suite and linters locally:
+
+```bash
+# Run contract and unit test suite
+pytest tests/ -v
+
+# Run code style & security linter
+ruff check src tests
+```
 
 ---
 
 ## 📄 License
 
-This project is distributed under the [MIT](LICENSE) license.
+Distributed under the **MIT License**. See [LICENSE](LICENSE) for details.
