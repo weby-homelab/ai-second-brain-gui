@@ -144,11 +144,11 @@ docker compose up -d
 
 ### 3. Proxmox VE (LXC Container) Deployment
 
-When running inside an unprivileged Proxmox LXC container (e.g. `LXC 200`):
+When running inside an unprivileged Proxmox LXC container (e.g. `CT 200`):
 
 1. **Mount host vault to the container from Proxmox host:**
    ```bash
-   pct set 200 -mp0 /root/geminicli/brain,mp=/mnt/brain
+   pct set 200 -mp0 /path/to/host/vault,mp=/mnt/brain
    ```
 
 2. **Run container inside LXC with mapped volume:**

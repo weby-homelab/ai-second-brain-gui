@@ -18,27 +18,17 @@
 </div>
 
 <!-- Stats Grid -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
     <div class="card" style="margin-bottom: 0;">
         <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">{{ t('total_notes', current_lang) }}</div>
         <div style="font-size: 2rem; font-weight: 700; color: var(--accent);">{{ stats.total_notes }}</div>
     </div>
+    {% for cat, count in stats.category_counts.items() %}
     <div class="card" style="margin-bottom: 0;">
-        <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">01_Projects</div>
-        <div style="font-size: 2rem; font-weight: 700; color: #a855f7;">{{ stats.category_counts.get('01_Projects', 0) }}</div>
+        <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">{{ cat }}</div>
+        <div style="font-size: 2rem; font-weight: 700; color: var(--text-primary);">{{ count }}</div>
     </div>
-    <div class="card" style="margin-bottom: 0;">
-        <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">02_Areas</div>
-        <div style="font-size: 2rem; font-weight: 700; color: #3b82f6;">{{ stats.category_counts.get('02_Areas', 0) }}</div>
-    </div>
-    <div class="card" style="margin-bottom: 0;">
-        <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">03_Resources</div>
-        <div style="font-size: 2rem; font-weight: 700; color: #10b981;">{{ stats.category_counts.get('03_Resources', 0) }}</div>
-    </div>
-    <div class="card" style="margin-bottom: 0;">
-        <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">04_Archive</div>
-        <div style="font-size: 2rem; font-weight: 700; color: #64748b;">{{ stats.category_counts.get('04_Archive', 0) }}</div>
-    </div>
+    {% endfor %}
 </div>
 
 <!-- Main Split: Tasks & Recent Activity -->
