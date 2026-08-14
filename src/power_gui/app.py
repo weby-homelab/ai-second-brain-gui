@@ -6,10 +6,11 @@ import argparse
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import Response
+from fastapi.responses import RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from .auth.session import SessionManager
 from .config import Settings, get_global_settings
 from .routes import (
     auth_router,
@@ -47,6 +48,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Mount static assets
     if static_dir.is_dir():
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+    # Authentication guard middleware
+    @app.middleware("http")
+    async def auth_middleware(request: Request, call_next) -> Response:
+        if app_settings.auth_enabled:
+            path = request.url.path
+            # Allow public assets and login
+            if path in {"/login", "/healthz"} or path.startswith("/static/"):
+                return await call_next(request)
+
+            cookie = request.cookies.get(app_settings.session_cookie_name)
+            if not cookie:
+                return RedirectResponse(url="/login", status_code=303)
+
+            session_mgr = SessionManager(app_settings.secret_key)
+            user_id = session_mgr.verify_session(cookie)
+            if not user_id:
+                return RedirectResponse(url="/login", status_code=303)
+
+        return await call_next(request)
 
     # Security headers middleware
     @app.middleware("http")
