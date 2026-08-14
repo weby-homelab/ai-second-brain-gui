@@ -233,7 +233,7 @@
     <a href="#main-content" class="skip-link">{{ t('skip_to_content', current_lang) }}</a>
     <header>
         <a href="/dashboard" class="logo-group" aria-label="POWER Cockpit Dashboard">
-            <span class="logo-badge">POWER 3.7</span>
+            <span class="logo-badge">POWER {{ power_version }}</span>
             <strong>{{ t('app_name', current_lang) }}</strong>
         </a>
         <nav aria-label="Main Navigation">
@@ -271,7 +271,7 @@
     </main>
 
     <footer>
-        <div>P.O.W.E.R 3.7.0 &middot; Zero-Error Local-First Cockpit &middot; Weby Homelab</div>
+        <div>P.O.W.E.R {{ power_version }} &middot; Zero-Error Local-First Cockpit &middot; Weby Homelab</div>
         <div>PROD PRXMX-01 &middot; GPG-Signed Authority Plane</div>
     </footer>
 

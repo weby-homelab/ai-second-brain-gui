@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+import power_framework
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -26,6 +27,8 @@ from .routes import (
     tasks_router,
 )
 
+POWER_VERSION = getattr(power_framework, "__version__", "3.6.0")
+
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     """Instantiate and configure the POWER-GUI FastAPI application."""
@@ -33,7 +36,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(
         title="POWER-GUI",
-        description="Secure, accessible local-first web cockpit for P.O.W.E.R 3.7",
+        description=f"Secure, accessible local-first web cockpit for P.O.W.E.R {POWER_VERSION}",
         version="0.5.4",
         docs_url=None,
         redoc_url=None,
@@ -47,6 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     templates.env.globals["t"] = pass_context(jinja_translate)
     templates.env.globals["get_lang"] = get_request_lang
     templates.env.globals["get_theme"] = get_request_theme
+    templates.env.globals["power_version"] = POWER_VERSION
 
     app.state.templates = templates
     app.state.settings = app_settings
