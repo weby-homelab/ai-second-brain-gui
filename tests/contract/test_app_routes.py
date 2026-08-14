@@ -214,16 +214,36 @@ def test_task_manager_cockpit(client: TestClient) -> None:
 
 
 def test_decisions_and_receipts(client: TestClient) -> None:
-    """Test decision queue and audit receipts view."""
+    """Test decision queue, audit receipts, and federation live status."""
     resp_dec = client.get("/decisions")
     assert resp_dec.status_code == 200
 
     resp_rec = client.get("/receipts")
     assert resp_rec.status_code == 200
 
+    # Federation HTML view
     resp_fed = client.get("/federation")
     assert resp_fed.status_code == 200
-    assert "Fleet Registry" in resp_fed.text
+    assert "local-core" in resp_fed.text
+    assert "remote-ws" in resp_fed.text
+    assert "docker-plane" in resp_fed.text
+
+    # Federation Ukrainian view
+    resp_fed_uk = client.get("/federation?lang=uk")
+    assert resp_fed_uk.status_code == 200
+    assert "Федеративна мережа знань" in resp_fed_uk.text
+
+    # A2A Agent Card endpoints
+    resp_card = client.get("/federation/agent.json")
+    assert resp_card.status_code == 200
+    card_data = resp_card.json()
+    assert card_data["protocol"] == "A2A"
+    assert card_data["node_id"] == "local-core"
+    assert "power.search" in card_data["capabilities"]
+
+    resp_well_known = client.get("/.well-known/agent.json")
+    assert resp_well_known.status_code == 200
+    assert resp_well_known.json()["protocol"] == "A2A"
 
 
 def test_authentication_enforcement_and_login(test_vault: Path) -> None:
