@@ -12,6 +12,7 @@ from fastapi.templating import Jinja2Templates
 
 from .auth.session import SessionManager
 from .config import Settings, get_global_settings
+from .i18n import get_request_lang, translate
 from .routes import (
     auth_router,
     dashboard_router,
@@ -32,7 +33,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         title="POWER-GUI",
         description="Secure, accessible local-first web cockpit for P.O.W.E.R 3.7",
-        version="0.5.0",
+        version="0.5.1",
         docs_url=None,
         redoc_url=None,
     )
@@ -42,6 +43,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     static_dir = base_dir / "static"
 
     templates = Jinja2Templates(directory=str(templates_dir))
+    templates.env.globals["t"] = translate
+    templates.env.globals["get_lang"] = get_request_lang
+
     app.state.templates = templates
     app.state.settings = app_settings
 
@@ -49,13 +53,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     if static_dir.is_dir():
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
-    # Authentication guard middleware
+    # Authentication & Language guard middleware
     @app.middleware("http")
     async def auth_middleware(request: Request, call_next) -> Response:
+        lang = get_request_lang(request)
+        request.state.lang = lang
+
         if app_settings.auth_enabled:
             path = request.url.path
-            # Allow public assets and login
-            if path in {"/login", "/healthz"} or path.startswith("/static/"):
+            # Allow public assets, login, language switch, and healthcheck
+            if path in {"/login", "/healthz", "/set-lang"} or path.startswith("/static/"):
                 return await call_next(request)
 
             cookie = request.cookies.get(app_settings.session_cookie_name)

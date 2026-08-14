@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from ..auth.session import SessionManager
 from ..config import Settings, get_settings
+from ..i18n import get_request_lang, translate
 
 if TYPE_CHECKING:
     from fastapi.templating import Jinja2Templates
@@ -41,6 +42,7 @@ async def login_action(
 ) -> Response:
     """Verify password and set signed session cookie."""
     templates: Jinja2Templates = request.app.state.templates
+    lang = get_request_lang(request)
     if not settings.auth_enabled:
         return RedirectResponse(url="/dashboard", status_code=303)
 
@@ -50,7 +52,7 @@ async def login_action(
             request=request,
             name="login.html",
             context={
-                "error": "Невірний пароль доступу",
+                "error": translate("invalid_password", lang),
                 "settings": settings,
             },
             status_code=401,
@@ -71,6 +73,25 @@ async def login_action(
     return response
 
 
+@router.get("/set-lang")
+async def set_language(
+    lang: str = "en",
+    next: str = "/dashboard",
+) -> RedirectResponse:
+    """Set language preference in cookie and redirect back to previous page."""
+    clean_lang = "uk" if lang.lower() in {"uk", "ua", "ukr"} else "en"
+    target = next if next.startswith("/") and not next.startswith("//") else "/dashboard"
+    response = RedirectResponse(url=target, status_code=303)
+    response.set_cookie(
+        key="power_gui_lang",
+        value=clean_lang,
+        max_age=31536000,
+        httponly=False,
+        samesite="lax",
+    )
+    return response
+
+
 @router.post("/logout")
 async def logout_action(
     request: Request,
@@ -80,3 +101,4 @@ async def logout_action(
     response = RedirectResponse(url="/login", status_code=303)
     response.delete_cookie(key=settings.session_cookie_name)
     return response
+
