@@ -31,6 +31,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "sign_in": "Sign In →",
         "invalid_password": "Invalid access password",
         "lang_switch_label": "Language",
+        "theme_dark": "Dark",
+        "theme_light": "Light",
+        "toggle_theme": "Toggle theme",
         # Dashboard
         "system_status": "System Status",
         "system_healthy": "System Healthy",
@@ -102,6 +105,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "sign_in": "Увійти →",
         "invalid_password": "Невірний пароль доступу",
         "lang_switch_label": "Мова",
+        "theme_dark": "Темна",
+        "theme_light": "Світла",
+        "toggle_theme": "Перемкнути тему",
         # Dashboard
         "system_status": "Стан системи",
         "system_healthy": "Система в нормі",
@@ -177,6 +183,31 @@ def get_request_lang(request: Request) -> str:
     return DEFAULT_LANG
 
 
+DEFAULT_THEME = "dark"
+SUPPORTED_THEMES = {"dark", "light"}
+
+
+def normalize_theme(theme: str | None) -> str:
+    """Normalize theme code to supported set, defaulting to 'dark'."""
+    if not theme:
+        return DEFAULT_THEME
+    cleaned = theme.strip().lower()
+    if cleaned in {"light", "day", "white"}:
+        return "light"
+    return DEFAULT_THEME
+
+
+def get_request_theme(request: Request) -> str:
+    """Extract theme from request query param or cookie, defaulting to 'dark'."""
+    query_theme = request.query_params.get("theme")
+    if query_theme:
+        return normalize_theme(query_theme)
+    cookie_theme = request.cookies.get("power_gui_theme")
+    if cookie_theme:
+        return normalize_theme(cookie_theme)
+    return DEFAULT_THEME
+
+
 def translate(key: str, lang: str = DEFAULT_LANG) -> str:
     """Lookup translation key with fallback to English then raw key."""
     norm_lang = normalize_lang(lang)
@@ -188,9 +219,14 @@ def translate(key: str, lang: str = DEFAULT_LANG) -> str:
 
 __all__ = [
     "DEFAULT_LANG",
+    "DEFAULT_THEME",
     "SUPPORTED_LANGS",
+    "SUPPORTED_THEMES",
     "TRANSLATIONS",
     "get_request_lang",
+    "get_request_theme",
     "normalize_lang",
+    "normalize_theme",
     "translate",
 ]
+
