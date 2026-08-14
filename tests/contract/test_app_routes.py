@@ -70,8 +70,8 @@ def test_dashboard_route_and_headers(client: TestClient) -> None:
     """Test dashboard route and verification of security headers."""
     resp = client.get("/dashboard")
     assert resp.status_code == 200
-    assert "POWER" in resp.text
-    assert "3.6.0" in resp.text or "P.O.W.E.R" in resp.text
+    assert "P.O.W.E.R." in resp.text
+    assert "3.6.0" in resp.text
     assert "01_Projects" in resp.text
 
     # Check CSP and security headers
@@ -286,8 +286,8 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
     auth_client.cookies.set("power_gui_session", cookie)
     resp_authed = auth_client.get("/dashboard")
     assert resp_authed.status_code == 200
-    assert "POWER" in resp_authed.text
-    assert "3.6.0" in resp_authed.text or "P.O.W.E.R" in resp_authed.text
+    assert "P.O.W.E.R." in resp_authed.text
+    assert "3.6.0" in resp_authed.text
 
 
 def test_language_switch_and_defaults(client: TestClient) -> None:

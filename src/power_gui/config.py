@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     """Fail-closed configuration settings for POWER-GUI application."""
 
     vault_path: Path = Field(
-        default=Path("/root/geminicli/brain"),
+        default=Path("/brain"),
         description="Path to the authoritative Markdown knowledge vault",
     )
     host: str = Field(default="127.0.0.1", description="Bind interface")
