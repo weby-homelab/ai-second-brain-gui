@@ -19,7 +19,7 @@ router = APIRouter()
 @router.get("/graph", response_class=HTMLResponse)
 async def graph_view(
     request: Request,
-    max_nodes: int = Query(300, ge=10, le=1000),
+    max_nodes: int = Query(1000, ge=10, le=5000),
     client: PowerClient = Depends(get_client),
     settings: Settings = Depends(get_settings),
 ) -> HTMLResponse:
@@ -41,7 +41,7 @@ async def graph_view(
 
 @router.get("/api/graph/data", response_class=JSONResponse)
 async def graph_data_api(
-    max_nodes: int = Query(500, ge=10, le=1000),
+    max_nodes: int = Query(1000, ge=10, le=5000),
     client: PowerClient = Depends(get_client),
 ) -> JSONResponse:
     """Return JSON formatted nodes and links for force-graph library."""

@@ -27,14 +27,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('graphSearchInput');
     const categorySelect = document.getElementById('graphCategorySelect');
     const degreeSelect = document.getElementById('graphDegreeSelect');
+    const toggleOrphansBtn = document.getElementById('graphToggleOrphansBtn');
     const resetBtn = document.getElementById('graphResetBtn');
     const zoomFitBtn = document.getElementById('graphZoomFitBtn');
     const nodesCountEl = document.getElementById('nodesCount');
+    const orphansCountEl = document.getElementById('orphansCount');
     const edgesCountEl = document.getElementById('edgesCount');
     const tableRows = document.querySelectorAll('.graph-table-row');
 
     let graphInstance = null;
     let rawGraphData = { nodes: [], links: [] };
+    let hideOrphans = false;
 
     const categoryColors = {
         '00_Inbox': '#06b6d4',
@@ -68,7 +71,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
         const selectedCat = categorySelect ? categorySelect.value : '';
-        const minDegree = degreeSelect ? (parseInt(degreeSelect.value, 10) || 0) : 0;
+        let minDegree = degreeSelect ? (parseInt(degreeSelect.value, 10) || 0) : 0;
+        if (hideOrphans && minDegree < 1) {
+            minDegree = 1;
+        }
 
         const filteredNodes = rawGraphData.nodes.filter(node => {
             const matchesQuery = !q ||
@@ -87,6 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return activeNodeIds.has(sId) && activeNodeIds.has(tId);
         });
 
+        const orphansInFilter = filteredNodes.filter(n => (n.degree || 0) === 0).length;
+
         if (graphInstance) {
             graphInstance.graphData({
                 nodes: filteredNodes,
@@ -95,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (nodesCountEl) nodesCountEl.textContent = filteredNodes.length;
+        if (orphansCountEl) orphansCountEl.textContent = orphansInFilter;
         if (edgesCountEl) edgesCountEl.textContent = filteredLinks.length;
 
         // Filter accessibility table rows
@@ -146,16 +155,50 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.href = `/notes/read?path=${encodeURIComponent(node.id)}`;
                 });
 
+            const totalOrphans = rawGraphData.nodes.filter(n => (n.degree || 0) === 0).length;
             if (nodesCountEl) nodesCountEl.textContent = rawGraphData.nodes.length;
+            if (orphansCountEl) orphansCountEl.textContent = totalOrphans;
             if (edgesCountEl) edgesCountEl.textContent = rawGraphData.links.length;
 
             // Attach event listeners
             if (searchInput) searchInput.addEventListener('input', updateFilter);
             if (categorySelect) categorySelect.addEventListener('change', updateFilter);
-            if (degreeSelect) degreeSelect.addEventListener('change', updateFilter);
+            if (degreeSelect) {
+                degreeSelect.addEventListener('change', () => {
+                    if (parseInt(degreeSelect.value, 10) > 0) {
+                        hideOrphans = true;
+                        if (toggleOrphansBtn) toggleOrphansBtn.textContent = '🌐 Показати сироти';
+                    } else {
+                        hideOrphans = false;
+                        if (toggleOrphansBtn) toggleOrphansBtn.textContent = '⚡ Сховати сироти';
+                    }
+                    updateFilter();
+                });
+            }
+
+            if (toggleOrphansBtn) {
+                toggleOrphansBtn.addEventListener('click', () => {
+                    hideOrphans = !hideOrphans;
+                    if (hideOrphans) {
+                        toggleOrphansBtn.textContent = '🌐 Показати сироти';
+                        if (degreeSelect && degreeSelect.value === '0') {
+                            degreeSelect.value = '1';
+                        }
+                    } else {
+                        toggleOrphansBtn.textContent = '⚡ Сховати сироти';
+                        if (degreeSelect) {
+                            degreeSelect.value = '0';
+                        }
+                    }
+                    updateFilter();
+                    if (graphInstance) graphInstance.zoomToFit(400, 20);
+                });
+            }
 
             if (resetBtn) {
                 resetBtn.addEventListener('click', () => {
+                    hideOrphans = false;
+                    if (toggleOrphansBtn) toggleOrphansBtn.textContent = '⚡ Сховати сироти';
                     if (searchInput) searchInput.value = '';
                     if (categorySelect) categorySelect.value = '';
                     if (degreeSelect) degreeSelect.value = '0';
