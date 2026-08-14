@@ -23,8 +23,15 @@ services:
       - POWER_GUI_VAULT_PATH=/brain
       - POWER_GUI_AUTH_ENABLED=true
       - POWER_GUI_ADMIN_PASSWORD=${POWER_GUI_ADMIN_PASSWORD:-}
-      - XDG_CACHE_HOME=/tmp/cache
-      - POWER_CACHE_DIR=/tmp/power_cache
+      - XDG_CACHE_HOME=/data/cache
+      - POWER_CACHE_DIR=/data/power_cache
+      # Allow FTS fallback when dense/semantic index is not yet built
+      - POWER_ALLOW_DENSE_FALLBACK=1
     volumes:
       - /mnt/brain:/brain:rw
+      # Persistent cache so FTS search.db survives container restarts
+      - power_cache:/data
 
+volumes:
+  power_cache:
+    driver: local
