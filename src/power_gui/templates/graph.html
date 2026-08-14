@@ -1,22 +1,52 @@
 {% extends "base.html" %}
 
-{% block title %}Граф знань{% endblock %}
+{% block title %}{{ t('knowledge_graph', current_lang) }}{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
     <div>
-        <h1 style="font-size: 1.75rem; font-weight: 700;">Граф зв'язків знань (Knowledge Graph)</h1>
+        <h1 style="font-size: 1.75rem; font-weight: 700;">{{ t('knowledge_graph', current_lang) }} (Knowledge Graph)</h1>
         <p style="color: var(--text-secondary); font-size: 0.9rem;">
-            Візуалізація зв'язків: {{ projection.total_nodes }} вузлів &middot; {{ projection.total_edges }} ребер
+            {{ t('graph_subtitle', current_lang) }} &middot;
+            <span id="graphGlobalStats">{{ projection.total_nodes }} вузлів &middot; {{ projection.total_edges }} ребер</span>
         </p>
     </div>
+    <div style="display: flex; gap: 8px;">
+        <button id="graphZoomFitBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" title="Центрувати граф">🎯 Центрувати</button>
+        <button id="toggleTableBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="toggleTableView()">📋 Показати таблицю</button>
+    </div>
+</div>
+
+<!-- Graph Filter Controls Toolbar -->
+<div class="card" style="margin-bottom: 16px; padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; background: var(--bg-surface-elevated); border: 1px solid var(--border);">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; flex: 1; min-width: 280px;">
+        <div style="position: relative; flex: 1; min-width: 200px; max-width: 360px;">
+            <input type="text" id="graphSearchInput" placeholder="🔍 Фільтр за назвою чи шляхом..." class="form-control" style="width: 100%; padding: 6px 12px; font-size: 0.85rem; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px;">
+        </div>
+        <div style="min-width: 160px;">
+            <select id="graphCategorySelect" class="form-control" style="width: 100%; padding: 6px 10px; font-size: 0.85rem; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px;">
+                <option value="">Усі категорії (All)</option>
+            </select>
+        </div>
+        <div style="min-width: 160px;">
+            <select id="graphDegreeSelect" class="form-control" style="width: 100%; padding: 6px 10px; font-size: 0.85rem; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px;">
+                <option value="0">Всі вузли (All)</option>
+                <option value="1">Зв'язані (Degree ≥ 1)</option>
+                <option value="2">Стійкі зв'язки (Degree ≥ 2)</option>
+                <option value="5">Хаби (Degree ≥ 5)</option>
+            </select>
+        </div>
+        <button id="graphResetBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">Скинути</button>
+    </div>
     <div>
-        <button id="toggleTableBtn" class="btn btn-secondary" onclick="toggleTableView()">📋 Показати таблицю доступності</button>
+        <span id="graphFilteredStats" class="badge badge-info" style="font-size: 0.85rem; padding: 6px 12px; font-family: monospace;">
+            Показано: <strong id="nodesCount">{{ projection.total_nodes }}</strong> вузлів &middot; <strong id="edgesCount">{{ projection.total_edges }}</strong> ребер
+        </span>
     </div>
 </div>
 
 <!-- Interactive Graph Canvas Container -->
-<div class="card" style="padding: 0; overflow: hidden; height: 600px; position: relative; background: #0b0f19;">
+<div class="card" style="padding: 0; overflow: hidden; height: 600px; position: relative; background: #0b0f19; border: 1px solid var(--border); border-radius: 8px;">
     <div id="graphContainer" style="width: 100%; height: 100%;"></div>
 </div>
 
@@ -32,9 +62,9 @@
                 <th style="padding: 8px; text-align: right;">Дія</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="accessibleTableBody">
             {% for node in projection.nodes %}
-            <tr style="border-bottom: 1px solid var(--border);">
+            <tr class="graph-table-row" data-id="{{ node.id }}" data-label="{{ node.label }}" data-category="{{ node.category }}" data-degree="{{ node.degree }}" style="border-bottom: 1px solid var(--border);">
                 <td style="padding: 8px; font-weight: 600;">
                     <a href="/notes/read?path={{ node.id }}" style="color: var(--accent); text-decoration: none;">{{ node.label }}</a>
                     <div style="font-family: monospace; font-size: 0.75rem; color: var(--text-secondary);">{{ node.id }}</div>

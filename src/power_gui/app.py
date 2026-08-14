@@ -70,7 +70,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         title="POWER-GUI",
         description=f"Secure, accessible local-first web cockpit for P.O.W.E.R {POWER_VERSION}",
-        version="0.6.1",
+        version="0.6.2",
         docs_url=None,
         redoc_url=None,
     )
