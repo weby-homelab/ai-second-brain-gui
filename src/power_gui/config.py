@@ -29,12 +29,16 @@ class Settings(BaseSettings):
         description="Secret key for signing sessions and CSRF tokens",
     )
     auth_enabled: bool = Field(
-        default=False,
-        description="Enable authentication requirements (default false for local-first)",
+        default=True,
+        description="Enable authentication requirements (redirects to /login)",
+    )
+    admin_password: str = Field(
+        default="",
+        description="Password for web access",
     )
     admin_password_hash: str | None = Field(
         default=None,
-        description="Optional Argon2/PBKDF2 password hash for local web access",
+        description="Optional password hash for local web access",
     )
     session_cookie_name: str = "power_gui_session"
     csrf_cookie_name: str = "power_gui_csrf"

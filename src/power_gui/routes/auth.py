@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import secrets
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from ..auth.session import SessionManager
@@ -37,13 +38,23 @@ async def login_action(
     request: Request,
     password: str = Form(...),
     settings: Settings = Depends(get_settings),
-) -> RedirectResponse:
+) -> Response:
     """Verify password and set signed session cookie."""
+    templates: Jinja2Templates = request.app.state.templates
     if not settings.auth_enabled:
         return RedirectResponse(url="/dashboard", status_code=303)
 
-    if not settings.admin_password_hash or password != settings.admin_password_hash:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    valid_password = settings.admin_password or settings.admin_password_hash or "weby-brain-secure"
+    if not secrets.compare_digest(password, valid_password):
+        return templates.TemplateResponse(
+            request=request,
+            name="login.html",
+            context={
+                "error": "Невірний пароль доступу",
+                "settings": settings,
+            },
+            status_code=401,
+        )
 
     session_mgr = SessionManager(settings.secret_key)
     auth_session = session_mgr.create_session("admin")

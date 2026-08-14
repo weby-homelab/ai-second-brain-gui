@@ -10,6 +10,12 @@
         <p style="color: var(--text-secondary); font-size: 0.85rem;">Введіть пароль для доступу до панелі</p>
     </div>
 
+    {% if error %}
+    <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); color: #fca5a5; padding: 10px; border-radius: 6px; font-size: 0.9rem; margin-bottom: 16px; text-align: center;">
+        {{ error }}
+    </div>
+    {% endif %}
+
     <form action="/login" method="POST" style="display: flex; flex-direction: column; gap: 16px;">
         <div>
             <label for="pwd" style="display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 6px;">Пароль адміністратора:</label>

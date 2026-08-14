@@ -199,3 +199,47 @@ def test_decisions_and_receipts(client: TestClient) -> None:
     resp_fed = client.get("/federation")
     assert resp_fed.status_code == 200
     assert "Fleet Registry" in resp_fed.text
+
+
+def test_authentication_enforcement_and_login(test_vault: Path) -> None:
+    """Test that auth_enabled enforces login redirect and authenticates valid sessions."""
+    settings = Settings(
+        vault_path=test_vault,
+        auth_enabled=True,
+        admin_password="test-secret-password",
+    )
+    app = create_app(settings)
+    auth_client = TestClient(app)
+
+    # 1. Unauthenticated request to private route redirects to /login (303)
+    resp = auth_client.get("/dashboard", follow_redirects=False)
+    assert resp.status_code == 303
+    assert resp.headers["location"] == "/login"
+
+    # 2. Login page itself is accessible
+    resp_login_page = auth_client.get("/login")
+    assert resp_login_page.status_code == 200
+    assert "Авторизація" in resp_login_page.text
+
+    # 3. Invalid password fails with 401
+    resp_invalid = auth_client.post("/login", data={"password": "wrong-password"})
+    assert resp_invalid.status_code == 401
+    assert "Невірний пароль" in resp_invalid.text
+
+    # 4. Correct password redirects to /dashboard with session cookie
+    resp_valid = auth_client.post(
+        "/login",
+        data={"password": "test-secret-password"},
+        follow_redirects=False,
+    )
+    assert resp_valid.status_code == 303
+    assert resp_valid.headers["location"] == "/dashboard"
+    cookie = resp_valid.cookies.get("power_gui_session")
+    assert cookie is not None
+
+    # 5. Authenticated request with session cookie succeeds
+    auth_client.cookies.set("power_gui_session", cookie)
+    resp_authed = auth_client.get("/dashboard")
+    assert resp_authed.status_code == 200
+    assert "POWER 3.7" in resp_authed.text
+
