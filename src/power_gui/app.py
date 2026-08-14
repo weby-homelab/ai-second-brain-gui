@@ -27,6 +27,7 @@ from .routes import (
     search_router,
     tasks_router,
 )
+from . import __version__ as GUI_VERSION
 
 POWER_VERSION = getattr(power_framework, "__version__", "3.6.0")
 
@@ -84,6 +85,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     templates.env.globals["get_lang"] = get_request_lang
     templates.env.globals["get_theme"] = get_request_theme
     templates.env.globals["power_version"] = POWER_VERSION
+    templates.env.globals["gui_version"] = GUI_VERSION
     templates.env.globals["is_authenticated"] = pass_context(jinja_is_authenticated)
 
     app.state.templates = templates
