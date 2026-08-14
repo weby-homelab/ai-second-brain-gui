@@ -100,7 +100,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Search
         "search_vault": "Search Knowledge Vault",
         "search_title": "Multimodal Knowledge Retrieval",
-        "search_subtitle": "Search across semantic, dense, and full-text (FTS) engines of POWER 3.7",
+        "search_subtitle": "Search across semantic, dense, and full-text (FTS) engines of P.O.W.E.R",
         "search_placeholder": "Search notes by title, tag, or fulltext...",
         "search_input_placeholder": "Enter search query...",
         "search_btn": "🔍 Search",
@@ -212,7 +212,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Search
         "search_vault": "Пошук по базі знань",
         "search_title": "Мультимодальний пошук знань",
-        "search_subtitle": "Пошук через семантичний, щільний (dense) та повнотекстовий (FTS) рушії POWER 3.7",
+        "search_subtitle": "Пошук через семантичний, щільний (dense) та повнотекстовий (FTS) рушії P.O.W.E.R",
         "search_placeholder": "Пошук нотаток за назвою, тегом чи текстом...",
         "search_input_placeholder": "Введіть пошуковий запит...",
         "search_btn": "🔍 Шукати",

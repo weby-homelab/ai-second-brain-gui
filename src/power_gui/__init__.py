@@ -1,3 +1,3 @@
-"""POWER-GUI v0.5.0 package for P.O.W.E.R 3.7."""
+"""POWER-GUI web cockpit package for P.O.W.E.R."""
 
-__version__ = "0.5.0"
+__version__ = "0.5.4"
