@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Федерація{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <h1 style="font-size: 1.75rem; font-weight: 700;">Федеративна мережа знань (Read-Only Federation)</h1>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+        Безпечний пошук та синхронізація статусу між незалежними вузлами екосистеми Weby Homelab
+    </p>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+    <h2 style="font-size: 1.2rem; margin-bottom: 12px;">Зареєстровані вузли флоту (Fleet Registry)</h2>
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+        <thead>
+            <tr style="border-bottom: 1px solid var(--border); color: var(--text-secondary);">
+                <th style="padding: 10px;">ID вузла</th>
+                <th style="padding: 10px;">Роль / Хост</th>
+                <th style="padding: 10px;">Статус</th>
+                <th style="padding: 10px;">Vault ID</th>
+                <th style="padding: 10px;">Рівень довіри</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for n in nodes %}
+            <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 12px 10px; font-weight: 600; font-family: monospace;">{{ n.node_id }}</td>
+                <td style="padding: 12px 10px;">{{ n.role }}</td>
+                <td style="padding: 12px 10px;">
+                    <span class="badge {% if n.status == 'online' %}badge-success{% else %}badge-warning{% endif %}">{{ n.status }}</span>
+                </td>
+                <td style="padding: 12px 10px; font-family: monospace; font-size: 0.8rem; color: var(--text-secondary);">{{ n.vault_id }}</td>
+                <td style="padding: 12px 10px;">
+                    <span class="badge badge-info">{{ n.trust_level }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card" style="background: rgba(30, 41, 59, 0.5);">
+    <h2 style="font-size: 1.2rem; margin-bottom: 8px;">A2A 1.0 Interoperability Protocol</h2>
+    <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6;">
+        Вузол транслює стандартизовану <code>Agent Card</code> (A2A 1.0.1) з обмеженими навичками (<code>power.search</code>, <code>power.source.read</code>, <code>power.task.request</code>). Пряме виконання shell або віддалений запис без підтвердження людини суворо заблоковано.
+    </p>
+</div>
+{% endblock %}

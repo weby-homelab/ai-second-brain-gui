@@ -65,38 +65,26 @@ cd ai-second-brain-gui
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
 ### 3. Setup configuration `.env`
 
-Create a `.env` file in the root directory (or direct the path to your existing configs):
+Configuration is managed via Pydantic Settings (`POWER_GUI_` prefix):
 
-```env
-BRAIN_PORTAL_PASSWORD="your-strong-password"
+```bash
+# Optional password hash for authenticated mode
+POWER_GUI_AUTH_ENABLED=false
+POWER_GUI_VAULT_PATH=/root/geminicli/brain
+POWER_GUI_PORT=8080
 ```
 
 ---
 
-## 🚀 Deployment
+## 🚀 Running POWER-GUI
 
-### Systemd Service Setup
-
-Create a service config `/etc/systemd/system/ai-second-brain-gui.service`:
-
-```ini
-[Unit]
-Description=Second Brain Portal Web Service
-After=network.target
-
-[Service]
-User=root
-WorkingDirectory=/root/geminicli/projects/ai-second-brain-gui
-ExecStart=/root/geminicli/projects/ai-second-brain-gui/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8008 --reload
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
+```bash
+power-gui --host 127.0.0.1 --port 8080 --vault /root/geminicli/brain
 ```
 
 Reload daemon and enable the service:

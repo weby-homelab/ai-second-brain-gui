@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Черга рішень{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <h1 style="font-size: 1.75rem; font-weight: 700;">Черга рішень та погоджень (Decisions Queue)</h1>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+        Запити від агентів, що потребують втручання людини або затвердження змін
+    </p>
+</div>
+
+{% if pending_decisions %}
+<div style="display: grid; gap: 16px;">
+    {% for t in pending_decisions %}
+    <div class="card" style="border-left: 4px solid #facc15;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div>
+                <h2 style="font-size: 1.2rem; font-weight: 600;">
+                    <a href="/tasks/{{ t.task_id }}" style="color: var(--accent); text-decoration: none;">{{ t.title }}</a>
+                </h2>
+                <div style="font-family: monospace; font-size: 0.8rem; color: var(--text-secondary);">
+                    Task ID: {{ t.task_id }} &middot; Власник: {{ t.owner }} &middot; Стан: <span class="badge badge-warning">{{ t.state }}</span>
+                </div>
+            </div>
+            <span class="badge" style="background: var(--bg-surface-elevated);">Rev: v{{ t.revision }}</span>
+        </div>
+
+        <div style="margin-bottom: 16px; background: var(--bg-primary); padding: 12px; border-radius: 6px; font-size: 0.9rem;">
+            <strong>Запит:</strong> {{ t.objective }}
+        </div>
+
+        <form action="/decisions/{{ t.task_id }}/resolve" method="POST" style="display: flex; gap: 12px; align-items: center;">
+            <input type="hidden" name="expected_revision" value="{{ t.revision }}">
+            <input type="text" name="input_value" placeholder="Введіть відповідь / значення (опціонально)..." style="flex: 1; padding: 8px 12px; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem;">
+            <button type="submit" name="action" value="approve" class="btn btn-success" style="padding: 8px 16px;">✅ Затвердити</button>
+            <button type="submit" name="action" value="reject" class="btn btn-danger" style="padding: 8px 16px;">❌ Відхилити</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 48px 24px;">
+    <div style="font-size: 2.5rem; margin-bottom: 8px;">🎉</div>
+    <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 4px;">Черга рішень порожня</h2>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+        Наразі немає завдань, що очікують на підтвердження чи введення даних.
+    </p>
+</div>
+{% endif %}
+{% endblock %}

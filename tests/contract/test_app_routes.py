@@ -1,0 +1,192 @@
+"""Contract and end-to-end integration tests for POWER-GUI web routes."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
+
+from power_gui.app import create_app
+from power_gui.config import Settings
+
+
+@pytest.fixture
+def test_vault(tmp_path: Path) -> Path:
+    """Create a hermetic synthetic vault for GUI route testing."""
+    vault = tmp_path / "gui_vault"
+    vault.mkdir()
+    (vault / ".power").mkdir()
+    (vault / "01_Projects").mkdir()
+    (vault / "03_Resources").mkdir()
+
+    # Note 1
+    (vault / "01_Projects" / "Project_Alpha.md").write_text(
+        """---
+type: Project
+title: "Project Alpha"
+description: "Core test project"
+tags: [alpha, power]
+timestamp: 2026-08-13T12:00:00+00:00
+---
+
+# Project Alpha
+This links to [[Resource_Beta]].
+""",
+        encoding="utf-8",
+    )
+
+    # Note 2
+    (vault / "03_Resources" / "Resource_Beta.md").write_text(
+        """---
+type: Resource
+title: "Resource Beta"
+description: "Reference material"
+tags: [beta]
+timestamp: 2026-08-13T12:00:00+00:00
+---
+
+# Resource Beta
+Reference material for Alpha.
+""",
+        encoding="utf-8",
+    )
+
+    return vault
+
+
+@pytest.fixture
+def client(test_vault: Path) -> TestClient:
+    """Instantiate TestClient bound to synthetic vault."""
+    settings = Settings(
+        vault_path=test_vault,
+        auth_enabled=False,
+    )
+    app = create_app(settings)
+    return TestClient(app)
+
+
+def test_dashboard_route_and_headers(client: TestClient) -> None:
+    """Test dashboard route and verification of security headers."""
+    resp = client.get("/dashboard")
+    assert resp.status_code == 200
+    assert "POWER 3.7" in resp.text
+    assert "01_Projects" in resp.text
+
+    # Check CSP and security headers
+    assert resp.headers.get("X-Frame-Options") == "SAMEORIGIN"
+    assert resp.headers.get("X-Content-Type-Options") == "nosniff"
+    assert "Content-Security-Policy" in resp.headers
+
+
+def test_notes_listing_and_read(client: TestClient) -> None:
+    """Test notes browser and secure note view."""
+    resp_list = client.get("/notes")
+    assert resp_list.status_code == 200
+    assert "Project Alpha" in resp_list.text
+
+    resp_read = client.get("/notes/read?path=01_Projects/Project_Alpha.md")
+    assert resp_read.status_code == 200
+    assert "Project Alpha" in resp_read.text
+    assert 'class="wikilink"' in resp_read.text
+
+
+def test_notes_edit_and_proposal_flow(client: TestClient) -> None:
+    """Test transactional note edit and proposal review."""
+    resp_edit = client.get("/notes/edit?path=01_Projects/Project_Alpha.md")
+    assert resp_edit.status_code == 200
+    assert "Транзакційний редактор" in resp_edit.text
+
+    # Submit proposal
+    resp_prop = client.post(
+        "/notes/propose",
+        data={
+            "path": "01_Projects/Project_Alpha.md",
+            "content": """---
+type: Project
+title: "Alpha Updated"
+description: "Updated project description"
+tags: [alpha, power]
+timestamp: 2026-08-13T12:00:00+00:00
+---
+
+# Updated
+""",
+        },
+    )
+    assert resp_prop.status_code == 200
+    assert "Перевірка пропозиції" in resp_prop.text
+
+
+def test_search_and_graph_routes(client: TestClient) -> None:
+    """Test search and knowledge graph projection endpoints."""
+    # Search
+    resp_search = client.get("/search?q=Alpha&mode=fts")
+    assert resp_search.status_code == 200
+    assert "Resource Beta" in resp_search.text or "Project_Alpha" in resp_search.text
+
+    # Graph UI
+    resp_graph_ui = client.get("/graph")
+    assert resp_graph_ui.status_code == 200
+    assert "Таблиця зв'язків нотаток" in resp_graph_ui.text
+
+    # Graph API
+    resp_graph_data = client.get("/api/graph/data")
+    assert resp_graph_data.status_code == 200
+    data = resp_graph_data.json()
+    assert "nodes" in data
+    assert "links" in data
+    assert len(data["nodes"]) == 2
+
+
+def test_task_manager_cockpit(client: TestClient) -> None:
+    """Test task creation, board listing, detail view, and state transitions."""
+    # List tasks
+    resp_tasks = client.get("/tasks")
+    assert resp_tasks.status_code == 200
+
+    # New task form
+    resp_new = client.get("/tasks/new")
+    assert resp_new.status_code == 200
+
+    # Create task
+    resp_create = client.post(
+        "/tasks/new",
+        data={
+            "task_id": "test_gui_task_01",
+            "title": "GUI Integration Task",
+            "objective": "Verify task creation from GUI",
+            "owner": "tester",
+            "priority": "high",
+            "authority": "propose",
+        },
+        follow_redirects=True,
+    )
+    assert resp_create.status_code == 200
+    assert "GUI Integration Task" in resp_create.text
+
+    # Detail page
+    resp_detail = client.get("/tasks/test_gui_task_01")
+    assert resp_detail.status_code == 200
+    assert "Журнал подій" in resp_detail.text
+
+    # Transition state to ready -> working
+    resp_trans = client.post(
+        "/tasks/test_gui_task_01/transition",
+        data={"new_state": "ready", "expected_revision": 1},
+        follow_redirects=True,
+    )
+    assert resp_trans.status_code == 200
+
+
+def test_decisions_and_receipts(client: TestClient) -> None:
+    """Test decision queue and audit receipts view."""
+    resp_dec = client.get("/decisions")
+    assert resp_dec.status_code == 200
+
+    resp_rec = client.get("/receipts")
+    assert resp_rec.status_code == 200
+
+    resp_fed = client.get("/federation")
+    assert resp_fed.status_code == 200
+    assert "Fleet Registry" in resp_fed.text
