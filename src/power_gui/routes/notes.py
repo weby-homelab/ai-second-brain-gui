@@ -46,6 +46,7 @@ async def list_notes_view(
         context={
             "sources": source_list,
             "category": category,
+            "categories": sorted(list(stats.category_counts.keys())),
             "tag": tag,
             "prefix": prefix,
             "stats": stats,

@@ -348,4 +348,63 @@ def test_theme_switch_and_defaults(client: TestClient) -> None:
     assert resp_switch_dark.cookies.get("power_gui_theme") == "dark"
 
 
+def test_arbitrary_custom_categories_and_vault_paths(tmp_path: Path) -> None:
+    """Ensure GUI seamlessly handles dynamic vault structures and categories."""
+    custom_vault = tmp_path / "custom_user_vault"
+    custom_vault.mkdir()
+    (custom_vault / ".power").mkdir()
+    (custom_vault / "00_Inbox").mkdir()
+    (custom_vault / "06_Daily_Logs").mkdir()
+
+    (custom_vault / "00_Inbox" / "Post1.md").write_text(
+        """---
+type: Resource
+title: "Inbox Item 1"
+description: "Inbox category test"
+tags: [inbox]
+timestamp: 2026-08-14T12:00:00+00:00
+---
+
+# Inbox Note
+""",
+        encoding="utf-8",
+    )
+
+    (custom_vault / "06_Daily_Logs" / "2026-08-14_log.md").write_text(
+        """---
+type: Daily Log
+title: "Daily Log Note"
+description: "Daily log test note"
+tags: [log]
+timestamp: 2026-08-14T12:00:00+00:00
+---
+
+# Daily Log Content
+""",
+        encoding="utf-8",
+    )
+
+    settings = Settings(vault_path=custom_vault, auth_enabled=False)
+    app = create_app(settings)
+    custom_client = TestClient(app)
+
+    # 1. Dashboard renders custom categories dynamically
+    resp_dash = custom_client.get("/dashboard")
+    assert resp_dash.status_code == 200
+    assert "00_Inbox" in resp_dash.text
+    assert "06_Daily_Logs" in resp_dash.text
+
+    # 2. Notes page lists dynamic filter chips for discovered categories
+    resp_notes = custom_client.get("/notes")
+    assert resp_notes.status_code == 200
+    assert "00_Inbox" in resp_notes.text
+    assert "06_Daily_Logs" in resp_notes.text
+
+    # 3. Filtering by category works
+    resp_filtered = custom_client.get("/notes?category=00_Inbox")
+    assert resp_filtered.status_code == 200
+    assert "Inbox Item 1" in resp_filtered.text
+
+
+
 

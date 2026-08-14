@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import secrets
 from functools import lru_cache
 from pathlib import Path
@@ -15,11 +16,25 @@ if TYPE_CHECKING:
     from .clients.power import PowerClient
 
 
+def _default_vault_path() -> Path:
+    """Resolve default vault path across local dev, Docker, and environment variables."""
+    for env_var in ("POWER_GUI_VAULT_PATH", "POWER_VAULT_DIR", "POWER_VAULT_PATH"):
+        val = os.environ.get(env_var)
+        if val:
+            return Path(val).expanduser().resolve()
+    if Path("/brain").exists():
+        return Path("/brain")
+    cwd_brain = Path.cwd() / "brain"
+    if cwd_brain.exists():
+        return cwd_brain
+    return Path.cwd()
+
+
 class Settings(BaseSettings):
     """Fail-closed configuration settings for POWER-GUI application."""
 
     vault_path: Path = Field(
-        default=Path("/brain"),
+        default_factory=_default_vault_path,
         description="Path to the authoritative Markdown knowledge vault",
     )
     host: str = Field(default="127.0.0.1", description="Bind interface")

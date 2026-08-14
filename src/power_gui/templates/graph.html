@@ -81,14 +81,30 @@
                     '03_Resources': '#10b981',
                     '04_Archive': '#64748b',
                     '06_Daily_Logs': '#eab308',
+                    'Projects': '#a855f7',
+                    'Areas': '#3b82f6',
+                    'Resources': '#10b981',
+                    'Archive': '#64748b',
+                    'Inbox': '#06b6d4',
                     'root': '#38bdf8'
+                };
+
+                const getNodeColor = (cat) => {
+                    if (!cat) return '#38bdf8';
+                    if (categoryColors[cat]) return categoryColors[cat];
+                    let hash = 0;
+                    for (let i = 0; i < cat.length; i++) {
+                        hash = cat.charCodeAt(i) + ((hash << 5) - hash);
+                    }
+                    const hue = Math.abs(hash % 360);
+                    return `hsl(${hue}, 75%, 60%)`;
                 };
 
                 const Graph = ForceGraph()(elem)
                     .graphData(data)
                     .nodeId('id')
                     .nodeLabel(node => `${node.label} (${node.category})`)
-                    .nodeColor(node => categoryColors[node.category] || '#38bdf8')
+                    .nodeColor(node => getNodeColor(node.category))
                     .nodeVal(node => Math.max(3, (node.degree || 1) * 2))
                     .linkColor(() => 'rgba(255, 255, 255, 0.2)')
                     .linkWidth(1)

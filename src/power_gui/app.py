@@ -37,7 +37,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         title="POWER-GUI",
         description=f"Secure, accessible local-first web cockpit for P.O.W.E.R {POWER_VERSION}",
-        version="0.5.8",
+        version="0.5.9",
         docs_url=None,
         redoc_url=None,
     )
@@ -116,15 +116,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
 def main() -> None:
     """CLI entry point for running power-gui."""
-    parser = argparse.ArgumentParser(description="POWER-GUI Web Cockpit")
-    parser.add_argument("--host", default="127.0.0.1", help="Host interface to bind")
-    parser.add_argument("--port", type=int, default=8080, help="Port to bind")
-    parser.add_argument("--vault", default="/root/geminicli/brain", help="Path to Markdown vault")
+    parser = argparse.ArgumentParser(description="P.O.W.E.R. GUI Web Cockpit")
+    parser.add_argument("--host", default=None, help="Host interface to bind")
+    parser.add_argument("--port", type=int, default=None, help="Port to bind")
+    parser.add_argument("--vault", default=None, help="Path to Markdown knowledge vault")
     args = parser.parse_args()
 
     import uvicorn
 
-    settings = Settings(host=args.host, port=args.port, vault_path=Path(args.vault))
+    settings_kwargs = {}
+    if args.host is not None:
+        settings_kwargs["host"] = args.host
+    if args.port is not None:
+        settings_kwargs["port"] = args.port
+    if args.vault is not None:
+        settings_kwargs["vault_path"] = Path(args.vault)
+
+    settings = Settings(**settings_kwargs)
     app = create_app(settings)
     uvicorn.run(app, host=settings.host, port=settings.port)
 
