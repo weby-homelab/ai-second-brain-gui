@@ -219,12 +219,12 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
     # 2. Login page itself is accessible
     resp_login_page = auth_client.get("/login")
     assert resp_login_page.status_code == 200
-    assert "Авторизація" in resp_login_page.text
+    assert "Authorization" in resp_login_page.text
 
     # 3. Invalid password fails with 401
     resp_invalid = auth_client.post("/login", data={"password": "wrong-password"})
     assert resp_invalid.status_code == 401
-    assert "Невірний пароль" in resp_invalid.text
+    assert "Invalid access password" in resp_invalid.text
 
     # 4. Correct password redirects to /dashboard with session cookie
     resp_valid = auth_client.post(
@@ -242,4 +242,36 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
     resp_authed = auth_client.get("/dashboard")
     assert resp_authed.status_code == 200
     assert "POWER 3.7" in resp_authed.text
+
+
+def test_language_switch_and_defaults(client: TestClient) -> None:
+    """Test default English UI and switching to Ukrainian via /set-lang."""
+    # 1. Default request without cookies uses English
+    resp_en = client.get("/dashboard")
+    assert resp_en.status_code == 200
+    assert "Dashboard" in resp_en.text
+    assert "Notes" in resp_en.text
+    assert "Tasks" in resp_en.text
+    assert 'lang="en"' in resp_en.text
+
+    # 2. Switch to Ukrainian via /set-lang
+    resp_switch = client.get("/set-lang?lang=uk&next=/dashboard", follow_redirects=False)
+    assert resp_switch.status_code == 303
+    assert resp_switch.headers["location"] == "/dashboard"
+    lang_cookie = resp_switch.cookies.get("power_gui_lang")
+    assert lang_cookie == "uk"
+
+    # 3. Request with Ukrainian cookie uses Ukrainian
+    client.cookies.set("power_gui_lang", "uk")
+    resp_uk = client.get("/dashboard")
+    assert resp_uk.status_code == 200
+    assert "Дашборд" in resp_uk.text
+    assert "Нотатки" in resp_uk.text
+    assert "Завдання" in resp_uk.text
+    assert 'lang="uk"' in resp_uk.text
+
+    # 4. Switch back to English
+    resp_switch_en = client.get("/set-lang?lang=en&next=/dashboard", follow_redirects=False)
+    assert resp_switch_en.cookies.get("power_gui_lang") == "en"
+
 

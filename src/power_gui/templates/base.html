@@ -1,9 +1,10 @@
+{% set current_lang = get_lang(request) if request is defined else 'en' %}
 <!DOCTYPE html>
-<html lang="uk" class="dark">
+<html lang="{{ current_lang }}" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}POWER Cockpit{% endblock %} | Weby Homelab</title>
+    <title>{% block title %}{{ t('dashboard', current_lang) }}{% endblock %} | Weby Homelab</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
         :root {
@@ -49,6 +50,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 16px;
         }
         .logo-group {
             display: flex;
@@ -69,6 +71,7 @@
         nav {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
         nav a {
             color: var(--text-secondary);
@@ -92,9 +95,34 @@
         .header-meta {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             font-size: 0.85rem;
             color: var(--text-secondary);
+        }
+        .lang-switcher {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 2px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+        .lang-btn {
+            text-decoration: none;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            transition: background 0.15s, color 0.15s;
+        }
+        .lang-btn:hover {
+            color: var(--text-primary);
+        }
+        .lang-btn.active {
+            background: #1e3a8a;
+            color: var(--accent);
         }
         .live-clock {
             font-family: monospace;
@@ -165,24 +193,34 @@
     {% block head %}{% endblock %}
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Перейти до вмісту / Skip to content</a>
+    <a href="#main-content" class="skip-link">{{ t('skip_to_content', current_lang) }}</a>
     <header>
         <a href="/dashboard" class="logo-group" aria-label="POWER Cockpit Dashboard">
             <span class="logo-badge">POWER 3.7</span>
-            <strong>Weby Second Brain</strong>
+            <strong>{{ t('app_name', current_lang) }}</strong>
         </a>
         <nav aria-label="Main Navigation">
-            <a href="/dashboard">Дашборд</a>
-            <a href="/notes">Нотатки</a>
-            <a href="/search">Пошук</a>
-            <a href="/graph">Граф</a>
-            <a href="/tasks">Завдання</a>
-            <a href="/decisions">Рішення</a>
-            <a href="/receipts">Чеки</a>
-            <a href="/federation">Федерація</a>
+            <a href="/dashboard">{{ t('dashboard', current_lang) }}</a>
+            <a href="/notes">{{ t('notes', current_lang) }}</a>
+            <a href="/search">{{ t('search', current_lang) }}</a>
+            <a href="/graph">{{ t('graph', current_lang) }}</a>
+            <a href="/tasks">{{ t('tasks', current_lang) }}</a>
+            <a href="/decisions">{{ t('decisions', current_lang) }}</a>
+            <a href="/receipts">{{ t('receipts', current_lang) }}</a>
+            <a href="/federation">{{ t('federation', current_lang) }}</a>
         </nav>
         <div class="header-meta">
+            <div class="lang-switcher" aria-label="Language selection">
+                <a href="/set-lang?lang=en&next={{ request.url.path if request is defined else '/dashboard' }}" class="lang-btn {% if current_lang == 'en' %}active{% endif %}" title="English">ENG</a>
+                <span style="color: var(--border);">|</span>
+                <a href="/set-lang?lang=uk&next={{ request.url.path if request is defined else '/dashboard' }}" class="lang-btn {% if current_lang == 'uk' %}active{% endif %}" title="Українська">UKR</a>
+            </div>
             <span id="liveClock" class="live-clock" aria-label="Current UTC Time">--:--:-- UTC</span>
+            {% if request is defined and request.cookies.get(settings.session_cookie_name if settings is defined else 'power_gui_session') %}
+            <form action="/logout" method="POST" style="display: inline; margin: 0;">
+                <button type="submit" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">{{ t('logout', current_lang) }}</button>
+            </form>
+            {% endif %}
         </div>
     </header>
 
