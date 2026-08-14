@@ -88,6 +88,15 @@ def test_notes_listing_and_read(client: TestClient) -> None:
     resp_read = client.get("/notes/read?path=01_Projects/Project_Alpha.md")
     assert resp_read.status_code == 200
     assert "Project Alpha" in resp_read.text
+
+    # Test wikilink / note stem resolution
+    resp_stem = client.get("/notes/read?path=Project_Alpha")
+    assert resp_stem.status_code == 200
+    assert "Project Alpha" in resp_stem.text
+
+    resp_stem2 = client.get("/notes/read?path=Resource_Beta")
+    assert resp_stem2.status_code == 200
+    assert "Resource Beta" in resp_stem2.text
     assert 'class="wikilink"' in resp_read.text
 
 
