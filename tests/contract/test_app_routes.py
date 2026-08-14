@@ -174,18 +174,24 @@ def test_task_manager_cockpit(client: TestClient) -> None:
     assert resp_create.status_code == 200
     assert "GUI Integration Task" in resp_create.text
 
-    # Detail page
+    # Detail page (default English)
     resp_detail = client.get("/tasks/test_gui_task_01")
     assert resp_detail.status_code == 200
-    assert "Журнал подій" in resp_detail.text
+    assert "Event Journal" in resp_detail.text
 
-    # Transition state to ready -> working
+    # Detail page (Ukrainian)
+    resp_detail_uk = client.get("/tasks/test_gui_task_01?lang=uk")
+    assert resp_detail_uk.status_code == 200
+    assert "Журнал подій" in resp_detail_uk.text
+
+    # Direct transition state: backlog -> working
     resp_trans = client.post(
         "/tasks/test_gui_task_01/transition",
-        data={"new_state": "ready", "expected_revision": 1},
+        data={"new_state": "working", "expected_revision": 1},
         follow_redirects=True,
     )
     assert resp_trans.status_code == 200
+    assert "working" in resp_trans.text
 
 
 def test_decisions_and_receipts(client: TestClient) -> None:

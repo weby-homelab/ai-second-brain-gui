@@ -9,10 +9,11 @@ from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from jinja2 import pass_context
 
 from .auth.session import SessionManager
 from .config import Settings, get_global_settings
-from .i18n import get_request_lang, get_request_theme, translate
+from .i18n import get_request_lang, get_request_theme, jinja_translate
 from .routes import (
     auth_router,
     dashboard_router,
@@ -33,7 +34,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         title="POWER-GUI",
         description="Secure, accessible local-first web cockpit for P.O.W.E.R 3.7",
-        version="0.5.2",
+        version="0.5.3",
         docs_url=None,
         redoc_url=None,
     )
@@ -43,7 +44,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     static_dir = base_dir / "static"
 
     templates = Jinja2Templates(directory=str(templates_dir))
-    templates.env.globals["t"] = translate
+    templates.env.globals["t"] = pass_context(jinja_translate)
     templates.env.globals["get_lang"] = get_request_lang
     templates.env.globals["get_theme"] = get_request_theme
 

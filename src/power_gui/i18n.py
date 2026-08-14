@@ -56,6 +56,32 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "event_journal": "Event Journal",
         "task_title": "Task Title",
         "create_task": "Create Task",
+        "back_to_tasks": "← Back to tasks",
+        "task_objective": "Task Objective",
+        "objective_empty": "No objective specified.",
+        "next_action": "Next Action",
+        "transition_gate": "State Transition Gate",
+        "start_working": "▶️ Start Working",
+        "mark_ready": "📋 Mark Ready",
+        "move_to_backlog": "📥 Move to Backlog",
+        "complete_task": "✅ Complete",
+        "request_input": "❓ Request Input",
+        "block_task": "⏸️ Block Task",
+        "fail_task": "❌ Mark Failed",
+        "resume_task": "▶️ Resume Working",
+        "cancel_task": "🚫 Cancel Task",
+        "terminal_state_msg": "Task is in a terminal immutable state",
+        "parameters": "Parameters",
+        "owner": "Owner",
+        "assignee": "Assignee",
+        "unassigned": "Unassigned",
+        "priority": "Priority",
+        "authority": "Authority",
+        "event_seq": "Seq",
+        "event_type": "Event Type",
+        "event_actor": "Actor",
+        "event_digest": "Digest",
+        "no_events": "No events recorded yet.",
         # Notes
         "note_browser": "Notes Browser",
         "edit_note": "Edit Note",
@@ -130,6 +156,32 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "event_journal": "Журнал подій",
         "task_title": "Назва завдання",
         "create_task": "Створити завдання",
+        "back_to_tasks": "← Назад до завдань",
+        "task_objective": "Мета завдання",
+        "objective_empty": "Ціль не вказана.",
+        "next_action": "Наступна дія",
+        "transition_gate": "Зміна стану (Transition Gate)",
+        "start_working": "▶️ Взяти в роботу",
+        "mark_ready": "📋 Готово до роботи",
+        "move_to_backlog": "📥 Відкласти в беклог",
+        "complete_task": "✅ Завершити",
+        "request_input": "❓ Запитати дані",
+        "block_task": "⏸️ Заблокувати",
+        "fail_task": "❌ Позначити збій",
+        "resume_task": "▶️ Продовжити",
+        "cancel_task": "🚫 Скасувати",
+        "terminal_state_msg": "Завдання у фінальному незмінному стані",
+        "parameters": "Параметри",
+        "owner": "Власник",
+        "assignee": "Виконавець",
+        "unassigned": "Не призначено",
+        "priority": "Пріоритет",
+        "authority": "Повноваження",
+        "event_seq": "Seq",
+        "event_type": "Тип події",
+        "event_actor": "Актор",
+        "event_digest": "Digest",
+        "no_events": "Подій поки що немає.",
         # Notes
         "note_browser": "Перегляд нотаток",
         "edit_note": "Редагувати нотатку",
@@ -217,6 +269,20 @@ def translate(key: str, lang: str = DEFAULT_LANG) -> str:
     return TRANSLATIONS[DEFAULT_LANG].get(key, key)
 
 
+def jinja_translate(context: dict, key: str, lang: str | None = None) -> str:
+    """Jinja2 helper to automatically translate using context request language."""
+    if lang is None:
+        req = context.get("request")
+        if req is not None:
+            if hasattr(req, "state") and hasattr(req.state, "lang"):
+                lang = req.state.lang
+            else:
+                lang = get_request_lang(req)
+        elif "current_lang" in context:
+            lang = context["current_lang"]
+    return translate(key, lang=lang or DEFAULT_LANG)
+
+
 __all__ = [
     "DEFAULT_LANG",
     "DEFAULT_THEME",
@@ -225,6 +291,7 @@ __all__ = [
     "TRANSLATIONS",
     "get_request_lang",
     "get_request_theme",
+    "jinja_translate",
     "normalize_lang",
     "normalize_theme",
     "translate",
