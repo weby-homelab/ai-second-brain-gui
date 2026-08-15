@@ -137,7 +137,7 @@ services:
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=64m
     ports:
-      - "127.0.0.1:8008:8080"
+      - "${POWER_GUI_BIND_ADDRESS:-127.0.0.1}:8008:8080"
     environment:
       - POWER_GUI_HOST=0.0.0.0
       - POWER_GUI_PORT=8080
@@ -163,6 +163,8 @@ docker compose up -d
 
 When running inside an unprivileged Proxmox LXC container (e.g. `CT 200`):
 
+Set `POWER_GUI_BIND_ADDRESS` to the LXC interface reachable by a host-level reverse proxy or Cloudflare Tunnel (for example, `192.168.2.29`). Keep the default loopback value when the proxy shares the same network namespace.
+
 1. **Mount host vault to the container from Proxmox host:**
    ```bash
    pct set 200 -mp0 /path/to/host/vault,mp=/mnt/brain
@@ -173,7 +175,7 @@ When running inside an unprivileged Proxmox LXC container (e.g. `CT 200`):
    docker run -d \
      --name power-gui \
      --restart unless-stopped \
-     -p 127.0.0.1:8008:8080 \
+     -p "${POWER_GUI_BIND_ADDRESS:-127.0.0.1}:8008:8080" \
      --user 10001:10001 \
      --cap-drop ALL \
      --security-opt no-new-privileges:true \
@@ -204,6 +206,7 @@ Configuration is managed entirely via environment variables (with the `POWER_GUI
 | `POWER_GUI_SESSION_COOKIE_NAME` | `str` | `"power_gui_session"` | Session cookie identifier. |
 | `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Session lifetime, bounded to 5 minutes–7 days. |
 | `POWER_GUI_COOKIE_SECURE` | `bool` | `true` | Secure cookies; disable only for explicitly isolated local HTTP development. |
+| `POWER_GUI_BIND_ADDRESS` | `str` | `127.0.0.1` | Host interface for port 8008; set to the LXC LAN address when a host-level reverse proxy needs to reach the service. |
 | `POWER_GUI_COOKIE_SAMESITE` | `str` | `lax` | Cookie SameSite policy (`lax`, `strict`, `none`). |
 
 ---

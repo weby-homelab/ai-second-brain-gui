@@ -132,7 +132,7 @@ services:
     container_name: power-gui
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8008:8080"
+      - "${POWER_GUI_BIND_ADDRESS:-127.0.0.1}:8008:8080"
     environment:
       - POWER_GUI_HOST=0.0.0.0
       - POWER_GUI_PORT=8080
@@ -155,6 +155,8 @@ docker compose up -d
 
 ### 3. Розгортання в Proxmox VE (LXC Контейнер `LXC 200`)
 
+Задайте `POWER_GUI_BIND_ADDRESS` як адресу інтерфейсу LXC, доступну для reverse proxy або Cloudflare Tunnel на хості (наприклад, `192.168.2.29`). Якщо proxy працює в тому самому network namespace, залишайте безпечне значення loopback за замовчуванням.
+
 При розгортанні всередині непрівілейованого контейнера Proxmox LXC (наприклад, `CT 200`):
 
 1. **Прокидання ваулту з хоста Proxmox у контейнер:**
@@ -167,7 +169,7 @@ docker compose up -d
    docker run -d \
      --name power-gui \
      --restart unless-stopped \
-     -p 127.0.0.1:8008:8080 \
+     -p "${POWER_GUI_BIND_ADDRESS:-127.0.0.1}:8008:8080" \
      --user 10001:10001 \
      --cap-drop ALL \
      --security-opt no-new-privileges:true \
@@ -198,6 +200,7 @@ docker compose up -d
 | `POWER_GUI_SESSION_COOKIE_NAME` | `str` | `"power_gui_session"` | Назва сесійної cookie. |
 | `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Тривалість сесії; дозволено від 5 хвилин до 7 днів. |
 | `POWER_GUI_COOKIE_SECURE` | `bool` | `true` | Secure cookies; вимикайте лише для ізольованої локальної HTTP-розробки. |
+| `POWER_GUI_BIND_ADDRESS` | `str` | `127.0.0.1` | Інтерфейс хоста для порту 8008; для reverse proxy на хості задайте LAN-адресу LXC. |
 | `POWER_GUI_COOKIE_SAMESITE` | `str` | `lax` | Політика SameSite для кукі (`lax`, `strict`, `none`). |
 
 ---
