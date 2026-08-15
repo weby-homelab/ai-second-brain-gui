@@ -17,7 +17,7 @@ services:
       - /tmp:rw,noexec,nosuid,size=512m
       - /home/appuser:rw,noexec,nosuid,size=128m
     ports:
-      - "127.0.0.1:8008:8080"
+      - "${POWER_GUI_BIND_ADDRESS:-127.0.0.1}:8008:8080"
     mem_limit: 1g
     cpus: 1.5
     pids_limit: 256
