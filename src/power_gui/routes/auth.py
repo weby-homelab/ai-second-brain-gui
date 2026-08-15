@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from ..auth.csrf import get_csrf_token, verify_csrf_token
+from ..auth.csrf import get_csrf_token, validate_csrf, verify_csrf_token
 from ..auth.password import is_auth_configured, verify_password
 from ..auth.rate_limiter import global_login_rate_limiter
 from ..auth.session import SessionManager
@@ -39,16 +39,6 @@ async def login_view(
         },
     )
 
-    new_csrf = getattr(request.state, "csrf_cookie_val", None)
-    if new_csrf and not request.cookies.get(settings.csrf_cookie_name):
-        response.set_cookie(
-            key=settings.csrf_cookie_name,
-            value=new_csrf,
-            httponly=True,
-            samesite=settings.cookie_samesite,  # type: ignore[arg-type]
-            secure=settings.cookie_secure,
-            max_age=86400,
-        )
     return response
 
 
@@ -143,7 +133,7 @@ async def login_action(
         httponly=True,
         samesite=settings.cookie_samesite,  # type: ignore[arg-type]
         secure=settings.cookie_secure,
-        max_age=86400,
+        max_age=settings.session_max_age_seconds,
     )
     return response
 
@@ -186,7 +176,7 @@ async def set_theme(
     return response
 
 
-@router.post("/logout")
+@router.post("/logout", dependencies=[Depends(validate_csrf)])
 async def logout_action(
     request: Request,
     settings: Settings = Depends(get_settings),
@@ -195,4 +185,3 @@ async def logout_action(
     response = RedirectResponse(url="/login", status_code=303)
     response.delete_cookie(key=settings.session_cookie_name)
     return response
-

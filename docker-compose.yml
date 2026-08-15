@@ -1,11 +1,12 @@
 services:
   power-gui:
-    image: webyhomelab/power-gui:latest
+    image: webyhomelab/power-gui:0.7.0
     build:
       context: .
       dockerfile: Dockerfile
     container_name: power-gui
     restart: unless-stopped
+    init: true
     user: "10001:10001"
     security_opt:
       - no-new-privileges:true
@@ -16,13 +17,23 @@ services:
       - /tmp:rw,noexec,nosuid,size=512m
       - /home/appuser:rw,noexec,nosuid,size=128m
     ports:
-      - "0.0.0.0:8008:8080"
+      - "127.0.0.1:8008:8080"
+    mem_limit: 1g
+    cpus: 1.5
+    pids_limit: 256
+    ulimits:
+      nofile:
+        soft: 4096
+        hard: 4096
     environment:
       - POWER_GUI_HOST=0.0.0.0
       - POWER_GUI_PORT=8080
       - POWER_GUI_VAULT_PATH=/brain
       - POWER_GUI_AUTH_ENABLED=true
-      - POWER_GUI_ADMIN_PASSWORD=${POWER_GUI_ADMIN_PASSWORD:-}
+      - POWER_GUI_COOKIE_SECURE=true
+      - POWER_GUI_SESSION_MAX_AGE_SECONDS=${POWER_GUI_SESSION_MAX_AGE_SECONDS:-86400}
+      - POWER_GUI_ADMIN_PASSWORD=${POWER_GUI_ADMIN_PASSWORD:?POWER_GUI_ADMIN_PASSWORD is required}
+      - POWER_GUI_SECRET_KEY=${POWER_GUI_SECRET_KEY:?POWER_GUI_SECRET_KEY is required}
       - XDG_CACHE_HOME=/data/cache
       - POWER_CACHE_DIR=/data/power_cache
       # Allow FTS fallback when dense/semantic index is not yet built

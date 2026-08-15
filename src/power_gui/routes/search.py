@@ -83,8 +83,8 @@ def _normalize_search_results(data: dict[str, Any]) -> dict[str, Any]:
 @router.get("", response_class=HTMLResponse)
 async def search_view(
     request: Request,
-    q: str = Query("", description="Search query"),
-    mode: str = Query("auto", description="Retrieval mode: auto, fts, semantic, reranked"),
+    q: str = Query("", max_length=512, description="Search query"),
+    mode: str = Query("auto", max_length=16, description="Retrieval mode: auto, fts, semantic, reranked"),
     limit: int = Query(20, ge=1, le=100),
     client: PowerClient = Depends(get_client),
     settings: Settings = Depends(get_settings),

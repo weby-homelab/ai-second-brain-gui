@@ -91,6 +91,8 @@ jobs:
           push: true
           provenance: true
           sbom: true
+          build-args: |
+            POWER_FRAMEWORK_COMMIT=e0a1804858fa58781180d1dfe1eb601629199973
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -104,5 +106,4 @@ jobs:
           repository: webyhomelab/power-gui
           readme-filepath: ./README.md
           short-description: "AI-native web cockpit & decision center for Obsidian Second Brain (P.O.W.E.R)"
-
 

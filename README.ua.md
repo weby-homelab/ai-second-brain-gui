@@ -108,12 +108,14 @@ docker run -d \
   -p 127.0.0.1:8008:8080 \
   -e POWER_GUI_AUTH_ENABLED=true \
   -e POWER_GUI_ADMIN_PASSWORD="${POWER_GUI_ADMIN_PASSWORD}" \
+  -e POWER_GUI_SECRET_KEY="${POWER_GUI_SECRET_KEY}" \
+  -e POWER_GUI_COOKIE_SECURE=true \
   -v /path/to/your/obsidian/brain:/brain:rw \
-  webyhomelab/power-gui:latest
+  webyhomelab/power-gui:0.7.0
 ```
 
 
-Відкрийте у браузері: `http://<ip-вашого-сервера>:8008` (або адресу вашого зворотного проксі / Cloudflare Tunnel).
+Відкрийте у браузері через reverse proxy/Tailscale/Cloudflare Tunnel. Прямий порт прив'язаний до loopback.
 
 ---
 
@@ -126,11 +128,11 @@ version: '3.8'
 
 services:
   power-gui:
-    image: webyhomelab/power-gui:latest
+    image: webyhomelab/power-gui:0.7.0
     container_name: power-gui
     restart: unless-stopped
     ports:
-      - "8008:8080"
+      - "127.0.0.1:8008:8080"
     environment:
       - POWER_GUI_HOST=0.0.0.0
       - POWER_GUI_PORT=8080
@@ -165,11 +167,17 @@ docker compose up -d
    docker run -d \
      --name power-gui \
      --restart unless-stopped \
-     -p 8008:8080 \
+     -p 127.0.0.1:8008:8080 \
+     --user 10001:10001 \
+     --cap-drop ALL \
+     --security-opt no-new-privileges:true \
+     --read-only \
      -e POWER_GUI_AUTH_ENABLED=true \
      -e POWER_GUI_ADMIN_PASSWORD="ваш-надійний-пароль" \
      -v /mnt/brain:/brain:rw \
-     webyhomelab/power-gui:latest
+     -e POWER_GUI_SECRET_KEY="ваш-випадковий-секретний-ключ" \
+     -e POWER_GUI_COOKIE_SECURE=true \
+     webyhomelab/power-gui:0.7.0
    ```
 
 ---
@@ -186,10 +194,10 @@ docker compose up -d
 | `POWER_GUI_AUTH_ENABLED` | `bool` | `true` | Обов'язкова автентифікація через сесійні кукі. |
 | `POWER_GUI_ADMIN_PASSWORD` | `str` | `""` | Пароль адміністратора (перевірка у константному часі). |
 | `POWER_GUI_ADMIN_PASSWORD_HASH` | `str` | `""` | Опціональний хеш пароля адміністратора (SHA256 / PBKDF2). |
-| `POWER_GUI_SECRET_KEY` | `str` | `"power-secret-key-12345"` | Секретний ключ для підпису сесій та CSRF-токенів. |
+| `POWER_GUI_SECRET_KEY` | `str` | випадковий для кожного процесу | Секретний ключ для підпису сесій та CSRF-токенів; у production задайте постійне значення. |
 | `POWER_GUI_SESSION_COOKIE_NAME` | `str` | `"power_gui_session"` | Назва сесійної cookie. |
-| `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Тривалість сесії в секундах (24 години). |
-| `POWER_GUI_COOKIE_SECURE` | `bool` | `false` | `true` при роботі виключно через HTTPS. |
+| `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Тривалість сесії; дозволено від 5 хвилин до 7 днів. |
+| `POWER_GUI_COOKIE_SECURE` | `bool` | `true` | Secure cookies; вимикайте лише для ізольованої локальної HTTP-розробки. |
 | `POWER_GUI_COOKIE_SAMESITE` | `str` | `lax` | Політика SameSite для кукі (`lax`, `strict`, `none`). |
 
 ---

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
@@ -23,8 +24,8 @@ router = APIRouter(prefix="/tasks")
 @router.get("", response_class=HTMLResponse)
 async def tasks_board_view(
     request: Request,
-    state: str | None = Query(None),
-    owner: str | None = Query(None),
+    state: str | None = Query(None, max_length=32),
+    owner: str | None = Query(None, max_length=64),
     client: PowerClient = Depends(get_client),
     settings: Settings = Depends(get_settings),
 ) -> HTMLResponse:
@@ -75,12 +76,12 @@ async def new_task_view(
 @router.post("/new", dependencies=[Depends(validate_csrf)])
 async def create_task_action(
     request: Request,
-    task_id: str = Form(...),
-    title: str = Form(...),
-    objective: str = Form(""),
-    owner: str = Form("local"),
-    priority: str = Form("normal"),
-    authority: str = Form("read-only"),
+    task_id: str = Form(..., max_length=128),
+    title: str = Form(..., max_length=256),
+    objective: str = Form("", max_length=4096),
+    owner: str = Form("local", max_length=64),
+    priority: str = Form("normal", max_length=16),
+    authority: str = Form("read-only", max_length=16),
     client: PowerClient = Depends(get_client),
 ) -> RedirectResponse:
     """Create a new PowerTask v2."""
@@ -130,10 +131,10 @@ async def task_detail_view(
 async def transition_task_action(
     request: Request,
     task_id: str,
-    new_state: str = Form(...),
+    new_state: str = Form(..., max_length=32),
     expected_revision: int = Form(...),
-    next_action: str | None = Form(None),
-    receipt_id: str | None = Form(None),
+    next_action: str | None = Form(None, max_length=512),
+    receipt_id: str | None = Form(None, max_length=128),
     client: PowerClient = Depends(get_client),
 ) -> RedirectResponse:
 
@@ -154,23 +155,46 @@ async def transition_task_action(
 
 @router.get("/api/events/stream")
 async def sse_task_events_stream(
-    task_id: str | None = Query(None),
+    request: Request,
+    task_id: str | None = Query(None, max_length=128),
     client: PowerClient = Depends(get_client),
+    settings: Settings = Depends(get_settings),
 ) -> StreamingResponse:
     """Server-Sent Events stream for real-time task state and event updates."""
 
+    limiter = getattr(request.app.state, "sse_connections", None)
+    if limiter is None or not limiter.acquire(blocking=False):
+        raise HTTPException(status_code=429, detail="Too many event streams")
+
+    started_at = time.monotonic()
+
     async def event_generator():
         last_seen_seq = 0
-        while True:
-            if task_id:
-                events = client.get_task_events(task_id, since_sequence=last_seen_seq)
-                for ev in events:
-                    last_seen_seq = max(last_seen_seq, ev.sequence)
-                    yield f"event: task_event\ndata: {json.dumps(ev.model_dump())}\n\n"
-            else:
-                tasks = client.list_tasks(limit=10)
-                summary = [{"id": t.task_id, "state": t.state, "revision": t.revision} for t in tasks]
-                yield f"event: tasks_summary\ndata: {json.dumps(summary)}\n\n"
-            await asyncio.sleep(2)
+        try:
+            while time.monotonic() - started_at < settings.sse_max_lifetime_seconds:
+                if await request.is_disconnected():
+                    break
 
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+                if task_id:
+                    events = client.get_task_events(task_id, since_sequence=last_seen_seq)
+                    for ev in events:
+                        last_seen_seq = max(last_seen_seq, ev.sequence)
+                        yield f"event: task_event\ndata: {json.dumps(ev.model_dump())}\n\n"
+                else:
+                    tasks = client.list_tasks(limit=10)
+                    summary = [
+                        {"id": t.task_id, "state": t.state, "revision": t.revision}
+                        for t in tasks
+                    ]
+                    yield f"event: tasks_summary\ndata: {json.dumps(summary)}\n\n"
+
+                yield ": heartbeat\n\n"
+                await asyncio.sleep(2)
+        finally:
+            limiter.release()
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
