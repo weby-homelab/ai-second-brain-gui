@@ -59,9 +59,13 @@ class Settings(BaseSettings):
 
     session_cookie_name: str = "power_gui_session"
     csrf_cookie_name: str = "power_gui_csrf"
-    cookie_secure: bool = False
+    cookie_secure: bool = True
     cookie_samesite: str = "lax"
-    max_upload_bytes: int = 5_000_000
+    session_max_age_seconds: int = Field(default=86400, ge=300, le=604800)
+    max_upload_bytes: int = Field(default=5_000_000, ge=1024, le=50_000_000)
+    sse_max_lifetime_seconds: int = Field(default=3600, ge=60, le=86400)
+    sse_max_connections: int = Field(default=16, ge=1, le=1000)
+    hsts_enabled: bool = True
     read_only_mode: bool = False
     federation_nodes: str = Field(
         default="",
@@ -92,5 +96,4 @@ def get_client(request: Request) -> PowerClient:
 
     settings: Settings = get_settings(request)
     return PowerClient(settings.vault_path)
-
 

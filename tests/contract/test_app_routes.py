@@ -70,6 +70,7 @@ def client(test_vault: Path) -> TestClient:
     settings = Settings(
         vault_path=test_vault,
         auth_enabled=False,
+        cookie_secure=False,
     )
     app = create_app(settings)
     return TestClient(app)
@@ -80,6 +81,7 @@ def test_dashboard_route_and_headers(client: TestClient) -> None:
     resp = client.get("/dashboard")
     assert resp.status_code == 200
     assert "P.O.W.E.R." in resp.text
+    assert "GUI v0.7.0" in resp.text
     assert "3.6.0" in resp.text
     assert "01_Projects" in resp.text
 
@@ -266,6 +268,7 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
         vault_path=test_vault,
         auth_enabled=True,
         admin_password="test-secret-password",
+        cookie_secure=False,
     )
     app = create_app(settings)
     auth_client = TestClient(app)
@@ -414,7 +417,7 @@ timestamp: 2026-08-14T12:00:00+00:00
         encoding="utf-8",
     )
 
-    settings = Settings(vault_path=custom_vault, auth_enabled=False)
+    settings = Settings(vault_path=custom_vault, auth_enabled=False, cookie_secure=False)
     app = create_app(settings)
     custom_client = TestClient(app)
 
@@ -434,7 +437,5 @@ timestamp: 2026-08-14T12:00:00+00:00
     resp_filtered = custom_client.get("/notes?category=00_Inbox")
     assert resp_filtered.status_code == 200
     assert "Inbox Item 1" in resp_filtered.text
-
-
 
 

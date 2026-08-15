@@ -489,7 +489,7 @@
                 <a href="/set-lang?lang=uk&next={{ request.url.path if request is defined else '/dashboard' }}" class="lang-btn {% if current_lang == 'uk' %}active{% endif %}" title="Українська">UKR</a>
             </div>
             {% if is_authed %}
-            <span id="liveClock" class="live-clock" aria-label="Current UTC Time">--:--:-- UTC</span>
+            <span id="liveClock" class="live-clock" aria-label="Current UTC Time" aria-live="polite">--:--:-- UTC</span>
             <form action="/logout" method="POST" style="display: inline; margin: 0;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.8rem; min-height: 34px;">{{ t('logout', current_lang) }}</button>
@@ -569,57 +569,7 @@
         {% endif %}
     </footer>
 
-    <script>
-        // UTC Live Clock
-        function updateUtcClock() {
-            const now = new Date();
-            const utcStr = now.toISOString().substring(11, 19) + ' UTC';
-            const clockEl = document.getElementById('liveClock');
-            if (clockEl) clockEl.textContent = utcStr;
-            const drawerClockEl = document.getElementById('drawerLiveClock');
-            if (drawerClockEl) drawerClockEl.textContent = utcStr;
-        }
-        setInterval(updateUtcClock, 1000);
-        updateUtcClock();
-
-        // Mobile Drawer Controller
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const bottomMenuBtn = document.getElementById('bottomMenuBtn');
-        const drawerCloseBtn = document.getElementById('drawerCloseBtn');
-        const mobileDrawer = document.getElementById('mobileDrawer');
-        const drawerBackdrop = document.getElementById('drawerBackdrop');
-
-        function openDrawer() {
-            if (!mobileDrawer || !drawerBackdrop) return;
-            mobileDrawer.classList.add('active');
-            drawerBackdrop.classList.add('active');
-            mobileDrawer.setAttribute('aria-hidden', 'false');
-            drawerBackdrop.setAttribute('aria-hidden', 'false');
-            if (mobileMenuBtn) mobileMenuBtn.setAttribute('aria-expanded', 'true');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDrawer() {
-            if (!mobileDrawer || !drawerBackdrop) return;
-            mobileDrawer.classList.remove('active');
-            drawerBackdrop.classList.remove('active');
-            mobileDrawer.setAttribute('aria-hidden', 'true');
-            drawerBackdrop.setAttribute('aria-hidden', 'true');
-            if (mobileMenuBtn) mobileMenuBtn.setAttribute('aria-expanded', 'false');
-            document.body.style.overflow = '';
-        }
-
-        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openDrawer);
-        if (bottomMenuBtn) bottomMenuBtn.addEventListener('click', openDrawer);
-        if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', closeDrawer);
-        if (drawerBackdrop) drawerBackdrop.addEventListener('click', closeDrawer);
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && mobileDrawer && mobileDrawer.classList.contains('active')) {
-                closeDrawer();
-            }
-        });
-    </script>
+    <script src="/static/js/app.js" defer></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

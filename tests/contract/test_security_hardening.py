@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import threading
 from pathlib import Path
 
 import pytest
@@ -42,7 +43,9 @@ def test_vault(tmp_path: Path) -> Path:
 
 def test_healthz_unauthenticated_probe(test_vault: Path) -> None:
     """Ensure /healthz is accessible without credentials even when auth is strictly enabled."""
-    settings = Settings(vault_path=test_vault, auth_enabled=True, admin_password="t_pw")
+    settings = Settings(
+        vault_path=test_vault, auth_enabled=True, admin_password="t_pw", cookie_secure=False
+    )
     app = create_app(settings)
     client = TestClient(app)
 
@@ -55,7 +58,13 @@ def test_healthz_unauthenticated_probe(test_vault: Path) -> None:
 
 def test_fail_closed_on_unconfigured_auth(test_vault: Path) -> None:
     """Ensure login attempts fail closed with HTTP 500 when auth is enabled without credentials."""
-    settings = Settings(vault_path=test_vault, auth_enabled=True, admin_password="", admin_password_hash=None)
+    settings = Settings(
+        vault_path=test_vault,
+        auth_enabled=True,
+        admin_password="",
+        admin_password_hash=None,
+        cookie_secure=False,
+    )
     app = create_app(settings)
     client = TestClient(app)
 
@@ -75,7 +84,9 @@ def test_fail_closed_on_unconfigured_auth(test_vault: Path) -> None:
 
 def test_login_rate_limiting_and_lockout(test_vault: Path) -> None:
     """Ensure multiple failed login attempts trigger HTTP 429 lockout."""
-    settings = Settings(vault_path=test_vault, auth_enabled=True, admin_password="good_pw")
+    settings = Settings(
+        vault_path=test_vault, auth_enabled=True, admin_password="good_pw", cookie_secure=False
+    )
     app = create_app(settings)
     client = TestClient(app)
 
@@ -106,6 +117,7 @@ def test_hashed_password_authentication(test_vault: Path) -> None:
         auth_enabled=True,
         admin_password="",
         admin_password_hash=pwd_hash,
+        cookie_secure=False,
     )
     app = create_app(settings)
     client = TestClient(app)
@@ -132,7 +144,7 @@ def test_hashed_password_authentication(test_vault: Path) -> None:
 
 def test_csrf_rejection_on_missing_or_tampered_token(test_vault: Path) -> None:
     """Ensure state-changing POST routes strictly reject missing or forged CSRF tokens."""
-    settings = Settings(vault_path=test_vault, auth_enabled=False)
+    settings = Settings(vault_path=test_vault, auth_enabled=False, cookie_secure=False)
     app = create_app(settings)
     client = TestClient(app)
 
@@ -162,7 +174,7 @@ def test_csrf_rejection_on_missing_or_tampered_token(test_vault: Path) -> None:
 
 def test_csp_header_security(test_vault: Path) -> None:
     """Ensure Content-Security-Policy headers do not contain unsafe-inline for scripts."""
-    settings = Settings(vault_path=test_vault, auth_enabled=False)
+    settings = Settings(vault_path=test_vault, auth_enabled=False, cookie_secure=False)
     app = create_app(settings)
     client = TestClient(app)
 
@@ -173,3 +185,75 @@ def test_csp_header_security(test_vault: Path) -> None:
     assert "script-src 'self' 'unsafe-inline'" not in csp
     assert "frame-ancestors 'self'" in csp
     assert "form-action 'self'" in csp
+    assert resp.headers["Strict-Transport-Security"].startswith("max-age=")
+    assert resp.headers["Permissions-Policy"] == "camera=(), microphone=(), geolocation=()"
+    assert resp.headers["Cache-Control"] == "no-store"
+    assert '/static/js/app.js" defer' in resp.text
+    assert "<script>" not in resp.text
+
+
+def test_secure_cookie_defaults_and_https_login(test_vault: Path) -> None:
+    """Ensure production defaults protect cookies and expose transport headers."""
+    default_settings = Settings(vault_path=test_vault)
+    assert default_settings.cookie_secure is True
+    assert default_settings.session_max_age_seconds == 86400
+
+    settings = Settings(
+        vault_path=test_vault,
+        auth_enabled=True,
+        admin_password="good_pw",
+        cookie_secure=True,
+    )
+    app = create_app(settings)
+    client = TestClient(app, base_url="https://testserver")
+    login_page = client.get("/login")
+    csrf = _extract_csrf(login_page)
+    response = client.post(
+        "/login",
+        data={"password": "good_pw", "csrf_token": csrf},
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    assert "Secure" in response.headers["set-cookie"]
+    assert "HttpOnly" in response.headers["set-cookie"]
+    assert "SameSite=lax" in response.headers["set-cookie"]
+    assert response.headers["Strict-Transport-Security"].startswith("max-age=")
+
+
+def test_logout_requires_csrf_token(test_vault: Path) -> None:
+    """Ensure logout cannot be triggered by a cross-site form without a token."""
+    settings = Settings(vault_path=test_vault, auth_enabled=False, cookie_secure=False)
+    app = create_app(settings)
+    client = TestClient(app)
+    dashboard = client.get("/dashboard")
+    csrf = _extract_csrf(dashboard)
+
+    assert client.post("/logout").status_code == 403
+    assert (
+        client.post("/logout", data={"csrf_token": csrf}, follow_redirects=False).status_code
+        == 303
+    )
+
+
+def test_request_body_and_sse_limits(test_vault: Path) -> None:
+    """Ensure oversized requests and excess event streams fail before expensive work."""
+    settings = Settings(
+        vault_path=test_vault,
+        auth_enabled=False,
+        cookie_secure=False,
+        max_upload_bytes=1024,
+        sse_max_connections=1,
+    )
+    app = create_app(settings)
+    client = TestClient(app)
+
+    oversized = client.post(
+        "/notes/propose",
+        content=b"x" * 1025,
+        headers={"content-type": "application/octet-stream"},
+    )
+    assert oversized.status_code == 413
+
+    app.state.sse_connections = threading.BoundedSemaphore(0)
+    stream = client.get("/tasks/api/events/stream")
+    assert stream.status_code == 429

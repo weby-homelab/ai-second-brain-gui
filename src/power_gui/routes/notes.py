@@ -124,8 +124,8 @@ async def edit_note_view(
 @router.post("/propose", response_class=HTMLResponse, dependencies=[Depends(validate_csrf)])
 async def propose_note_view(
     request: Request,
-    path: str = Form(...),
-    content: str = Form(...),
+    path: str = Form(..., max_length=512),
+    content: str = Form(..., max_length=5_000_000),
     client: PowerClient = Depends(get_client),
     settings: Settings = Depends(get_settings),
 ) -> HTMLResponse:
@@ -152,8 +152,8 @@ async def propose_note_view(
 @router.post("/apply", dependencies=[Depends(validate_csrf)])
 async def apply_note_view(
     request: Request,
-    proposal_id: str = Form(...),
-    rel_path: str = Form(...),
+    proposal_id: str = Form(..., max_length=128),
+    rel_path: str = Form(..., max_length=512),
     approved: bool = Form(True),
     client: PowerClient = Depends(get_client),
 ) -> RedirectResponse:
@@ -164,4 +164,3 @@ async def apply_note_view(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return RedirectResponse(url=f"/notes/read?path={rel_path}", status_code=303)
-

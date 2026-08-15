@@ -1,4 +1,6 @@
-FROM python:3.11.9-slim-bookworm
+FROM python:3.11.9-slim-bookworm@sha256:8fb099199b9f2d70342674bd9dbccd3ed03a258f26bbd1d556822c6dfc60c317
+
+ARG POWER_FRAMEWORK_COMMIT=e0a1804858fa58781180d1dfe1eb601629199973
 
 WORKDIR /app
 
@@ -7,9 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Pin power-framework core with semantic dense embeddings
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir "power-framework[semantic] @ git+https://github.com/weby-homelab/power-framework.git@main"
+# Install the reviewed power-framework revision with semantic dense embeddings.
+RUN pip install --no-cache-dir "power-framework[semantic] @ git+https://github.com/weby-homelab/power-framework.git@${POWER_FRAMEWORK_COMMIT}"
 
 COPY pyproject.toml .
 COPY src/ ./src/

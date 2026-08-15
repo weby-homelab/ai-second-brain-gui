@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import threading
 from pathlib import Path
 
 import power_framework
@@ -12,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jinja2 import pass_context
 
+from . import __version__ as GUI_VERSION
 from .auth.csrf import get_csrf_token
 from .auth.session import SessionManager
 from .config import Settings, get_global_settings
@@ -27,7 +29,6 @@ from .routes import (
     search_router,
     tasks_router,
 )
-from . import __version__ as GUI_VERSION
 
 POWER_VERSION = getattr(power_framework, "__version__", "3.6.0")
 
@@ -59,7 +60,7 @@ def _maybe_set_csrf_cookie(request: Request, response: Response, settings: Setti
             httponly=True,
             samesite=settings.cookie_samesite,  # type: ignore[arg-type]
             secure=settings.cookie_secure,
-            max_age=86400,
+            max_age=settings.session_max_age_seconds,
         )
 
 
@@ -70,7 +71,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         title="POWER-GUI",
         description=f"Secure, accessible local-first web cockpit for P.O.W.E.R {POWER_VERSION}",
-        version="0.6.2",
+        version=GUI_VERSION,
         docs_url=None,
         redoc_url=None,
     )
@@ -90,10 +91,31 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.state.templates = templates
     app.state.settings = app_settings
+    app.state.sse_connections = threading.BoundedSemaphore(app_settings.sse_max_connections)
 
     # Mount static assets
     if static_dir.is_dir():
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+    @app.middleware("http")
+    async def request_size_middleware(request: Request, call_next) -> Response:
+        """Reject oversized requests before form parsing or downstream work."""
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                if int(content_length) > app_settings.max_upload_bytes:
+                    return Response(
+                        content="Request body too large",
+                        status_code=413,
+                        media_type="text/plain",
+                    )
+            except ValueError:
+                return Response(
+                    content="Invalid Content-Length",
+                    status_code=400,
+                    media_type="text/plain",
+                )
+        return await call_next(request)
 
     # Authentication, Language & Theme guard middleware
     @app.middleware("http")
@@ -138,6 +160,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         response.headers["X-Frame-Options"] = "SAMEORIGIN"
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        if app_settings.hsts_enabled:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        if request.url.path != "/static" and not request.url.path.startswith("/static/"):
+            response.headers["Cache-Control"] = "no-store"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self'; "

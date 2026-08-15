@@ -107,8 +107,10 @@ docker run -d \
   -p 127.0.0.1:8008:8080 \
   -e POWER_GUI_AUTH_ENABLED=true \
   -e POWER_GUI_ADMIN_PASSWORD="${POWER_GUI_ADMIN_PASSWORD}" \
+  -e POWER_GUI_SECRET_KEY="${POWER_GUI_SECRET_KEY}" \
+  -e POWER_GUI_COOKIE_SECURE=true \
   -v /path/to/your/obsidian/brain:/brain:rw \
-  webyhomelab/power-gui:latest
+  webyhomelab/power-gui:0.7.0
 ```
 
 
@@ -123,7 +125,7 @@ Create a `docker-compose.yml` file:
 ```yaml
 services:
   power-gui:
-    image: webyhomelab/power-gui:latest
+    image: webyhomelab/power-gui:0.7.0
     container_name: power-gui
     restart: unless-stopped
     user: "10001:10001"
@@ -143,6 +145,7 @@ services:
       - POWER_GUI_AUTH_ENABLED=true
       - POWER_GUI_ADMIN_PASSWORD=${POWER_GUI_ADMIN_PASSWORD}
       - POWER_GUI_SECRET_KEY=${POWER_GUI_SECRET_KEY}
+      - POWER_GUI_COOKIE_SECURE=true
     volumes:
       - /path/to/your/obsidian/brain:/brain:rw
 ```
@@ -170,11 +173,17 @@ When running inside an unprivileged Proxmox LXC container (e.g. `CT 200`):
    docker run -d \
      --name power-gui \
      --restart unless-stopped \
-     -p 8008:8080 \
+     -p 127.0.0.1:8008:8080 \
+     --user 10001:10001 \
+     --cap-drop ALL \
+     --security-opt no-new-privileges:true \
+     --read-only \
      -e POWER_GUI_AUTH_ENABLED=true \
      -e POWER_GUI_ADMIN_PASSWORD="your-strong-password" \
+     -e POWER_GUI_SECRET_KEY="your-random-secret-key" \
+     -e POWER_GUI_COOKIE_SECURE=true \
      -v /mnt/brain:/brain:rw \
-     webyhomelab/power-gui:latest
+     webyhomelab/power-gui:0.7.0
    ```
 
 ---
@@ -191,10 +200,10 @@ Configuration is managed entirely via environment variables (with the `POWER_GUI
 | `POWER_GUI_AUTH_ENABLED` | `bool` | `true` | Enable mandatory session authentication. |
 | `POWER_GUI_ADMIN_PASSWORD` | `str` | `""` | Plain-text admin password (validated in constant-time). |
 | `POWER_GUI_ADMIN_PASSWORD_HASH` | `str` | `""` | Optional SHA256 / PBKDF2 hash of admin password. |
-| `POWER_GUI_SECRET_KEY` | `str` | `"power-secret-key-12345"` | Secret key used for signing session and CSRF tokens. |
+| `POWER_GUI_SECRET_KEY` | `str` | random per process | Secret key used for signing session and CSRF tokens; set a persistent secret in production. |
 | `POWER_GUI_SESSION_COOKIE_NAME` | `str` | `"power_gui_session"` | Session cookie identifier. |
-| `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Session lifetime (default: 24 hours). |
-| `POWER_GUI_COOKIE_SECURE` | `bool` | `false` | Set to `true` when serving over HTTPS. |
+| `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Session lifetime, bounded to 5 minutes–7 days. |
+| `POWER_GUI_COOKIE_SECURE` | `bool` | `true` | Secure cookies; disable only for explicitly isolated local HTTP development. |
 | `POWER_GUI_COOKIE_SAMESITE` | `str` | `lax` | Cookie SameSite policy (`lax`, `strict`, `none`). |
 
 ---
