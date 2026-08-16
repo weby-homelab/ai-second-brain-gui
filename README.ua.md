@@ -9,9 +9,11 @@
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-![P.O.W.E.R-GUI Dashboard](second-brain-portal-UA.png)
-
-![P.O.W.E.R-GUI Knowledge Graph](SB-Graph.gif)
+<p align="center">
+  <video src="POWER-GUI_ua.mp4" width="100%" controls autoplay loop muted playsinline>
+    <a href="POWER-GUI_ua.mp4">Дивитися відео-демонстрацію P.O.W.E.R-GUI</a>
+  </video>
+</p>
 
 **P.O.W.E.R-GUI** — це виробничий, AI-native веб-кокпіт та центр прийняття рішень для вашої персональної бази знань [Obsidian](https://obsidian.md) (Second Brain). Додаток розроблено виключно за стандартом **Docker-First**, він поєднує оператора-людину та автономних ШІ-агентів через екосистему **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
@@ -21,31 +23,82 @@
 
 P.O.W.E.R-GUI реалізує архітектурний патерн **Backend-For-Frontend (BFF)** на базі FastAPI та Pydantic v2 Settings. Додаток взаємодіє з базою знань виключно через канонічний інтерфейс `PowerClient` та `ApplicationService`, що гарантує повну відсутність невалідованих прямих перезаписів файлів на диску.
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                              ОПЕРАТОР                                  │
-│         (Граф знань / Гібридний пошук / Черга завдань та рішень)       │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ HTTP / SSE (Tailscale захист)
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                        P.O.W.E.R-GUI (Docker)                          │
-│     [Дашборд]  [Редактор нотаток]  [Task Manager v2]  [Черга рішень]   │
-│     [Auth Guard] [i18n ENG/UKR]    [Темна/Світла тема] [WCAG 2.2 AA]   │
-└───────────────────────────────────┬────────────────────────────────────┘
+```mermaid
+flowchart TD
+    %% Global Styling & Classes
+    classDef client fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#f8fafc
+    classDef security fill:#312e81,stroke:#818cf8,stroke-width:2px,color:#f8fafc
+    classDef ui fill:#0f766e,stroke:#2dd4bf,stroke-width:2px,color:#f8fafc
+    classDef service fill:#701a75,stroke:#f472b6,stroke-width:2px,color:#f8fafc
+    classDef storage fill:#854d0e,stroke:#facc15,stroke-width:2px,color:#f8fafc
+    classDef vault fill:#14532d,stroke:#4ade80,stroke-width:2px,color:#f8fafc
 
-                                    │ PowerClient Port
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                     P.O.W.E.R Application API v2                       │
-│        • Proposal Gate      • OKF Linter            • Event Ledger     │
-│        • Task Store (flock) • Source Service        • Receipts Engine  │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ Direct / Inode I/O
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                        /brain (Obsidian Vault)                         │
-└────────────────────────────────────────────────────────────────────────┘
+    subgraph CLIENTS ["👤 Інтерфейси Оператора та ШІ-Агентів"]
+        USER["🖥️ Веб-браузер (WCAG 2.2 AA / Темна та Світла теми)"]:::client
+        AGENT["🤖 Автономні ШІ-Агенти (OpenCode / Gemini / FastMCP)"]:::client
+        TS["🔒 Шифрована мережа Tailscale / LAN Proxy (Порт 8008:8080)"]:::client
+    end
+
+    subgraph DOCKER_APP ["🐳 P.O.W.E.R-GUI Контейнер (FastAPI BFF / Non-Root 10001)"]
+        subgraph SEC_GATE ["🛡️ Шлюз Безпеки та Харденінгу"]
+            AUTH["🔑 Session Auth Guard<br/>(power_gui_session)"]:::security
+            CSRF["⚡ HMAC-SHA256 CSRF Guard<br/>(power_gui_csrf)"]:::security
+            CSP["🛑 Суворий CSP & HSTS<br/>(read-only rootfs + tmpfs)"]:::security
+        end
+
+        subgraph BFF_ROUTERS ["🎛️ Модулі та Роути FastAPI BFF"]
+            DASH["📊 Дашборд та Телеметрія<br/>(/)"]:::ui
+            TASKS["📋 Task Manager v2 Канбан<br/>(/tasks • Живий SSE Стрім)"]:::ui
+            PROPOSALS["⚖️ Human Decision Gate<br/>(/decisions • /notes/propose)"]:::ui
+            GRAPH["🌐 Динамічний 2D Граф<br/>(/graph • Мульти-Фільтри)"]:::ui
+            SEARCH["🔍 Гібридний Мультимодальний Пошук<br/>(/search • Auto/FTS/Semantic/Rerank)"]:::ui
+            FED["🛰️ Карта Флоту Федерації<br/>(/federation • Живі Зонди)"]:::ui
+            RECEIPTS["📜 Незмінний Аудиторський Журнал<br/>(/receipts)"]:::ui
+        end
+
+        subgraph IN_CACHE ["💾 Стійкий Том Кешу (/data)"]
+            FTS_DB[("⚡ Індекс SQLite FTS5<br/>(Токенна близькість та стеми)")]:::storage
+            ONNX_MODELS[("🧠 Ембеддінги BGE-M3<br/>(Кеш ONNX Runtime)")]:::storage
+        end
+    end
+
+    subgraph POWER_CORE ["⚙️ P.O.W.E.R Application API v2 (Сервіси Ядра)"]
+        CLIENT["🔌 PowerClient Boundary Port"]:::service
+        APP_SRV["🏛️ ApplicationService"]:::service
+        TASK_SRV["📋 TaskService<br/>(Монотонний лічильник ревізій)"]:::service
+        SRC_SRV["📑 SourceService<br/>(Розпізнавання stem-вікіпосилань)"]:::service
+        PROP_SRV["🛡️ ProposalGate<br/>(OKF Linter та Diff Engine)"]:::service
+        FLOCK["🔒 Суворе Блокування Inode<br/>(mutation.lock / 0o600)"]:::service
+    end
+
+    subgraph OBSIDIAN_VAULT ["🧠 Сейф Знань Obsidian (/brain)"]
+        INBOX["📥 00_Inbox"]:::vault
+        PROJECTS["🚀 01_Projects"]:::vault
+        AREAS["🧭 02_Areas"]:::vault
+        RESOURCES["📚 03_Resources"]:::vault
+        ARCHIVE["📦 04_Archive"]:::vault
+        LOGS["📅 06_Daily_Logs"]:::vault
+        PROTOCOLS["📜 PROTOCOLS"]:::vault
+    end
+
+    %% Зв'язки
+    USER -->|HTTP / SSE| TS
+    AGENT -->|REST API / Proposals| TS
+    TS --> SEC_GATE
+    SEC_GATE --> BFF_ROUTERS
+
+    SEARCH <-->|Індексація та Кеш| IN_CACHE
+    BFF_ROUTERS --> CLIENT
+    CLIENT --> APP_SRV
+
+    APP_SRV --> TASK_SRV
+    APP_SRV --> SRC_SRV
+    APP_SRV --> PROP_SRV
+    APP_SRV --> FLOCK
+
+    FLOCK -->|Атомарний I/O Запис| OBSIDIAN_VAULT
+    SRC_SRV -->|Зчитування Графа та Нотаток| OBSIDIAN_VAULT
+    TASK_SRV -->|Дозапис Подій у Журнал| OBSIDIAN_VAULT
 ```
 
 ---
