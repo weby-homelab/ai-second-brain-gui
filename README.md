@@ -9,9 +9,11 @@
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-![P.O.W.E.R-GUI Dashboard](second-brain-portal-EN.png)
-
-![P.O.W.E.R-GUI Knowledge Graph](SB-Graph.gif)
+<p align="center">
+  <video src="POWER-GUI_ua.mp4" width="100%" controls autoplay loop muted playsinline>
+    <a href="POWER-GUI_ua.mp4">Watch P.O.W.E.R-GUI Video Demo</a>
+  </video>
+</p>
 
 **P.O.W.E.R-GUI** is the production-grade, AI-native web cockpit and decision center for your personal [Obsidian](https://obsidian.md) knowledge base (Second Brain). Designed strictly as a **Docker-First** application, it bridges human operators and autonomous AI agents through the **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
@@ -21,30 +23,82 @@
 
 P.O.W.E.R-GUI adopts the **Backend-For-Frontend (BFF)** pattern built on FastAPI and Pydantic v2 Settings. It communicates exclusively through the canonical `PowerClient` boundary to the P.O.W.E.R `ApplicationService`, guaranteeing zero unvalidated direct writes to your knowledge vault.
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                               OPERATOR                                 │
-│        (Knowledge Graph / Hybrid Search / Task & Decision Queue)       │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ HTTP / SSE (Tailscale Protected)
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                        P.O.W.E.R-GUI (Docker)                          │
-│   [Dashboard]  [Notes Editor]  [Task Manager v2]  [Decision Queue]     │
-│   [Auth Guard] [i18n ENG/UKR]  [Theme Switcher]   [WCAG 2.2 AA]        │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ PowerClient Port
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                     P.O.W.E.R Application API v2                       │
-│        • Proposal Gate      • OKF Metadata Linter   • Event Ledger     │
-│        • Task Store (flock) • Source Service        • Receipts Engine  │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ Direct / Inode I/O
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                         /brain (Obsidian Vault)                        │
-└────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    %% Global Styling & Classes
+    classDef client fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#f8fafc
+    classDef security fill:#312e81,stroke:#818cf8,stroke-width:2px,color:#f8fafc
+    classDef ui fill:#0f766e,stroke:#2dd4bf,stroke-width:2px,color:#f8fafc
+    classDef service fill:#701a75,stroke:#f472b6,stroke-width:2px,color:#f8fafc
+    classDef storage fill:#854d0e,stroke:#facc15,stroke-width:2px,color:#f8fafc
+    classDef vault fill:#14532d,stroke:#4ade80,stroke-width:2px,color:#f8fafc
+
+    subgraph CLIENTS ["👤 Operator & Agent Interfaces"]
+        USER["🖥️ Desktop & Mobile Web<br/>(WCAG 2.2 AA / Dark & Light)"]:::client
+        AGENT["🤖 Autonomous AI Agents<br/>(OpenCode / Gemini / FastMCP)"]:::client
+        TS["🔒 Tailscale Encrypted Mesh / LAN Proxy<br/>(Port 8008:8080)"]:::client
+    end
+
+    subgraph DOCKER_APP ["🐳 P.O.W.E.R-GUI Container (FastAPI BFF / Non-Root 10001)"]
+        subgraph SEC_GATE ["🛡️ Security & Hardening Gateway"]
+            AUTH["🔑 Session Auth Guard<br/>(power_gui_session)"]:::security
+            CSRF["⚡ HMAC-SHA256 CSRF Guard<br/>(power_gui_csrf)"]:::security
+            CSP["🛑 Strict CSP & HSTS<br/>(read-only rootfs + tmpfs)"]:::security
+        end
+
+        subgraph BFF_ROUTERS ["🎛️ FastAPI BFF Modules & Routes"]
+            DASH["📊 Dashboard & Telemetry<br/>(/)"]:::ui
+            TASKS["📋 Task Manager v2 Kanban<br/>(/tasks • SSE Stream)"]:::ui
+            PROPOSALS["⚖️ Human Decision Gate<br/>(/decisions • /notes/propose)"]:::ui
+            GRAPH["🌐 Force-Directed Graph<br/>(/graph • Multi-Filters)"]:::ui
+            SEARCH["🔍 Hybrid Multimodal Search<br/>(/search • Auto/FTS/Semantic/Rerank)"]:::ui
+            FED["🛰️ Fleet Federation Map<br/>(/federation • Live Probes)"]:::ui
+            RECEIPTS["📜 Immutable Audit Ledger<br/>(/receipts)"]:::ui
+        end
+
+        subgraph IN_CACHE ["💾 Persistent Cache Volume (/data)"]
+            FTS_DB[("⚡ SQLite FTS5 Index<br/>(Token Proximity & Stems)")]:::storage
+            ONNX_MODELS[("🧠 BGE-M3 Dense Embeddings<br/>(ONNX Runtime Cache)")]:::storage
+        end
+    end
+
+    subgraph POWER_CORE ["⚙️ P.O.W.E.R Application API v2 (Core Services)"]
+        CLIENT["🔌 PowerClient Boundary Port"]:::service
+        APP_SRV["🏛️ ApplicationService"]:::service
+        TASK_SRV["📋 TaskService<br/>(Revision Monotonic Counter)"]:::service
+        SRC_SRV["📑 SourceService<br/>(Wikilink Stem Resolution)"]:::service
+        PROP_SRV["🛡️ ProposalGate<br/>(OKF Linter & Diff Engine)"]:::service
+        FLOCK["🔒 Strict Inode File Lock<br/>(mutation.lock / 0o600)"]:::service
+    end
+
+    subgraph OBSIDIAN_VAULT ["🧠 Obsidian Second Brain (/brain)"]
+        INBOX["📥 00_Inbox"]:::vault
+        PROJECTS["🚀 01_Projects"]:::vault
+        AREAS["🧭 02_Areas"]:::vault
+        RESOURCES["📚 03_Resources"]:::vault
+        ARCHIVE["📦 04_Archive"]:::vault
+        LOGS["📅 06_Daily_Logs"]:::vault
+        PROTOCOLS["📜 PROTOCOLS"]:::vault
+    end
+
+    %% Connections
+    USER -->|HTTP / SSE| TS
+    AGENT -->|REST API / Proposals| TS
+    TS --> SEC_GATE
+    SEC_GATE --> BFF_ROUTERS
+
+    SEARCH <-->|Index & Query Cache| IN_CACHE
+    BFF_ROUTERS --> CLIENT
+    CLIENT --> APP_SRV
+
+    APP_SRV --> TASK_SRV
+    APP_SRV --> SRC_SRV
+    APP_SRV --> PROP_SRV
+    APP_SRV --> FLOCK
+
+    FLOCK -->|Strict Atomic I/O| OBSIDIAN_VAULT
+    SRC_SRV -->|Read Graph & Content| OBSIDIAN_VAULT
+    TASK_SRV -->|Append Event Log| OBSIDIAN_VAULT
 ```
 
 ---
