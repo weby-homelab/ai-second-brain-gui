@@ -9,11 +9,10 @@
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-<p align="center">
-  <video src="POWER-GUI_ua.mp4" width="100%" controls autoplay loop muted playsinline>
-    <a href="POWER-GUI_ua.mp4">Watch P.O.W.E.R-GUI Video Demo</a>
-  </video>
-</p>
+[![P.O.W.E.R-GUI Video Walkthrough](POWER-GUI_ua.png)](POWER-GUI_ua.mp4)
+
+> 📹 **[▶️ Watch P.O.W.E.R-GUI Video Walkthrough (POWER-GUI_ua.mp4)](POWER-GUI_ua.mp4)**
+
 
 **P.O.W.E.R-GUI** is the production-grade, AI-native web cockpit and decision center for your personal [Obsidian](https://obsidian.md) knowledge base (Second Brain). Designed strictly as a **Docker-First** application, it bridges human operators and autonomous AI agents through the **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
