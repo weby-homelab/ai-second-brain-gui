@@ -9,9 +9,7 @@
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-[![P.O.W.E.R-GUI Відео-демонстрація](POWER-GUI_ua.png)](POWER-GUI_ua.mp4)
-
-> 📹 **[▶️ Дивитися повну відео-демонстрацію P.O.W.E.R-GUI (POWER-GUI_ua.mp4)](POWER-GUI_ua.mp4)**
+![P.O.W.E.R-GUI Демонстрація](POWER-GUI_ua.gif)
 
 
 **P.O.W.E.R-GUI** — це виробничий, AI-native веб-кокпіт та центр прийняття рішень для вашої персональної бази знань [Obsidian](https://obsidian.md) (Second Brain). Додаток розроблено виключно за стандартом **Docker-First**, він поєднує оператора-людину та автономних ШІ-агентів через екосистему **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
