@@ -76,16 +76,22 @@ P.O.W.E.R-GUI adopts the **Backend-For-Frontend (BFF)** pattern built on FastAPI
 - **Obsidian Wikilink & Stem Lookup:** Resolves note references by stem title (e.g., `[[Infrastructure]]`) without requiring explicit folder paths.
 
 ### 5. 🌐 Dynamic 2D Force-Directed Knowledge Graph
-- Visualizes vault topologies and note relations in real time using D3 force layout.
-- Provides global vault views as well as localized 2-depth subtrees for individual notes.
-- **WCAG 2.2 AA Accessibility:** Includes high-contrast matrix fallbacks for screen readers and keyboard navigation.
+- Visualizes vault topologies and note relations in real time using D3 force-directed layout.
+- Provides global full-screen vault views as well as localized 2-depth subtrees for individual notes.
+- **Interactive Multi-Filter Controls:** Real-time note search filter, category toggles (`01_Projects`, `02_Areas`, `03_Resources`, `04_Archive`, `06_Daily_Logs`, `Other`), connection degree slider, and orphan node toggle.
+- **WCAG 2.2 AA Accessibility:** Includes high-contrast matrix table fallbacks for screen readers and keyboard navigation.
 
 ### 6. 🔍 Multi-Modal Hybrid Search
 - Seamlessly query notes across four search backends:
   - `Auto`: Hybrid dense semantic retrieval with full-text fallback.
-  - `FTS`: Lean BM25 full-text search with token proximity matching.
+  - `FTS`: Lean BM25 full-text search with token proximity matching and persistent SQLite FTS cache.
   - `Semantic`: Dense vector embeddings (e.g., `BGE-M3` 1024d).
   - `Reranked`: Cross-encoder scoring for deep contextual relevance.
+- Supports tag (`tag:`) and path prefix (`prefix:`) query filters with auto-pre-warming container entrypoint.
+
+### 7. 🛰️ Fleet Federation Map & Probes
+- Cockpit monitoring for federated home lab fleet nodes (PRXMX-01 Home Core, LXC 200 Docker Host, WS OpenCode AI Agent, HTZNR VPN Exit, PRXMX-02 Backup Host).
+- Real-time HTTP/ping latency probes, health badges, and infrastructure role statuses.
 
 ---
 
@@ -128,6 +134,7 @@ services:
     image: webyhomelab/power-gui:0.7.0
     container_name: power-gui
     restart: unless-stopped
+    init: true
     user: "10001:10001"
     security_opt:
       - no-new-privileges:true
@@ -135,9 +142,17 @@ services:
       - ALL
     read_only: true
     tmpfs:
-      - /tmp:rw,noexec,nosuid,size=64m
+      - /tmp:rw,noexec,nosuid,size=512m
+      - /home/appuser:rw,noexec,nosuid,size=128m
     ports:
       - "${POWER_GUI_BIND_ADDRESS:-127.0.0.1}:8008:8080"
+    mem_limit: 1g
+    cpus: 1.5
+    pids_limit: 256
+    ulimits:
+      nofile:
+        soft: 4096
+        hard: 4096
     environment:
       - POWER_GUI_HOST=0.0.0.0
       - POWER_GUI_PORT=8080
@@ -146,10 +161,18 @@ services:
       - POWER_GUI_ADMIN_PASSWORD=${POWER_GUI_ADMIN_PASSWORD}
       - POWER_GUI_SECRET_KEY=${POWER_GUI_SECRET_KEY}
       - POWER_GUI_COOKIE_SECURE=true
+      - POWER_GUI_SESSION_MAX_AGE_SECONDS=${POWER_GUI_SESSION_MAX_AGE_SECONDS:-86400}
+      - XDG_CACHE_HOME=/data/cache
+      - POWER_CACHE_DIR=/data/power_cache
+      - POWER_ALLOW_DENSE_FALLBACK=1
     volumes:
       - /path/to/your/obsidian/brain:/brain:rw
-```
+      - power_cache:/data
 
+volumes:
+  power_cache:
+    driver: local
+```
 
 Start the service:
 
@@ -161,7 +184,7 @@ docker compose up -d
 
 ### 3. Proxmox VE (LXC Container) Deployment
 
-When running inside an unprivileged Proxmox LXC container (e.g. `CT 200`):
+When running inside an unprivileged Proxmox LXC container (e.g. `LXC 200`):
 
 Set `POWER_GUI_BIND_ADDRESS` to the LXC interface reachable by a host-level reverse proxy or Cloudflare Tunnel (for example, `192.168.2.29`). Keep the default loopback value when the proxy shares the same network namespace.
 
@@ -180,13 +203,54 @@ Set `POWER_GUI_BIND_ADDRESS` to the LXC interface reachable by a host-level reve
      --cap-drop ALL \
      --security-opt no-new-privileges:true \
      --read-only \
+     --tmpfs /tmp:rw,noexec,nosuid,size=512m \
+     --tmpfs /home/appuser:rw,noexec,nosuid,size=128m \
      -e POWER_GUI_AUTH_ENABLED=true \
-     -e POWER_GUI_ADMIN_PASSWORD="your-strong-password" \
-     -e POWER_GUI_SECRET_KEY="your-random-secret-key" \
+     -e POWER_GUI_ADMIN_PASSWORD="<admin-password>" \
+     -e POWER_GUI_SECRET_KEY="<secret-key>" \
      -e POWER_GUI_COOKIE_SECURE=true \
      -v /mnt/brain:/brain:rw \
+     -v power_cache:/data \
      webyhomelab/power-gui:0.7.0
    ```
+
+---
+
+### 4. Native Systemd Service (Non-Docker Alternative)
+
+To run POWER-GUI directly as a managed systemd service:
+
+Create `/etc/systemd/system/power-gui.service`:
+
+```ini
+[Unit]
+Description=P.O.W.E.R. GUI Web Cockpit
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/geminicli/projects/ai-second-brain-gui
+ExecStart=/root/geminicli/projects/ai-second-brain-gui/venv/bin/power-gui --host 127.0.0.1 --port 8008
+Restart=always
+RestartSec=3
+Environment=POWER_GUI_VAULT_PATH=/root/geminicli/brain
+Environment=POWER_GUI_HOST=127.0.0.1
+Environment=POWER_GUI_PORT=8008
+Environment=POWER_GUI_AUTH_ENABLED=true
+Environment=POWER_GUI_ADMIN_PASSWORD="<admin-password>"
+Environment=POWER_GUI_SECRET_KEY="<secret-key>"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start the service:
+
+```bash
+systemctl daemon-reload
+systemctl enable power-gui --now
+```
 
 ---
 
@@ -196,18 +260,23 @@ Configuration is managed entirely via environment variables (with the `POWER_GUI
 
 | Variable | Type | Default | Description |
 | :--- | :---: | :---: | :--- |
-| `POWER_GUI_HOST` | `str` | `0.0.0.0` | IP address for Uvicorn to bind. |
+| `POWER_GUI_HOST` | `str` | `127.0.0.1` (`0.0.0.0` in Docker) | IP address for Uvicorn server to bind. |
 | `POWER_GUI_PORT` | `int` | `8080` | Internal listening port. |
-| `POWER_GUI_VAULT_PATH` | `Path` | `/brain` | Absolute path to mounted Obsidian vault. |
-| `POWER_GUI_AUTH_ENABLED` | `bool` | `true` | Enable mandatory session authentication. |
-| `POWER_GUI_ADMIN_PASSWORD` | `str` | `""` | Plain-text admin password (validated in constant-time). |
-| `POWER_GUI_ADMIN_PASSWORD_HASH` | `str` | `""` | Optional SHA256 / PBKDF2 hash of admin password. |
+| `POWER_GUI_VAULT_PATH` | `Path` | `/brain` | Absolute path to mounted Obsidian knowledge vault. |
+| `POWER_GUI_AUTH_ENABLED` | `bool` | `true` | Enable mandatory session authentication (redirects to `/login`). |
+| `POWER_GUI_ADMIN_PASSWORD` | `str` | `""` | Plain-text administrator password (validated in constant time). |
+| `POWER_GUI_ADMIN_PASSWORD_HASH` | `str` | `None` | Optional PBKDF2 / Argon2id / SHA-256 hash of admin password. |
 | `POWER_GUI_SECRET_KEY` | `str` | random per process | Secret key used for signing session and CSRF tokens; set a persistent secret in production. |
 | `POWER_GUI_SESSION_COOKIE_NAME` | `str` | `"power_gui_session"` | Session cookie identifier. |
-| `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Session lifetime, bounded to 5 minutes–7 days. |
-| `POWER_GUI_COOKIE_SECURE` | `bool` | `true` | Secure cookies; disable only for explicitly isolated local HTTP development. |
-| `POWER_GUI_BIND_ADDRESS` | `str` | `127.0.0.1` | Host interface for port 8008; set to the LXC LAN address when a host-level reverse proxy needs to reach the service. |
-| `POWER_GUI_COOKIE_SAMESITE` | `str` | `lax` | Cookie SameSite policy (`lax`, `strict`, `none`). |
+| `POWER_GUI_CSRF_COOKIE_NAME` | `str` | `"power_gui_csrf"` | CSRF token cookie identifier. |
+| `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Session lifetime in seconds (bounded between 300 and 604800). |
+| `POWER_GUI_COOKIE_SECURE` | `bool` | `true` | Require HTTPS for session and CSRF cookies; disable only for isolated local development. |
+| `POWER_GUI_COOKIE_SAMESITE` | `str` | `"lax"` | Cookie SameSite policy (`lax`, `strict`, `none`). |
+| `POWER_GUI_BIND_ADDRESS` | `str` | `127.0.0.1` | Host bind interface for port 8008 in Docker Compose; set to LXC LAN address for reverse proxy access. |
+| `POWER_GUI_READ_ONLY_MODE` | `bool` | `false` | Enable read-only mode, blocking note editing and task mutations. |
+| `POWER_GUI_MAX_UPLOAD_BYTES` | `int` | `5000000` | Maximum payload and file upload limit in bytes (5 MB). |
+| `POWER_GUI_HSTS_ENABLED` | `bool` | `true` | Enable HTTP Strict Transport Security header in responses. |
+| `POWER_GUI_FEDERATION_NODES` | `str` | `""` | Optional JSON string of custom federated nodes to monitor and probe. |
 
 ---
 
@@ -216,7 +285,7 @@ Configuration is managed entirely via environment variables (with the `POWER_GUI
 Run the test suite and linters locally:
 
 ```bash
-# Run contract and unit test suite (20+ tests)
+# Run contract and unit test suite (35+ tests)
 pytest tests/ -v
 
 # Run code style & security linter
@@ -225,6 +294,32 @@ ruff check src tests
 
 ---
 
+## 🤝 Contributing
+
+Contributions to improve styling, parsing rules, or support for additional Obsidian syntax extensions and P.O.W.E.R. modules are welcome. Feel free to open an Issue or a Pull Request!
+
+---
+
 ## 📄 License
 
 Distributed under the **MIT License**. See [LICENSE](LICENSE) for details.
+
+<!--
+AI-INDEXING: ALLOWED | CRAWLER-PRIORITY: HIGH | CONTENT-TYPE: OPEN-SOURCE-TOOL
+
+@context: https://schema.org
+@type: SoftwareApplication
+name: P.O.W.E.R-GUI
+alternateName: ai-second-brain-gui
+description: Production-grade AI-native web cockpit and decision center for Obsidian Second Brain powered by FastAPI and P.O.W.E.R. Framework
+applicationCategory: WebApplication
+applicationSubCategory: KnowledgeManagement
+operatingSystem: Linux
+softwareVersion: 0.7.0
+keywords: second-brain, obsidian, power-framework, fastapi, web-ui, knowledge-graph, ai-cockpit
+author: Weby Homelab (https://github.com/weby-homelab)
+codeRepository: https://github.com/weby-homelab/ai-second-brain-gui
+downloadUrl: https://github.com/weby-homelab/ai-second-brain-gui/releases
+license: MIT
+isAccessibleForFree: true
+-->

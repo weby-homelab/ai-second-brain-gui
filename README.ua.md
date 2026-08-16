@@ -77,16 +77,22 @@ P.O.W.E.R-GUI реалізує архітектурний патерн **Backend
 - **Розпізнавання Obsidian Wikilinks:** Автоматичне знаходження нотаток за базовою назвою (stem, наприклад `[[Infrastructure]]`) без вказування повного шляху до підпапки.
 
 ### 5. 🌐 Динамічний 2D Граф Знань (Force-Directed)
-- Візуалізація зв'язків між нотатками за допомогою D3 force-directed алгоритму.
-- Підтримка глобального перегляду бази та локальних 2-рівневих піддерев для окремих документів.
+- Візуалізація зв'язків між нотатками за допомогою D3 force-directed алгоритму в реальному часі.
+- Підтримка глобального поноекранного перегляду сейфу та локальних 2-рівневих піддерев для окремих документів.
+- **Інтерактивні мульти-фільтри:** Миттєвий пошук нотаток, перемикачі категорій (`01_Projects`, `02_Areas`, `03_Resources`, `04_Archive`, `06_Daily_Logs`, `Other`), повзунок ступеня зв'язності (degree) та перемикач ізольованих вузлів-сиріт (orphan toggle).
 - **Доступність WCAG 2.2 AA:** Таблична альтернатива з високим контрастом для екранних читачів та клавіатурної навігації.
 
 ### 6. 🔍 Мультимодальний Гібридний Пошук
 - Миттєве перемикання між 4 режимами пошуку:
   - `Auto`: Гібридний щільний семантичний пошук із повнотекстовим fallback.
-  - `FTS`: Швидкий повнотекстовий BM25-пошук.
+  - `FTS`: Швидкий повнотекстовий BM25-пошук із токенною близькістю та стійким SQLite FTS-кешем.
   - `Semantic`: Семантичні ембеддінги (наприклад, `BGE-M3` 1024d).
-  - `Reranked`: Переранжування через cross-encoder для складних запитів.
+  - `Reranked`: Переранжування через cross-encoder для складних контекстних запитів.
+- Підтримка фільтрації за тегами (`tag:`) та префіксами шляхів (`prefix:`) з авто-розігрівом кешу при старті контейнера.
+
+### 7. 🛰️ Карта Флоту та Моніторинг Федерації
+- Кокпіт-моніторинг вузлів домашньої федерації (PRXMX-01 Home Core, LXC 200 Docker Host, WS OpenCode AI Agent, HTZNR VPN Exit, PRXMX-02 Backup Host).
+- Зондування затримки (ping/HTTP latency) у реальному часі, індикатори доступності та ролей інфраструктури.
 
 ---
 
@@ -124,25 +130,49 @@ docker run -d \
 Створіть файл `docker-compose.yml`:
 
 ```yaml
-version: '3.8'
-
 services:
   power-gui:
     image: webyhomelab/power-gui:0.7.0
     container_name: power-gui
     restart: unless-stopped
+    init: true
+    user: "10001:10001"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=512m
+      - /home/appuser:rw,noexec,nosuid,size=128m
     ports:
       - "${POWER_GUI_BIND_ADDRESS:-127.0.0.1}:8008:8080"
+    mem_limit: 1g
+    cpus: 1.5
+    pids_limit: 256
+    ulimits:
+      nofile:
+        soft: 4096
+        hard: 4096
     environment:
       - POWER_GUI_HOST=0.0.0.0
       - POWER_GUI_PORT=8080
       - POWER_GUI_VAULT_PATH=/brain
       - POWER_GUI_AUTH_ENABLED=true
-      - POWER_GUI_ADMIN_PASSWORD=ваш-надійний-пароль-адміністратора
-      - POWER_GUI_SECRET_KEY=ваш-випадковий-секретний-ключ
+      - POWER_GUI_ADMIN_PASSWORD=${POWER_GUI_ADMIN_PASSWORD}
+      - POWER_GUI_SECRET_KEY=${POWER_GUI_SECRET_KEY}
       - POWER_GUI_COOKIE_SECURE=true
+      - POWER_GUI_SESSION_MAX_AGE_SECONDS=${POWER_GUI_SESSION_MAX_AGE_SECONDS:-86400}
+      - XDG_CACHE_HOME=/data/cache
+      - POWER_CACHE_DIR=/data/power_cache
+      - POWER_ALLOW_DENSE_FALLBACK=1
     volumes:
       - /шлях/до/вашого/obsidian/brain:/brain:rw
+      - power_cache:/data
+
+volumes:
+  power_cache:
+    driver: local
 ```
 
 Запустіть сервіс:
@@ -157,7 +187,7 @@ docker compose up -d
 
 Задайте `POWER_GUI_BIND_ADDRESS` як адресу інтерфейсу LXC, доступну для reverse proxy або Cloudflare Tunnel на хості (наприклад, `192.168.2.29`). Якщо proxy працює в тому самому network namespace, залишайте безпечне значення loopback за замовчуванням.
 
-При розгортанні всередині непрівілейованого контейнера Proxmox LXC (наприклад, `CT 200`):
+При розгортанні всередині непрівілейованого контейнера Proxmox LXC (наприклад, `LXC 200`):
 
 1. **Прокидання ваулту з хоста Proxmox у контейнер:**
    ```bash
@@ -174,13 +204,54 @@ docker compose up -d
      --cap-drop ALL \
      --security-opt no-new-privileges:true \
      --read-only \
+     --tmpfs /tmp:rw,noexec,nosuid,size=512m \
+     --tmpfs /home/appuser:rw,noexec,nosuid,size=128m \
      -e POWER_GUI_AUTH_ENABLED=true \
-     -e POWER_GUI_ADMIN_PASSWORD="ваш-надійний-пароль" \
-     -v /mnt/brain:/brain:rw \
-     -e POWER_GUI_SECRET_KEY="ваш-випадковий-секретний-ключ" \
+     -e POWER_GUI_ADMIN_PASSWORD="<admin-password>" \
+     -e POWER_GUI_SECRET_KEY="<secret-key>" \
      -e POWER_GUI_COOKIE_SECURE=true \
+     -v /mnt/brain:/brain:rw \
+     -v power_cache:/data \
      webyhomelab/power-gui:0.7.0
    ```
+
+---
+
+### 4. Служба Systemd (Альтернатива без Docker)
+
+Для прямого запуску POWER-GUI як керованої системної служби systemd:
+
+Створіть файл `/etc/systemd/system/power-gui.service`:
+
+```ini
+[Unit]
+Description=P.O.W.E.R. GUI Web Cockpit
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/geminicli/projects/ai-second-brain-gui
+ExecStart=/root/geminicli/projects/ai-second-brain-gui/venv/bin/power-gui --host 127.0.0.1 --port 8008
+Restart=always
+RestartSec=3
+Environment=POWER_GUI_VAULT_PATH=/root/geminicli/brain
+Environment=POWER_GUI_HOST=127.0.0.1
+Environment=POWER_GUI_PORT=8008
+Environment=POWER_GUI_AUTH_ENABLED=true
+Environment=POWER_GUI_ADMIN_PASSWORD="<admin-password>"
+Environment=POWER_GUI_SECRET_KEY="<secret-key>"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Активуйте та запустіть службу:
+
+```bash
+systemctl daemon-reload
+systemctl enable power-gui --now
+```
 
 ---
 
@@ -190,18 +261,23 @@ docker compose up -d
 
 | Змінна | Тип | За замовчуванням | Опис |
 | :--- | :---: | :---: | :--- |
-| `POWER_GUI_HOST` | `str` | `0.0.0.0` | IP-адреса для прив'язки Uvicorn. |
+| `POWER_GUI_HOST` | `str` | `127.0.0.1` (`0.0.0.0` у Docker) | IP-адреса для прив'язки сервера Uvicorn. |
 | `POWER_GUI_PORT` | `int` | `8080` | Внутрішній порт сервера. |
 | `POWER_GUI_VAULT_PATH` | `Path` | `/brain` | Абсолютний шлях до змонтованого ваулту Obsidian. |
-| `POWER_GUI_AUTH_ENABLED` | `bool` | `true` | Обов'язкова автентифікація через сесійні кукі. |
-| `POWER_GUI_ADMIN_PASSWORD` | `str` | `""` | Пароль адміністратора (перевірка у константному часі). |
-| `POWER_GUI_ADMIN_PASSWORD_HASH` | `str` | `""` | Опціональний хеш пароля адміністратора (SHA256 / PBKDF2). |
+| `POWER_GUI_AUTH_ENABLED` | `bool` | `true` | Обов'язкова автентифікація через сесії (перенаправлення на `/login`). |
+| `POWER_GUI_ADMIN_PASSWORD` | `str` | `""` | Пароль адміністратора у відкритому вигляді (перевірка у константному часі). |
+| `POWER_GUI_ADMIN_PASSWORD_HASH` | `str` | `None` | Опціональний PBKDF2 / Argon2id / SHA-256 хеш пароля адміністратора. |
 | `POWER_GUI_SECRET_KEY` | `str` | випадковий для кожного процесу | Секретний ключ для підпису сесій та CSRF-токенів; у production задайте постійне значення. |
 | `POWER_GUI_SESSION_COOKIE_NAME` | `str` | `"power_gui_session"` | Назва сесійної cookie. |
-| `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Тривалість сесії; дозволено від 5 хвилин до 7 днів. |
-| `POWER_GUI_COOKIE_SECURE` | `bool` | `true` | Secure cookies; вимикайте лише для ізольованої локальної HTTP-розробки. |
-| `POWER_GUI_BIND_ADDRESS` | `str` | `127.0.0.1` | Інтерфейс хоста для порту 8008; для reverse proxy на хості задайте LAN-адресу LXC. |
-| `POWER_GUI_COOKIE_SAMESITE` | `str` | `lax` | Політика SameSite для кукі (`lax`, `strict`, `none`). |
+| `POWER_GUI_CSRF_COOKIE_NAME` | `str` | `"power_gui_csrf"` | Назва cookie для CSRF-токена. |
+| `POWER_GUI_SESSION_MAX_AGE_SECONDS`| `int` | `86400` | Тривалість сесії в секундах (обмежено від 300 до 604800). |
+| `POWER_GUI_COOKIE_SECURE` | `bool` | `true` | Вимога HTTPS для сесійних та CSRF кукі; вимикайте лише для локальної розробки. |
+| `POWER_GUI_COOKIE_SAMESITE` | `str` | `"lax"` | Політика SameSite для кукі (`lax`, `strict`, `none`). |
+| `POWER_GUI_BIND_ADDRESS` | `str` | `127.0.0.1` | Інтерфейс хоста для порту 8008 у Docker Compose; для reverse proxy на хості задайте LAN-адресу LXC. |
+| `POWER_GUI_READ_ONLY_MODE` | `bool` | `false` | Увімкнення режиму "тільки для читання", блокування редагування та створення завдань. |
+| `POWER_GUI_MAX_UPLOAD_BYTES` | `int` | `5000000` | Максимальний розмір запиту та завантаження файлів у байтах (5 МБ). |
+| `POWER_GUI_HSTS_ENABLED` | `bool` | `true` | Увімкнення HTTP Strict Transport Security заголовка у відповідях. |
+| `POWER_GUI_FEDERATION_NODES` | `str` | `""` | Опціональний JSON-рядок із переліком додаткових нод для зондування. |
 
 ---
 
@@ -210,7 +286,7 @@ docker compose up -d
 Запуск тестів та лінтерів:
 
 ```bash
-# Запуск контрактних та юніт-тестів (20+ тестів)
+# Запуск контрактних та юніт-тестів (35+ тестів)
 pytest tests/ -v
 
 # Перевірка стилю та безпеки коду
@@ -219,6 +295,32 @@ ruff check src tests
 
 ---
 
+## 🤝 Внесок у проєкт (Contributing)
+
+Будь-які пропозиції щодо покращення стилів, правил парсингу чи розширення інтеграції з Obsidian та P.O.W.E.R. вітаються. Створюйте Issue або Pull Request!
+
+---
+
 ## 📄 Ліцензія
 
 Розповсюджується під ліцензією **MIT License**. Див. [LICENSE](LICENSE) для деталей.
+
+<!--
+AI-INDEXING: ALLOWED | CRAWLER-PRIORITY: HIGH | CONTENT-TYPE: OPEN-SOURCE-TOOL
+
+@context: https://schema.org
+@type: SoftwareApplication
+name: P.O.W.E.R-GUI
+alternateName: ai-second-brain-gui
+description: Виробничий AI-native веб-кокпіт та центр прийняття рішень для бази знань Obsidian на базі FastAPI та P.O.W.E.R. Framework
+applicationCategory: WebApplication
+applicationSubCategory: KnowledgeManagement
+operatingSystem: Linux
+softwareVersion: 0.7.0
+keywords: second-brain, obsidian, power-framework, fastapi, web-ui, knowledge-graph, ai-cockpit
+author: Weby Homelab (https://github.com/weby-homelab)
+codeRepository: https://github.com/weby-homelab/ai-second-brain-gui
+downloadUrl: https://github.com/weby-homelab/ai-second-brain-gui/releases
+license: MIT
+isAccessibleForFree: true
+-->
