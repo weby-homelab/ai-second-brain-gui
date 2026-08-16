@@ -8,6 +8,8 @@
 [![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.0-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![A2A Protocol](https://img.shields.io/badge/A2A-Agent_Ready-8B5CF6?style=for-the-badge&logo=openai&logoColor=white)](AGENTS.md)
+
 
 ![P.O.W.E.R-GUI Демонстрація](POWER-GUI_ua.gif)
 
@@ -302,6 +304,19 @@ WantedBy=multi-user.target
 systemctl daemon-reload
 systemctl enable power-gui --now
 ```
+
+---
+
+## 🤖 Інструкція Розгортання для AI-Агентів (A2A Protocol)
+
+Для автономних AI-агентів (Claude, Gemini, Antigravity, OpenCode, Codex, Cursor, AutoGPT, LangChain), що здійснюють установку або програмну інтеграцію з P.O.W.E.R-GUI:
+
+Зверніться до стандартизованого машиночитаного протоколу **[AGENTS.md](AGENTS.md)**:
+- 📇 **Agent Discovery Card:** Метадані середовища, non-root UID `10001`, порти, SSE-стрім та healthcheck.
+- 🚀 **Детерміновані плейбуки розгортання:** Покрокові команди для Docker Compose, Proxmox LXC 200 та Systemd.
+- 🔍 **Автоматичні перевірочні гейти:** Багатокрокова валідація (health probe, витяг сесійних cookie, BFF probe, тестування SSE).
+- 📡 **A2A API Довідник:** Потік пропозицій нотаток, переходи станів завдань, гібридний пошук та телеметрія флоту.
+- 🛡️ **Гарантії безпеки Zero-Error:** Блокування flock, read-only rootfs та чекліст Definition of Done (DoD).
 
 ---
 

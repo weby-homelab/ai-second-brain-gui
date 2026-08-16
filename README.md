@@ -8,6 +8,8 @@
 [![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.0-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![A2A Protocol](https://img.shields.io/badge/A2A-Agent_Ready-8B5CF6?style=for-the-badge&logo=openai&logoColor=white)](AGENTS.md)
+
 
 ![P.O.W.E.R-GUI Walkthrough](POWER-GUI_ua.gif)
 
@@ -302,6 +304,19 @@ Enable and start the service:
 systemctl daemon-reload
 systemctl enable power-gui --now
 ```
+
+---
+
+## 🤖 AI Agent Deployment & A2A Integration Guide
+
+For autonomous AI agents (Claude, Gemini, Antigravity, OpenCode, Codex, Cursor, AutoGPT, LangChain) deploying or programmatically interfacing with P.O.W.E.R-GUI:
+
+Read the standardized machine-actionable **[AGENTS.md](AGENTS.md)** protocol for:
+- 📇 **Agent Discovery Card:** Runtime metadata, non-root UID `10001`, ports, SSE stream, and health endpoints.
+- 🚀 **Deterministic Installation Playbooks:** Step-by-step commands for Docker Compose, Proxmox LXC 200, and Systemd.
+- 🔍 **Automated Validation Gates:** Multi-step verification commands (health probe, cookie extraction, authenticated BFF probe, SSE streaming).
+- 📡 **Agent-to-Agent (A2A) API Reference:** Note proposal workflow, Kanban state transitions, multimodal search, and fleet telemetry.
+- 🛡️ **Zero-Error Safety Invariants:** Concurrency flock control, read-only rootfs, and Definition of Done (DoD) checklist.
 
 ---
 
