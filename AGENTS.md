@@ -1,18 +1,18 @@
-# 🤖 Agent-to-Agent (A2A) Operations & Deployment Protocol
+# 🤖 P.O.W.E.R-GUI — Operations & Deployment Guide for AI Agents
 
-> **Standard:** Agentic AI Foundation (AAIF) Project Guidelines (2026 Specification)  
+> **Scope:** Operations / deployment playbook (not an A2A 1.0 or AAIF conformance claim)  
 > **Target Application:** `ai-second-brain-gui` (P.O.W.E.R-GUI v0.7.1)  
 > **Audience:** Autonomous AI Agents (Claude, Gemini, Antigravity, OpenCode, Codex, Cursor, AutoGPT, LangChain, FastMCP)
 
-This document provides a deterministic, machine-actionable playbook for any AI agent tasked with deploying, configuring, verifying, or programmatically interacting with the **P.O.W.E.R-GUI Web Cockpit**.
+This document provides a deterministic, machine-actionable playbook for any AI agent tasked with deploying, configuring, verifying, or programmatically interacting with the **P.O.W.E.R-GUI Web Cockpit**. Runtime discovery metadata uses **`experimental/custom-discovery`** only.
 
 ---
 
-## 📇 1. Agent Discovery Card (Runtime Metadata)
+## 📇 1. Experimental custom discovery metadata (runtime)
 
 ```json
 {
-  "protocol": "A2A/2026.1",
+  "protocol": "experimental/custom-discovery",
   "name": "power-gui",
   "version": "0.7.1",
   "description": "Production-grade, AI-native web cockpit and decision center for Obsidian Second Brain",
@@ -226,7 +226,7 @@ curl -s -N -b /tmp/cookies.txt --max-time 3 http://127.0.0.1:8008/tasks/api/even
 
 ---
 
-## 📡 4. Agent-to-Agent (A2A) API Interaction Reference
+## 📡 4. HTTP API interaction reference (GUI BFF)
 
 AI agents interacting with P.O.W.E.R-GUI must use the following structured endpoints:
 

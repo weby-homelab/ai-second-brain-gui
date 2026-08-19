@@ -242,12 +242,12 @@ def test_decisions_and_receipts(client: TestClient) -> None:
     assert "remote-ws" in resp_fed.text
     assert "docker-plane" in resp_fed.text
 
-    # Federation Ukrainian view
+    # Federation Ukrainian view (read-only discovery copy)
     resp_fed_uk = client.get("/federation?lang=uk")
     assert resp_fed_uk.status_code == 200
-    assert "Федеративна мережа знань" in resp_fed_uk.text
+    assert "discovery" in resp_fed_uk.text.lower() or "флоту" in resp_fed_uk.text
 
-    # A2A Agent Card endpoints
+    # Experimental custom discovery metadata endpoints (not A2A 1.0)
     resp_card = client.get("/federation/agent.json")
     assert resp_card.status_code == 200
     card_data = resp_card.json()

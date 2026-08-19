@@ -1,4 +1,4 @@
-"""Read-only Federation status, fleet live health probe, and A2A discovery route."""
+"""Read-only fleet probe status and experimental/custom-discovery metadata route."""
 
 from __future__ import annotations
 

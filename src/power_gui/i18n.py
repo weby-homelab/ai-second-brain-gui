@@ -22,7 +22,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tasks": "Tasks",
         "decisions": "Decisions",
         "receipts": "Receipts",
-        "federation": "Federation",
+        "federation": "Discovery",
         "login": "Login",
         "logout": "Logout",
         "authorization": "Authorization",
@@ -122,9 +122,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "decision_queue": "Operator Decision Queue",
         "receipts_ledger": "Receipts & Audit Ledger",
         "fleet_registry": "Fleet Registry",
-        # Federation
-        "federation_title": "Federated Knowledge Network (Read-Only Federation)",
-        "federation_subtitle": "Real-time health probing, multi-node registry, and A2A interoperability across Weby Homelab fleet",
+        # Fleet discovery (read-only probes; not A2A 1.0)
+        "federation_title": "Fleet discovery map (read-only probes)",
+        "federation_subtitle": "Real-time health probing and multi-node registry across the Weby Homelab fleet (experimental/custom-discovery only)",
         "fleet_nodes_registered": "Registered Fleet Nodes",
         "node_id": "Node ID",
         "role_host": "Role / Host",
@@ -133,7 +133,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "trust_authority": "Trust & Authority",
         "a2a_protocol": "Experimental custom discovery",
         "a2a_description": "The node publishes bounded read-only custom discovery metadata. This is not an A2A 1.0.1 conformance claim.",
-        "view_agent_card": "View Agent Card (JSON)",
+        "view_agent_card": "View discovery metadata (JSON)",
         "probe_refresh": "Refresh Status",
     },
     "uk": {
@@ -147,7 +147,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tasks": "Завдання",
         "decisions": "Рішення",
         "receipts": "Чеки",
-        "federation": "Федерація",
+        "federation": "Discovery",
         "login": "Вхід",
         "logout": "Вийти",
         "authorization": "Авторизація",
@@ -247,9 +247,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "decision_queue": "Черга рішень оператора",
         "receipts_ledger": "Журнал аудиторських чеків",
         "fleet_registry": "Реєстр вузлів флоту",
-        # Federation
-        "federation_title": "Федеративна мережа знань (Read-Only Federation)",
-        "federation_subtitle": "Моніторинг доступності в реальному часі, реєстр вузлів флоту та протокол A2A в екосистемі Weby Homelab",
+        # Fleet discovery (read-only probes; not A2A 1.0)
+        "federation_title": "Карта discovery флоту (read-only зонди)",
+        "federation_subtitle": "Моніторинг доступності в реальному часі та реєстр вузлів флоту Weby Homelab (лише experimental/custom-discovery)",
         "fleet_nodes_registered": "Зареєстровані вузли флоту",
         "node_id": "ID вузла",
         "role_host": "Роль / Хост",
@@ -258,7 +258,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "trust_authority": "Рівень довіри",
         "a2a_protocol": "Експериментальне custom discovery",
         "a2a_description": "Вузол публікує обмежені read-only метадані custom discovery. Це не заява про відповідність A2A 1.0.1.",
-        "view_agent_card": "Переглянути Agent Card (JSON)",
+        "view_agent_card": "Переглянути discovery metadata (JSON)",
         "probe_refresh": "Оновити статус",
     },
 }

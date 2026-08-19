@@ -8,7 +8,7 @@
 [![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.3-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![A2A Protocol](https://img.shields.io/badge/A2A-Agent_Ready-8B5CF6?style=for-the-badge&logo=openai&logoColor=white)](AGENTS.md)
+[![Discovery](https://img.shields.io/badge/discovery-experimental%2Fcustom--discovery-8B5CF6?style=for-the-badge)](AGENTS.md)
 
 
 ![P.O.W.E.R-GUI Демонстрація](POWER-GUI_ua.gif)
@@ -51,7 +51,7 @@ flowchart TD
             PROPOSALS["⚖️ Human Decision Gate<br/>(/decisions • /notes/propose)"]:::ui
             GRAPH["🌐 Динамічний 2D Граф<br/>(/graph • Мульти-Фільтри)"]:::ui
             SEARCH["🔍 Гібридний Мультимодальний Пошук<br/>(/search • Auto/FTS/Semantic/Rerank)"]:::ui
-            FED["🛰️ Карта Флоту Федерації<br/>(/federation • Живі Зонди)"]:::ui
+            FED["🛰️ Карта discovery флоту<br/>(/federation • read-only зонди)"]:::ui
             RECEIPTS["📜 Незмінний Аудиторський Журнал<br/>(/receipts)"]:::ui
         end
 
@@ -142,9 +142,10 @@ flowchart TD
   - `Reranked`: Переранжування через cross-encoder для складних контекстних запитів.
 - Підтримка фільтрації за тегами (`tag:`) та префіксами шляхів (`prefix:`) з авто-розігрівом кешу при старті контейнера.
 
-### 7. 🛰️ Карта Флоту та Моніторинг Федерації
-- Кокпіт-моніторинг вузлів домашньої федерації (PRXMX-01 Home Core, LXC 200 Docker Host, WS OpenCode AI Agent, HTZNR VPN Exit, PRXMX-02 Backup Host).
-- Зондування затримки (ping/HTTP latency) у реальному часі, індикатори доступності та ролей інфраструктури.
+### 7. 🛰️ Карта discovery флоту та read-only зонди
+- Моніторинг вузлів homelab-флоту (PRXMX-01 Home Core, LXC 200 Docker Host, WS OpenCode AI Agent, HTZNR VPN Exit, PRXMX-02 Backup Host).
+- Real-time HTTP/ping latency probes та health badges. Це **лише read-only discovery / probing** — не multi-writer federation і **не** заява про відповідність A2A 1.0.
+- Runtime-метадані публікуються як `experimental/custom-discovery` (див. `/federation/agent.json`).
 
 ---
 
@@ -307,16 +308,16 @@ systemctl enable power-gui --now
 
 ---
 
-## 🤖 Інструкція Розгортання для AI-Агентів (A2A Protocol)
+## 🤖 Інструкція розгортання та operations guide для AI-агентів
 
-Для автономних AI-агентів (Claude, Gemini, Antigravity, OpenCode, Codex, Cursor, AutoGPT, LangChain), що здійснюють установку або програмну інтеграцію з P.O.W.E.R-GUI:
+Для автономних AI-агентів (Claude, Gemini, Antigravity, OpenCode, Codex, Cursor, AutoGPT, LangChain), що розгортають або програмно взаємодіють із P.O.W.E.R-GUI:
 
-Зверніться до стандартизованого машиночитаного протоколу **[AGENTS.md](AGENTS.md)**:
-- 📇 **Agent Discovery Card:** Метадані середовища, non-root UID `10001`, порти, SSE-стрім та healthcheck.
-- 🚀 **Детерміновані плейбуки розгортання:** Покрокові команди для Docker Compose, Proxmox LXC 200 та Systemd.
-- 🔍 **Автоматичні перевірочні гейти:** Багатокрокова валідація (health probe, витяг сесійних cookie, BFF probe, тестування SSE).
-- 📡 **A2A API Довідник:** Потік пропозицій нотаток, переходи станів завдань, гібридний пошук та телеметрія флоту.
-- 🛡️ **Гарантії безпеки Zero-Error:** Блокування flock, read-only rootfs та чекліст Definition of Done (DoD).
+Читайте machine-actionable **[AGENTS.md](AGENTS.md)** (operations/deployment guide):
+- 📇 **Experimental custom discovery metadata:** runtime-метадані, non-root UID `10001`, порти, SSE, health (`experimental/custom-discovery` — не A2A 1.0).
+- 🚀 **Детерміновані playbook встановлення:** Docker Compose, Proxmox LXC 200, Systemd.
+- 🔍 **Automated validation gates:** health probe, cookies, authenticated BFF, SSE.
+- 📡 **HTTP API довідник:** proposal workflow, Kanban transitions, hybrid search, fleet probe telemetry.
+- 🛡️ **Zero-error safety invariants:** flock, read-only rootfs, DoD checklist.
 
 ---
 
