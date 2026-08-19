@@ -8,9 +8,12 @@ from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from fastapi import Request
+from fastapi import HTTPException, Request
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from .auth.csrf import verify_csrf_token
+from .auth.session import SessionManager
 
 if TYPE_CHECKING:
     from .clients.power import PowerClient
@@ -52,7 +55,6 @@ class Settings(BaseSettings):
         description="Password for web access",
     )
     admin_password_hash: str | None = Field(
-
         default=None,
         description="Optional password hash for local web access",
     )
@@ -97,3 +99,26 @@ def get_client(request: Request) -> PowerClient:
     settings: Settings = get_settings(request)
     return PowerClient(settings.vault_path)
 
+
+def require_mutation_enabled(request: Request) -> None:
+    """Reject mutation routes when the GUI is configured read-only."""
+    if get_settings(request).read_only_mode:
+        raise HTTPException(status_code=405, detail="POWER-GUI is in read-only mode")
+
+
+async def require_mutation_csrf(request: Request) -> None:
+    """Require the canonical CSRF dependency unless read-only already stopped it."""
+    settings = get_settings(request)
+    session_token = request.cookies.get(settings.session_cookie_name)
+    csrf_cookie = request.cookies.get(settings.csrf_cookie_name)
+    if not session_token or not csrf_cookie:
+        raise HTTPException(status_code=403, detail="CSRF token required")
+    session_id = SessionManager(settings.secret_key).verify_session(session_token)
+    if not session_id:
+        raise HTTPException(status_code=403, detail="Invalid session")
+    form = await request.form()
+    submitted = form.get("csrf_token") or request.headers.get("X-CSRF-Token")
+    if not isinstance(submitted, str) or not verify_csrf_token(
+        settings.secret_key, session_id, submitted
+    ):
+        raise HTTPException(status_code=403, detail="Invalid CSRF token")

@@ -131,8 +131,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "endpoint": "Endpoint",
         "latency": "Latency",
         "trust_authority": "Trust & Authority",
-        "a2a_protocol": "A2A 1.0.1 Interoperability Protocol",
-        "a2a_description": "The node broadcasts a standardized Agent Card (A2A 1.0.1) with bounded capabilities (power.search, power.source.read, power.source.list, power.task.status, power.graph). Direct shell execution or remote write operations without human approval are strictly blocked.",
+        "a2a_protocol": "Experimental custom discovery",
+        "a2a_description": "The node publishes bounded read-only custom discovery metadata. This is not an A2A 1.0.1 conformance claim.",
         "view_agent_card": "View Agent Card (JSON)",
         "probe_refresh": "Refresh Status",
     },
@@ -256,8 +256,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "endpoint": "Ендпоінт",
         "latency": "Затримка",
         "trust_authority": "Рівень довіри",
-        "a2a_protocol": "Протокол взаємодії A2A 1.0.1",
-        "a2a_description": "Вузол транслює стандартизовану картку агента (Agent Card A2A 1.0.1) з обмеженими навичками (power.search, power.source.read, power.source.list, power.task.status, power.graph). Пряме виконання shell або віддалений запис без підтвердження людини суворо заблоковано.",
+        "a2a_protocol": "Експериментальне custom discovery",
+        "a2a_description": "Вузол публікує обмежені read-only метадані custom discovery. Це не заява про відповідність A2A 1.0.1.",
         "view_agent_card": "Переглянути Agent Card (JSON)",
         "probe_refresh": "Оновити статус",
     },
@@ -346,4 +346,3 @@ __all__ = [
     "normalize_theme",
     "translate",
 ]
-

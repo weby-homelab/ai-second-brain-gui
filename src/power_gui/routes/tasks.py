@@ -12,7 +12,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 
 from ..auth.csrf import validate_csrf
 from ..clients.power import PowerClient
-from ..config import Settings, get_client, get_settings
+from ..config import Settings, get_client, get_settings, require_mutation_enabled
 
 if TYPE_CHECKING:
     from fastapi.templating import Jinja2Templates
@@ -73,7 +73,7 @@ async def new_task_view(
     )
 
 
-@router.post("/new", dependencies=[Depends(validate_csrf)])
+@router.post("/new", dependencies=[Depends(validate_csrf), Depends(require_mutation_enabled)])
 async def create_task_action(
     request: Request,
     task_id: str = Form(..., max_length=128),
@@ -127,17 +127,20 @@ async def task_detail_view(
     )
 
 
-@router.post("/{task_id}/transition", dependencies=[Depends(validate_csrf)])
+@router.post(
+    "/{task_id}/transition",
+    dependencies=[Depends(validate_csrf), Depends(require_mutation_enabled)],
+)
 async def transition_task_action(
     request: Request,
     task_id: str,
     new_state: str = Form(..., max_length=32),
     expected_revision: int = Form(...),
     next_action: str | None = Form(None, max_length=512),
-    receipt_id: str | None = Form(None, max_length=128),
+    completion_postcondition: str | None = Form(None, max_length=4096),
+    completion_artifact_refs: list[str] = Form([]),
     client: PowerClient = Depends(get_client),
 ) -> RedirectResponse:
-
     """Advance task state machine."""
     try:
         client.transition_task(
@@ -145,7 +148,8 @@ async def transition_task_action(
             new_state=new_state,
             expected_revision=expected_revision,
             next_action=next_action,
-            receipt_id=receipt_id or (f"rec_{task_id}_{expected_revision}" if new_state == "completed" else None),
+            completion_postcondition=completion_postcondition,
+            completion_artifact_refs=completion_artifact_refs or None,
         )
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -183,8 +187,7 @@ async def sse_task_events_stream(
                 else:
                     tasks = client.list_tasks(limit=10)
                     summary = [
-                        {"id": t.task_id, "state": t.state, "revision": t.revision}
-                        for t in tasks
+                        {"id": t.task_id, "state": t.state, "revision": t.revision} for t in tasks
                     ]
                     yield f"event: tasks_summary\ndata: {json.dumps(summary)}\n\n"
 

@@ -1,0 +1,6 @@
+{
+  "power_core": {"tag": "v3.6.3", "commit": "467ca4f7f52c6c21b2b5a4d35b3e148c8a55b1b0"},
+  "power_gui": {"version": "0.7.1"},
+  "python": ">=3.11",
+  "container_digest": "pending-GitHub-workflow"
+}

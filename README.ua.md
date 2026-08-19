@@ -5,7 +5,7 @@
 [![Docker Image](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/webyhomelab/power-gui)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.0-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
+[![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.3-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![A2A Protocol](https://img.shields.io/badge/A2A-Agent_Ready-8B5CF6?style=for-the-badge&logo=openai&logoColor=white)](AGENTS.md)
@@ -169,7 +169,7 @@ docker run -d \
   -e POWER_GUI_SECRET_KEY="${POWER_GUI_SECRET_KEY}" \
   -e POWER_GUI_COOKIE_SECURE=true \
   -v /path/to/your/obsidian/brain:/brain:rw \
-  webyhomelab/power-gui:0.7.0
+  webyhomelab/power-gui:0.7.1
 ```
 
 
@@ -184,7 +184,7 @@ docker run -d \
 ```yaml
 services:
   power-gui:
-    image: webyhomelab/power-gui:0.7.0
+    image: webyhomelab/power-gui:0.7.1
     container_name: power-gui
     restart: unless-stopped
     init: true
@@ -264,7 +264,7 @@ docker compose up -d
      -e POWER_GUI_COOKIE_SECURE=true \
      -v /mnt/brain:/brain:rw \
      -v power_cache:/data \
-     webyhomelab/power-gui:0.7.0
+     webyhomelab/power-gui:0.7.1
    ```
 
 ---
@@ -381,7 +381,7 @@ description: Виробничий AI-native веб-кокпіт та центр 
 applicationCategory: WebApplication
 applicationSubCategory: KnowledgeManagement
 operatingSystem: Linux
-softwareVersion: 0.7.0
+softwareVersion: 0.7.1
 keywords: second-brain, obsidian, power-framework, fastapi, web-ui, knowledge-graph, ai-cockpit
 author: Weby Homelab (https://github.com/weby-homelab)
 codeRepository: https://github.com/weby-homelab/ai-second-brain-gui

@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
 from ..auth.csrf import validate_csrf
 from ..clients.power import PowerClient
-from ..config import Settings, get_client, get_settings
+from ..config import Settings, get_client, get_settings, require_mutation_enabled
 from ..view_models.markdown_render import render_markdown
 
 if TYPE_CHECKING:
@@ -121,7 +121,11 @@ async def edit_note_view(
     )
 
 
-@router.post("/propose", response_class=HTMLResponse, dependencies=[Depends(validate_csrf)])
+@router.post(
+    "/propose",
+    response_class=HTMLResponse,
+    dependencies=[Depends(validate_csrf), Depends(require_mutation_enabled)],
+)
 async def propose_note_view(
     request: Request,
     path: str = Form(..., max_length=512),
@@ -149,18 +153,21 @@ async def propose_note_view(
     )
 
 
-@router.post("/apply", dependencies=[Depends(validate_csrf)])
+@router.post(
+    "/apply",
+    dependencies=[Depends(validate_csrf), Depends(require_mutation_enabled)],
+)
 async def apply_note_view(
     request: Request,
     proposal_id: str = Form(..., max_length=128),
-    rel_path: str = Form(..., max_length=512),
     approved: bool = Form(True),
     client: PowerClient = Depends(get_client),
 ) -> RedirectResponse:
     """Apply an approved proposal with explicit authority and postcondition check."""
     try:
-        client.apply({"proposal_id": proposal_id, "path": rel_path}, approved=approved)
+        envelope = client.apply(proposal_id, approved=approved)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return RedirectResponse(url=f"/notes/read?path={rel_path}", status_code=303)
+    path = envelope.data.get("path", "") if isinstance(envelope.data, dict) else ""
+    return RedirectResponse(url=f"/notes/read?path={path}", status_code=303)

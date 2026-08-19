@@ -18,8 +18,6 @@ def _extract_csrf(response) -> str:
     return match.group(1) if match else ""
 
 
-
-
 @pytest.fixture
 def test_vault(tmp_path: Path) -> Path:
     """Create a hermetic synthetic vault for GUI route testing."""
@@ -81,8 +79,8 @@ def test_dashboard_route_and_headers(client: TestClient) -> None:
     resp = client.get("/dashboard")
     assert resp.status_code == 200
     assert "P.O.W.E.R." in resp.text
-    assert "GUI v0.7.0" in resp.text
-    assert "3.6.0" in resp.text
+    assert "GUI v0.7.1" in resp.text
+    assert "3.6.3" in resp.text
     assert "01_Projects" in resp.text
 
     # Check CSP and security headers
@@ -157,8 +155,8 @@ def test_search_and_graph_routes(client: TestClient) -> None:
     # Search
     resp_search = client.get("/search?q=Alpha&mode=fts")
     assert resp_search.status_code == 200
-    assert "href=\"/notes/read?path=" in resp_search.text
-    assert "href=\"/notes/read?path=\"" not in resp_search.text
+    assert 'href="/notes/read?path=' in resp_search.text
+    assert 'href="/notes/read?path="' not in resp_search.text
     assert "Project_Alpha" in resp_search.text
 
     # Search with Ukrainian locale
@@ -253,13 +251,13 @@ def test_decisions_and_receipts(client: TestClient) -> None:
     resp_card = client.get("/federation/agent.json")
     assert resp_card.status_code == 200
     card_data = resp_card.json()
-    assert card_data["protocol"] == "A2A"
+    assert card_data["protocol"] == "experimental/custom-discovery"
     assert card_data["node_id"] == "local-core"
     assert "power.search" in card_data["capabilities"]
 
     resp_well_known = client.get("/.well-known/agent.json")
     assert resp_well_known.status_code == 200
-    assert resp_well_known.json()["protocol"] == "A2A"
+    assert resp_well_known.json()["protocol"] == "experimental/custom-discovery"
 
 
 def test_authentication_enforcement_and_login(test_vault: Path) -> None:
@@ -288,7 +286,7 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
     assert 'href="/tasks"' not in resp_login_page.text
     assert "ai-second-brain-gui" not in resp_login_page.text
     assert "Fail-Closed" not in resp_login_page.text
-    assert "3.6.0" not in resp_login_page.text
+    assert "3.6.3" not in resp_login_page.text
     csrf_login = _extract_csrf(resp_login_page)
 
     # 3. Invalid password fails with 401
@@ -315,12 +313,11 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
     resp_authed = auth_client.get("/dashboard")
     assert resp_authed.status_code == 200
     assert "P.O.W.E.R." in resp_authed.text
-    assert "3.6.0" in resp_authed.text
+    assert "3.6.3" in resp_authed.text
     assert "<nav" in resp_authed.text
     assert 'href="/notes"' in resp_authed.text
     assert "ai-second-brain-gui" in resp_authed.text
     assert "Fail-Closed" in resp_authed.text
-
 
 
 def test_language_switch_and_defaults(client: TestClient) -> None:
@@ -437,5 +434,3 @@ timestamp: 2026-08-14T12:00:00+00:00
     resp_filtered = custom_client.get("/notes?category=00_Inbox")
     assert resp_filtered.status_code == 200
     assert "Inbox Item 1" in resp_filtered.text
-
-

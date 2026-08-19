@@ -187,11 +187,38 @@ class PowerClient:
         return self._service.propose(rel_path, content, context=ctx)
 
     def apply(
-        self, proposal: dict[str, str], approved: bool = True, actor: str = "gui"
+        self, proposal_id: str, approved: bool = True, actor: str = "gui"
     ) -> ApplicationEnvelope:
-        """Apply an approved proposal."""
+        """Apply a durable proposal by content-addressed ID only."""
         ctx = RequestContext(actor=actor, authority="apply")
-        return self._service.apply(proposal, approved=approved, context=ctx)
+        if not proposal_id.strip():
+            raise ValueError("proposal_id is required")
+        return self._service.apply_proposal(proposal_id, approved=approved, context=ctx)
+
+    def list_decisions(self, actor: str = "gui") -> list[dict[str, Any]]:
+        """Read canonical DecisionService projections."""
+        ctx = RequestContext(actor=actor, authority="read-only")
+        env = self._service.decision_list(context=ctx)
+        return env.data if isinstance(env.data, list) else []
+
+    def resolve_decision(
+        self,
+        decision_id: str,
+        *,
+        action: str,
+        input_data: dict[str, Any] | None = None,
+        comment: str | None = None,
+        actor: str = "gui",
+    ) -> ApplicationEnvelope:
+        """Resolve a canonical decision through ApplicationService."""
+        ctx = RequestContext(actor=actor, authority="apply")
+        return self._service.decision_resolve(
+            decision_id,
+            action=action,
+            input_data=input_data,
+            comment=comment,
+            context=ctx,
+        )
 
     def get_receipts(self, limit: int = 100, actor: str = "gui") -> list[dict[str, Any]]:
         """Fetch audit receipts."""

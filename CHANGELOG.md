@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.1 — 2026-08-19
+
+### Fixed
+
+- Aligned note apply, DecisionService, completion evidence, read-only mutation guards and POWER 3.6.3 pin.
+- Downgraded unsupported A2A wording to experimental custom discovery.
+
+
 ## 0.7.0 — 2026-08-15
 
 ### Security
