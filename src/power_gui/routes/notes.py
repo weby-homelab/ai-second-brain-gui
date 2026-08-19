@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
 from ..auth.csrf import validate_csrf
+from ..clients.idempotency import key_for
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings, require_mutation_enabled
 from ..view_models.markdown_render import render_markdown
@@ -137,7 +138,11 @@ async def propose_note_view(
     templates: Jinja2Templates = request.app.state.templates
 
     try:
-        proposal_env = client.propose(path, content)
+        proposal_env = client.propose(
+            path,
+            content,
+            idempotency_key=key_for("propose", path=path, content=content),
+        )
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -165,7 +170,11 @@ async def apply_note_view(
 ) -> RedirectResponse:
     """Apply an approved proposal with explicit authority and postcondition check."""
     try:
-        envelope = client.apply(proposal_id, approved=approved)
+        envelope = client.apply(
+            proposal_id,
+            approved=approved,
+            idempotency_key=key_for("apply", proposal_id=proposal_id),
+        )
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

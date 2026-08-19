@@ -128,10 +128,11 @@ class PowerClient:
         priority: str = "normal",
         authority: str = "read-only",
         actor: str = "gui",
+        idempotency_key: str | None = None,
         **kwargs: Any,
     ) -> TaskDTO:
         """Create a new Task v2."""
-        ctx = RequestContext(actor=actor, authority="propose")
+        ctx = RequestContext(actor=actor, authority="propose", idempotency_key=idempotency_key)
         env = self._service.task_create(
             task_id=task_id,
             title=title,
@@ -155,10 +156,11 @@ class PowerClient:
         expected_revision: int | None = None,
         receipt_id: str | None = None,
         next_action: str | None = None,
+        idempotency_key: str | None = None,
         **kwargs: Any,
     ) -> TaskDTO:
         """Transition Task v2 state."""
-        ctx = RequestContext(actor=actor, authority="apply")
+        ctx = RequestContext(actor=actor, authority="apply", idempotency_key=idempotency_key)
         env = self._service.task_transition(
             task_id=task_id,
             new_state=new_state,
@@ -181,16 +183,26 @@ class PowerClient:
             return [TaskEventDTO.model_validate(item) for item in raw_items]
         return []
 
-    def propose(self, rel_path: str, content: str, actor: str = "gui") -> ApplicationEnvelope:
+    def propose(
+        self,
+        rel_path: str,
+        content: str,
+        actor: str = "gui",
+        idempotency_key: str | None = None,
+    ) -> ApplicationEnvelope:
         """Create a proposal for a note modification."""
-        ctx = RequestContext(actor=actor, authority="propose")
+        ctx = RequestContext(actor=actor, authority="propose", idempotency_key=idempotency_key)
         return self._service.propose(rel_path, content, context=ctx)
 
     def apply(
-        self, proposal_id: str, approved: bool = True, actor: str = "gui"
+        self,
+        proposal_id: str,
+        approved: bool = True,
+        actor: str = "gui",
+        idempotency_key: str | None = None,
     ) -> ApplicationEnvelope:
         """Apply a durable proposal by content-addressed ID only."""
-        ctx = RequestContext(actor=actor, authority="apply")
+        ctx = RequestContext(actor=actor, authority="apply", idempotency_key=idempotency_key)
         if not proposal_id.strip():
             raise ValueError("proposal_id is required")
         return self._service.apply_proposal(proposal_id, approved=approved, context=ctx)
@@ -210,9 +222,10 @@ class PowerClient:
         input_data: dict[str, Any] | None = None,
         comment: str | None = None,
         actor: str = "gui",
+        idempotency_key: str | None = None,
     ) -> ApplicationEnvelope:
         """Resolve a canonical decision through ApplicationService."""
-        ctx = RequestContext(actor=actor, authority="apply")
+        ctx = RequestContext(actor=actor, authority="apply", idempotency_key=idempotency_key)
         return self._service.decision_resolve(
             decision_id,
             action=action,
