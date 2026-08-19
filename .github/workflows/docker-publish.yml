@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       image_version:
-        description: "Optional image tag to publish (for example, 0.7.0)"
+         description: "Optional image tag to publish (for example, 0.7.1)"
         required: false
         type: string
 
@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install "git+https://github.com/weby-homelab/power-framework.git@e0a1804858fa58781180d1dfe1eb601629199973"
+           pip install "git+https://github.com/weby-homelab/power-framework.git@467ca4f5f6471eb51a63a5c917e2833c63c66eac"
           pip install -e ".[dev]"
 
 
@@ -98,7 +98,7 @@ jobs:
           provenance: true
           sbom: true
           build-args: |
-            POWER_FRAMEWORK_COMMIT=e0a1804858fa58781180d1dfe1eb601629199973
+             POWER_FRAMEWORK_COMMIT=467ca4f5f6471eb51a63a5c917e2833c63c66eac
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
