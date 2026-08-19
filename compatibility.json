@@ -5,7 +5,7 @@
   },
   "power_gui": {
     "version": "0.7.2",
-    "git_sha": "e551a16b90251994c39adc3c66742772cfe6ca6f",
+    "git_sha": "d81b5375dd0b2b999d661d7fc8018f887a1b1e53",
     "tag": "v0.7.2"
   },
   "python": ">=3.11",

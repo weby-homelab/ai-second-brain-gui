@@ -314,4 +314,6 @@ def test_claims_files_do_not_advertise_a2a_agent_ready() -> None:
     compat = (root / "compatibility.json").read_text(encoding="utf-8")
     assert "467ca4f5f6471eb51a63a5c917e2833c63c66eac" in compat
     assert "467ca4f7f52c6c21b2b5a4d35b3e148c8a55b1b0" not in compat
-    assert "ddcb7ad33805ae067891c8a9c180fc6f54676fadf3030992442432bfed309306" in compat
+    # container_digest must be a real sha256, never the placeholder left by F1
+    assert "pending-GitHub-workflow" not in compat
+    assert __import__("re").search(r"sha256:[0-9a-f]{64}", compat) is not None
