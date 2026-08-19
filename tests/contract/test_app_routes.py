@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from power_gui import __version__
 from power_gui.app import create_app
 from power_gui.config import Settings
 
@@ -79,7 +80,7 @@ def test_dashboard_route_and_headers(client: TestClient) -> None:
     resp = client.get("/dashboard")
     assert resp.status_code == 200
     assert "P.O.W.E.R." in resp.text
-    assert "GUI v0.7.1" in resp.text
+    assert f"GUI v{__version__}" in resp.text
     assert "3.6.3" in resp.text
     assert "01_Projects" in resp.text
 
