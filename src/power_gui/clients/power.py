@@ -199,7 +199,8 @@ class PowerClient:
         """Read canonical DecisionService projections."""
         ctx = RequestContext(actor=actor, authority="read-only")
         env = self._service.decision_list(context=ctx)
-        return env.data if isinstance(env.data, list) else []
+        raw = env.data.get("items", []) if isinstance(env.data, dict) else env.data
+        return raw if isinstance(raw, list) else []
 
     def resolve_decision(
         self,

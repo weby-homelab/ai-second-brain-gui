@@ -8,7 +8,7 @@
 [![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.3-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![A2A Protocol](https://img.shields.io/badge/A2A-Agent_Ready-8B5CF6?style=for-the-badge&logo=openai&logoColor=white)](AGENTS.md)
+[![Discovery](https://img.shields.io/badge/discovery-experimental%2Fcustom--discovery-8B5CF6?style=for-the-badge)](AGENTS.md)
 
 
 ![P.O.W.E.R-GUI Walkthrough](POWER-GUI_ua.gif)
@@ -51,7 +51,7 @@ flowchart TD
             PROPOSALS["⚖️ Human Decision Gate<br/>(/decisions • /notes/propose)"]:::ui
             GRAPH["🌐 Force-Directed Graph<br/>(/graph • Multi-Filters)"]:::ui
             SEARCH["🔍 Hybrid Multimodal Search<br/>(/search • Auto/FTS/Semantic/Rerank)"]:::ui
-            FED["🛰️ Fleet Federation Map<br/>(/federation • Live Probes)"]:::ui
+            FED["🛰️ Fleet discovery map<br/>(/federation • read-only probes)"]:::ui
             RECEIPTS["📜 Immutable Audit Ledger<br/>(/receipts)"]:::ui
         end
 
@@ -142,9 +142,10 @@ flowchart TD
   - `Reranked`: Cross-encoder scoring for deep contextual relevance.
 - Supports tag (`tag:`) and path prefix (`prefix:`) query filters with auto-pre-warming container entrypoint.
 
-### 7. 🛰️ Fleet Federation Map & Probes
-- Cockpit monitoring for federated home lab fleet nodes (PRXMX-01 Home Core, LXC 200 Docker Host, WS OpenCode AI Agent, HTZNR VPN Exit, PRXMX-02 Backup Host).
-- Real-time HTTP/ping latency probes, health badges, and infrastructure role statuses.
+### 7. 🛰️ Fleet discovery map & read-only probes
+- Cockpit monitoring for homelab fleet nodes (PRXMX-01 Home Core, LXC 200 Docker Host, WS OpenCode AI Agent, HTZNR VPN Exit, PRXMX-02 Backup Host).
+- Real-time HTTP/ping latency probes and health badges. This is **read-only discovery / probing only** — not multi-writer federation and **not** an A2A 1.0 conformance claim.
+- Runtime metadata is published as `experimental/custom-discovery` (see `/federation/agent.json`).
 
 ---
 
@@ -307,16 +308,16 @@ systemctl enable power-gui --now
 
 ---
 
-## 🤖 AI Agent Deployment & A2A Integration Guide
+## 🤖 AI agent deployment & operations guide
 
 For autonomous AI agents (Claude, Gemini, Antigravity, OpenCode, Codex, Cursor, AutoGPT, LangChain) deploying or programmatically interfacing with P.O.W.E.R-GUI:
 
-Read the standardized machine-actionable **[AGENTS.md](AGENTS.md)** protocol for:
-- 📇 **Agent Discovery Card:** Runtime metadata, non-root UID `10001`, ports, SSE stream, and health endpoints.
-- 🚀 **Deterministic Installation Playbooks:** Step-by-step commands for Docker Compose, Proxmox LXC 200, and Systemd.
-- 🔍 **Automated Validation Gates:** Multi-step verification commands (health probe, cookie extraction, authenticated BFF probe, SSE streaming).
-- 📡 **Agent-to-Agent (A2A) API Reference:** Note proposal workflow, Kanban state transitions, multimodal search, and fleet telemetry.
-- 🛡️ **Zero-Error Safety Invariants:** Concurrency flock control, read-only rootfs, and Definition of Done (DoD) checklist.
+Read the machine-actionable **[AGENTS.md](AGENTS.md)** operations guide for:
+- 📇 **Experimental custom discovery metadata:** Runtime metadata, non-root UID `10001`, ports, SSE stream, and health endpoints (`experimental/custom-discovery` — not A2A 1.0).
+- 🚀 **Deterministic installation playbooks:** Step-by-step commands for Docker Compose, Proxmox LXC 200, and Systemd.
+- 🔍 **Automated validation gates:** Multi-step verification commands (health probe, cookie extraction, authenticated BFF probe, SSE streaming).
+- 📡 **HTTP API reference:** Note proposal workflow, Kanban state transitions, multimodal search, and fleet probe telemetry.
+- 🛡️ **Zero-error safety invariants:** Concurrency flock control, read-only rootfs, and Definition of Done (DoD) checklist.
 
 ---
 
