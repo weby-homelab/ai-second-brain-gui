@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from ..auth.csrf import validate_csrf
+from ..clients.idempotency import key_for
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings, require_mutation_enabled
 
@@ -55,6 +56,7 @@ async def resolve_decision_action(
             decision_id,
             action=action,
             input_data={"value": input_value} if action == "provide_input" else None,
+            idempotency_key=key_for("resolve", decision_id=decision_id, action=action),
         )
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

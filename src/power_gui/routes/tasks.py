@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 
 from ..auth.csrf import validate_csrf
+from ..clients.idempotency import key_for
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings, require_mutation_enabled
 
@@ -93,6 +94,15 @@ async def create_task_action(
             owner=owner.strip(),
             priority=priority,  # type: ignore[arg-type]
             authority=authority,  # type: ignore[arg-type]
+            idempotency_key=key_for(
+                "create",
+                task_id=task_id.strip(),
+                title=title.strip(),
+                objective=objective.strip(),
+                owner=owner.strip(),
+                priority=priority,
+                authority=authority,
+            ),
         )
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -150,6 +160,13 @@ async def transition_task_action(
             next_action=next_action,
             completion_postcondition=completion_postcondition,
             completion_artifact_refs=completion_artifact_refs or None,
+            idempotency_key=key_for(
+                "transition",
+                task_id=task_id,
+                new_state=new_state,
+                expected_revision=expected_revision,
+                next_action=next_action,
+            ),
         )
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
