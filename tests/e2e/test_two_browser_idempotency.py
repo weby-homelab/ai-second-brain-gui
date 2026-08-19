@@ -11,7 +11,7 @@ LIVE power-gui server and verifies:
        both browsers submit the SAME logical transition (same idempotency key)
        -> exactly one side effect (the task revision stays at 1, not 2)
   3. Read-only gate (optional, skip unless configured):
-       against a server started with POWER_GUI_MUTATIONS_ENABLED=false the same
+       against a server started with POWER_GUI_READ_ONLY_MODE=true the same
        mutation returns 405.
 
 The harness only talks to a live server; it is SKIPPABLE. If POWER_GUI_E2E_URL
@@ -26,6 +26,7 @@ Env:
 
 import os
 import re
+import uuid
 
 import pytest
 import requests
@@ -35,7 +36,8 @@ PASSWORD = os.environ.get("POWER_GUI_E2E_PASSWORD", "testpass")
 READONLY_URL = (os.environ.get("POWER_GUI_E2E_READONLY_URL", "") or "").rstrip("/") or None
 
 TIMEOUT = 30
-TASK_ID = "T_E2E_TWOBROWSER"
+# Unique per-process id so repeated local runs never collide on a persistent vault.
+TASK_ID = f"T_E2E_{uuid.uuid4().hex[:10]}"
 
 
 def _reachable(url: str) -> bool:
@@ -80,7 +82,7 @@ def create_task(session, base, csrf, task_id):
             "objective": "verify idempotency",
             "owner": "local",
             "priority": "normal",
-            "authority": "operator",
+            "authority": "apply",
             "csrf_token": csrf,
         },
         allow_redirects=False,
@@ -95,7 +97,7 @@ def transition(session, base, csrf, task_id, expected_revision):
         data={
             "new_state": "ready",
             "expected_revision": str(expected_revision),
-            "authority": "operator",
+            "authority": "apply",
             "csrf_token": csrf,
         },
         allow_redirects=False,
@@ -143,23 +145,29 @@ def test_two_browser_idempotent_transition():
     login(b, BASE)
     csrf_a = get_csrf(a, BASE)
 
-    # Create the task (revision 0) from browser A.
+    # Create the task from browser A.
     r = create_task(a, BASE, csrf_a, TASK_ID)
     assert r.status_code in (302, 303), f"create returned {r.status_code}: {r.text[:200]}"
 
-    # Browser A transitions ready (rev 0 -> 1).
-    r1 = transition(a, BASE, csrf_a, TASK_ID, 0)
-    assert r1.status_code in (302, 303), f"A transition returned {r1.status_code}"
+    # Read the post-create revision so both browsers issue the SAME logical
+    # transition (identical idempotency key). Whatever the create leaves the
+    # task at, both submit expected_revision == that value.
+    rev0 = revision_of(a, BASE, TASK_ID)
+    assert rev0 is not None, "could not read post-create revision"
+
+    # Browser A transitions ready (rev0 -> rev0+1).
+    r1 = transition(a, BASE, csrf_a, TASK_ID, rev0)
+    assert r1.status_code in (302, 303), f"A transition returned {r1.status_code}: {r1.text[:300]}"
 
     # Browser B submits the SAME logical transition (same idempotency key):
     # it must be idempotent and NOT produce a second side effect.
     csrf_b = get_csrf(b, BASE)
-    r2 = transition(b, BASE, csrf_b, TASK_ID, 0)
-    assert r2.status_code in (302, 303), f"B transition returned {r2.status_code}"
+    r2 = transition(b, BASE, csrf_b, TASK_ID, rev0)
+    assert r2.status_code in (302, 303), f"B transition returned {r2.status_code}: {r2.text[:300]}"
 
-    # Exactly one side effect: revision stays at 1, not 2.
+    # Exactly one side effect: revision advances by exactly one, not two.
     rev = revision_of(a, BASE, TASK_ID)
-    assert rev == 1, f"expected idempotent revision 1, got {rev}"
+    assert rev == rev0 + 1, f"expected idempotent revision {rev0 + 1}, got {rev}"
 
 
 @pytest.mark.skipif(
@@ -178,7 +186,7 @@ def test_readonly_gate_405():
             "objective": "x",
             "owner": "local",
             "priority": "normal",
-            "authority": "operator",
+            "authority": "apply",
             "csrf_token": csrf,
         },
         allow_redirects=False,
