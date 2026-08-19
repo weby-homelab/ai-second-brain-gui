@@ -4,11 +4,11 @@
     "commit": "467ca4f5f6471eb51a63a5c917e2833c63c66eac"
   },
   "power_gui": {
-    "version": "0.7.1",
-    "git_sha": "62960b74ed3fde531d79857ef1d67aef68b2dc7f",
-    "tag": "v0.7.1"
+    "version": "0.7.2",
+    "git_sha": "e551a16b90251994c39adc3c66742772cfe6ca6f",
+    "tag": "v0.7.2"
   },
   "python": ">=3.11",
-  "container_digest": "sha256:ddcb7ad33805ae067891c8a9c180fc6f54676fadf3030992442432bfed309306",
-  "docker_image": "webyhomelab/power-gui:0.7.1"
+  "container_digest": "sha256:d8740741af63aa85de22cc8d4ddbfc8409b2efa6c3587a9dc30100b3e47219d1",
+  "docker_image": "webyhomelab/power-gui:0.7.2"
 }
