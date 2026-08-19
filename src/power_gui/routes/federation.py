@@ -133,14 +133,14 @@ async def a2a_agent_card(
     client: PowerClient = Depends(get_client),
     settings: Settings = Depends(get_settings),
 ) -> JSONResponse:
-    """A2A 1.0.1 standardized Agent Card for autonomous agent discovery."""
+    """Expose experimental custom discovery metadata, not A2A conformance."""
     stats = client.get_source_stats()
     discovery = client.discover()
     power_version = getattr(power_framework, "__version__", "3.6.0")
 
     card = {
-        "schema_version": "1.0.1",
-        "protocol": "A2A",
+        "schema_version": "custom-discovery.v1",
+        "protocol": "experimental/custom-discovery",
         "name": "Second Brain Cockpit",
         "node_id": "local-core",
         "vault_id": stats.vault_id,
