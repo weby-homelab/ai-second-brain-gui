@@ -4,7 +4,7 @@
 
 ### Contract and Security
 
-- Aligned the local GUI candidate with the POWER 3.6.5 `power.application.v2` contract; public dependency publication remains pending.
+- Published GUI `0.7.3` against immutable POWER `v3.6.5` `power.application.v2`; Docker digest, SBOM/provenance, and live E2E readback are recorded in `compatibility.json`.
 - Offloaded blocking POWER calls through a bounded worker limiter, including bounded SSE polling.
 - Added redacted typed errors with request correlation IDs; stable A2A and multi-writer Federation remain unsupported.
 
