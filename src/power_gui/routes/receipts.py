@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse
 
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings
+from ..offload import run_power_call
 
 if TYPE_CHECKING:
     from fastapi.templating import Jinja2Templates
@@ -26,7 +27,7 @@ async def receipts_view(
     """Render content-free audit receipts history."""
     templates: Jinja2Templates = request.app.state.templates
 
-    receipts = client.get_receipts(limit=limit)
+    receipts = await run_power_call(request, settings, client.get_receipts, limit=limit)
 
     return templates.TemplateResponse(
         request=request,

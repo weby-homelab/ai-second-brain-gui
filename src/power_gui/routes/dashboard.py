@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, Request
@@ -9,6 +10,7 @@ from fastapi.responses import HTMLResponse
 
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings
+from ..offload import run_power_call
 
 if TYPE_CHECKING:
     from fastapi.templating import Jinja2Templates
@@ -26,10 +28,12 @@ async def dashboard_view(
     """Render main dashboard with vault metrics, active tasks, and system status."""
     templates: Jinja2Templates = request.app.state.templates
 
-    stats = client.get_source_stats()
-    tasks = client.list_tasks(limit=10)
-    receipts = client.get_receipts(limit=5)
-    discovery = client.discover()
+    stats, tasks, receipts, discovery = await asyncio.gather(
+        run_power_call(request, settings, client.get_source_stats),
+        run_power_call(request, settings, client.list_tasks, limit=10),
+        run_power_call(request, settings, client.get_receipts, limit=5),
+        run_power_call(request, settings, client.discover),
+    )
 
     active_tasks = [t for t in tasks if t.state in {"ready", "working", "input-required"}]
 

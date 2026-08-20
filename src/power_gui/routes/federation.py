@@ -14,6 +14,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings
+from ..offload import run_power_call
 
 if TYPE_CHECKING:
     from fastapi.templating import Jinja2Templates
@@ -106,8 +107,10 @@ async def federation_view(
     """Render federated nodes status and multi-vault search cockpit with live probe."""
     templates: Jinja2Templates = request.app.state.templates
 
-    discovery = client.discover()
-    stats = client.get_source_stats()
+    discovery, stats = await asyncio.gather(
+        run_power_call(request, settings, client.discover),
+        run_power_call(request, settings, client.get_source_stats),
+    )
     topology = _get_fleet_topology(settings)
 
     # Parallel asynchronous health probing across the configured fleet topology
@@ -130,13 +133,16 @@ async def federation_view(
 @router.get("/federation/agent.json", response_class=JSONResponse)
 @router.get("/.well-known/agent.json", response_class=JSONResponse)
 async def a2a_agent_card(
+    request: Request,
     client: PowerClient = Depends(get_client),
     settings: Settings = Depends(get_settings),
 ) -> JSONResponse:
     """Expose experimental custom discovery metadata, not A2A conformance."""
-    stats = client.get_source_stats()
-    discovery = client.discover()
-    power_version = getattr(power_framework, "__version__", "3.6.0")
+    stats, discovery = await asyncio.gather(
+        run_power_call(request, settings, client.get_source_stats),
+        run_power_call(request, settings, client.discover),
+    )
+    power_version = getattr(power_framework, "__version__", "3.6.5")
 
     card = {
         "schema_version": "custom-discovery.v1",

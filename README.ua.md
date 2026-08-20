@@ -4,8 +4,8 @@
 
 [![Docker Image](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/webyhomelab/power-gui)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.3-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
+[![Python](https://img.shields.io/badge/Python-3.11--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.5--candidate-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Discovery](https://img.shields.io/badge/discovery-experimental%2Fcustom--discovery-8B5CF6?style=for-the-badge)](AGENTS.md)
@@ -14,7 +14,9 @@
 ![P.O.W.E.R-GUI Демонстрація](POWER-GUI_ua.gif)
 
 
-**P.O.W.E.R-GUI** — це виробничий, AI-native веб-кокпіт та центр прийняття рішень для вашої персональної бази знань [Obsidian](https://obsidian.md) (Second Brain). Додаток розроблено виключно за стандартом **Docker-First**, він поєднує оператора-людину та автономних ШІ-агентів через екосистему **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
+**P.O.W.E.R-GUI** — це виробничий, AI-native веб-кокпіт та центр прийняття рішень для вашої персональної бази знань [Obsidian](https://obsidian.md) (Second Brain). Додаток розроблено за стандартом **Docker-First** із документованим native-профілем, він поєднує оператора-людину та автономних ШІ-агентів через екосистему **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
+
+**Підтримуваний candidate baseline:** GUI `0.7.3` проти immutable public POWER `v3.6.5` контракту `power.application.v2` (Python `>=3.11,<3.15`). GUI image/release залишається candidate-only до завершення власного tag, digest, SBOM/provenance та live E2E readback. Пара сумісності та вимкнені можливості описані машинно-читабельно у [`compatibility.json`](compatibility.json). Публічна discovery-поверхня залишається experimental custom discovery; стабільні claims A2A та multi-writer Federation не підтримуються.
 
 ---
 
@@ -170,7 +172,7 @@ docker run -d \
   -e POWER_GUI_SECRET_KEY="${POWER_GUI_SECRET_KEY}" \
   -e POWER_GUI_COOKIE_SECURE=true \
   -v /path/to/your/obsidian/brain:/brain:rw \
-  webyhomelab/power-gui:0.7.1
+  webyhomelab/power-gui:0.7.3
 ```
 
 
@@ -185,7 +187,7 @@ docker run -d \
 ```yaml
 services:
   power-gui:
-    image: webyhomelab/power-gui:0.7.1
+    image: webyhomelab/power-gui:0.7.3
     container_name: power-gui
     restart: unless-stopped
     init: true
@@ -265,7 +267,7 @@ docker compose up -d
      -e POWER_GUI_COOKIE_SECURE=true \
      -v /mnt/brain:/brain:rw \
      -v power_cache:/data \
-     webyhomelab/power-gui:0.7.1
+      webyhomelab/power-gui:0.7.3
    ```
 
 ---
@@ -342,8 +344,27 @@ systemctl enable power-gui --now
 | `POWER_GUI_BIND_ADDRESS` | `str` | `127.0.0.1` | Інтерфейс хоста для порту 8008 у Docker Compose; для reverse proxy на хості задайте LAN-адресу LXC. |
 | `POWER_GUI_READ_ONLY_MODE` | `bool` | `false` | Увімкнення режиму "тільки для читання", блокування редагування та створення завдань. |
 | `POWER_GUI_MAX_UPLOAD_BYTES` | `int` | `5000000` | Максимальний розмір запиту та завантаження файлів у байтах (5 МБ). |
+| `POWER_GUI_POWER_CALL_TIMEOUT_SECONDS` | `float` | `30` | Дедлайн одного blocking POWER-виклику перед безпечним timeout. |
+| `POWER_GUI_POWER_CALL_MAX_CONCURRENCY` | `int` | `8` | Максимум одночасних blocking POWER-викликів для роутів і SSE. |
+| `POWER_GUI_SSE_MAX_LIFETIME_SECONDS` | `int` | `3600` | Максимальний час життя одного SSE-стріму. |
+| `POWER_GUI_SSE_MAX_CONNECTIONS` | `int` | `16` | Максимум одночасних SSE-стрімів. |
 | `POWER_GUI_HSTS_ENABLED` | `bool` | `true` | Увімкнення HTTP Strict Transport Security заголовка у відповідях. |
 | `POWER_GUI_FEDERATION_NODES` | `str` | `""` | Опціональний JSON-рядок із переліком додаткових нод для зондування. |
+
+### Контракт read model POWER 3.6.5
+
+GUI споживає `source.list`, `source.stats`, `source.read` та `source.graph`
+виключно через `PowerClient`. Після успішної синхронізації generation list/stats/
+graph читають перевірену immutable projection і не перепарсюють vault на кожен
+запит. Відсутня або пошкоджена projection повертає явний degraded/fail-closed
+результат, а не фіктивні здорові метадані. `source.read` читає один bounded-файл;
+stem lookup повертає детермінований список кандидатів при неоднозначності.
+
+`focus_path` і `max_depth` графа є реальними bounded BFS-параметрами. Відповіді
+пошуку та графа можуть містити `actual_capability`, `source_revision` і
+`degraded_reason`. Мутації залишаються лише proposal/apply-by-ID і повертають
+redacted typed errors з `X-Request-ID`; вміст нотаток, абсолютні шляхи та секрети
+не входять до публічного error contract.
 
 ---
 
@@ -382,7 +403,7 @@ description: Виробничий AI-native веб-кокпіт та центр 
 applicationCategory: WebApplication
 applicationSubCategory: KnowledgeManagement
 operatingSystem: Linux
-softwareVersion: 0.7.1
+softwareVersion: 0.7.3
 keywords: second-brain, obsidian, power-framework, fastapi, web-ui, knowledge-graph, ai-cockpit
 author: Weby Homelab (https://github.com/weby-homelab)
 codeRepository: https://github.com/weby-homelab/ai-second-brain-gui

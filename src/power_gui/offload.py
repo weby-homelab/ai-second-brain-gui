@@ -1,0 +1,53 @@
+"""Bounded execution bridge for synchronous POWER ApplicationService calls."""
+
+from __future__ import annotations
+
+import asyncio
+from collections.abc import Callable
+from functools import partial
+from typing import TYPE_CHECKING, ParamSpec, TypeVar
+
+import anyio
+from fastapi import Request
+
+from .errors import PowerCallTimeoutError, public_http_exception
+
+if TYPE_CHECKING:
+    from .config import Settings
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+async def run_power_call(
+    request: Request,
+    settings: Settings,
+    function: Callable[P, R],
+    /,
+    *args: P.args,
+    timeout_seconds: float | None = None,
+    **kwargs: P.kwargs,
+) -> R:
+    """Run one blocking POWER call in a bounded, cancellation-aware worker slot."""
+    limiter = getattr(request.app.state, "power_call_limiter", None)
+    if limiter is None:
+        limiter = anyio.CapacityLimiter(settings.power_call_max_concurrency)
+
+    call = partial(function, *args, **kwargs)
+    timeout = timeout_seconds or settings.power_call_timeout_seconds
+    try:
+        return await asyncio.wait_for(
+            anyio.to_thread.run_sync(
+                call,
+                abandon_on_cancel=True,
+                limiter=limiter,
+            ),
+            timeout=timeout,
+        )
+    except TimeoutError as exc:
+        raise PowerCallTimeoutError from exc
+    except Exception as exc:
+        raise public_http_exception(exc) from exc
+
+
+__all__ = ["run_power_call"]

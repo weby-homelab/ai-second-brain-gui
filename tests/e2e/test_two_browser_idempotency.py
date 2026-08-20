@@ -20,7 +20,7 @@ without a live server.
 
 Env:
   POWER_GUI_E2E_URL           base URL (default http://localhost:8011)
-  POWER_GUI_E2E_PASSWORD      admin password (default "testpass")
+  POWER_GUI_E2E_PASSWORD      admin password (required when a live URL is configured)
   POWER_GUI_E2E_READONLY_URL  optional read-only server URL for the 405 test
 """
 
@@ -32,7 +32,7 @@ import pytest
 import requests
 
 BASE = os.environ.get("POWER_GUI_E2E_URL", "http://localhost:8011").rstrip("/")
-PASSWORD = os.environ.get("POWER_GUI_E2E_PASSWORD", "testpass")
+PASSWORD = os.environ.get("POWER_GUI_E2E_PASSWORD")
 READONLY_URL = (os.environ.get("POWER_GUI_E2E_READONLY_URL", "") or "").rstrip("/") or None
 
 TIMEOUT = 30
@@ -54,6 +54,8 @@ def _csrf_from_html(text: str) -> str:
 
 
 def login(session: requests.Session, base: str) -> str:
+    if not PASSWORD:
+        pytest.skip("POWER_GUI_E2E_PASSWORD is required for live E2E")
     r = session.get(base + "/login", timeout=TIMEOUT)
     assert r.status_code == 200, f"login page returned {r.status_code}"
     csrf = _csrf_from_html(r.text)

@@ -4,8 +4,8 @@
 
 [![Docker Image](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/webyhomelab/power-gui)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.3-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
+[![Python](https://img.shields.io/badge/Python-3.11--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.5--candidate-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Discovery](https://img.shields.io/badge/discovery-experimental%2Fcustom--discovery-8B5CF6?style=for-the-badge)](AGENTS.md)
@@ -14,7 +14,9 @@
 ![P.O.W.E.R-GUI Walkthrough](POWER-GUI_ua.gif)
 
 
-**P.O.W.E.R-GUI** is the production-grade, AI-native web cockpit and decision center for your personal [Obsidian](https://obsidian.md) knowledge base (Second Brain). Designed strictly as a **Docker-First** application, it bridges human operators and autonomous AI agents through the **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
+**P.O.W.E.R-GUI** is the production-grade, AI-native web cockpit and decision center for your personal [Obsidian](https://obsidian.md) knowledge base (Second Brain). Designed as a **Docker-First** application with a documented native profile, it bridges human operators and autonomous AI agents through the **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
+
+**Supported candidate baseline:** GUI `0.7.3` against the immutable public POWER `v3.6.5` `power.application.v2` contract (Python `>=3.11,<3.15`). The GUI image/release remains candidate-only until its own tag, digest, SBOM/provenance and live E2E readback complete. The compatibility pair and disabled capabilities are machine-readable in [`compatibility.json`](compatibility.json). The public discovery surface remains experimental custom discovery; stable A2A and multi-writer Federation are not supported claims.
 
 ---
 
@@ -170,7 +172,7 @@ docker run -d \
   -e POWER_GUI_SECRET_KEY="${POWER_GUI_SECRET_KEY}" \
   -e POWER_GUI_COOKIE_SECURE=true \
   -v /path/to/your/obsidian/brain:/brain:rw \
-  webyhomelab/power-gui:0.7.1
+  webyhomelab/power-gui:0.7.3
 ```
 
 
@@ -185,7 +187,7 @@ Create a `docker-compose.yml` file:
 ```yaml
 services:
   power-gui:
-    image: webyhomelab/power-gui:0.7.1
+    image: webyhomelab/power-gui:0.7.3
     container_name: power-gui
     restart: unless-stopped
     init: true
@@ -265,7 +267,7 @@ Set `POWER_GUI_BIND_ADDRESS` to the LXC interface reachable by a host-level reve
      -e POWER_GUI_COOKIE_SECURE=true \
      -v /mnt/brain:/brain:rw \
      -v power_cache:/data \
-     webyhomelab/power-gui:0.7.1
+      webyhomelab/power-gui:0.7.3
    ```
 
 ---
@@ -342,8 +344,27 @@ Configuration is managed entirely via environment variables (with the `POWER_GUI
 | `POWER_GUI_BIND_ADDRESS` | `str` | `127.0.0.1` | Host bind interface for port 8008 in Docker Compose; set to LXC LAN address for reverse proxy access. |
 | `POWER_GUI_READ_ONLY_MODE` | `bool` | `false` | Enable read-only mode, blocking note editing and task mutations. |
 | `POWER_GUI_MAX_UPLOAD_BYTES` | `int` | `5000000` | Maximum payload and file upload limit in bytes (5 MB). |
+| `POWER_GUI_POWER_CALL_TIMEOUT_SECONDS` | `float` | `30` | Deadline for one blocking POWER call before returning a safe timeout. |
+| `POWER_GUI_POWER_CALL_MAX_CONCURRENCY` | `int` | `8` | Maximum concurrent blocking POWER calls across routes and SSE. |
+| `POWER_GUI_SSE_MAX_LIFETIME_SECONDS` | `int` | `3600` | Maximum lifetime of one SSE stream. |
+| `POWER_GUI_SSE_MAX_CONNECTIONS` | `int` | `16` | Maximum concurrent SSE streams. |
 | `POWER_GUI_HSTS_ENABLED` | `bool` | `true` | Enable HTTP Strict Transport Security header in responses. |
 | `POWER_GUI_FEDERATION_NODES` | `str` | `""` | Optional JSON string of custom federated nodes to monitor and probe. |
+
+### POWER 3.6.5 read-model contract
+
+The GUI consumes `source.list`, `source.stats`, `source.read`, and `source.graph`
+through `PowerClient` only. After a successful POWER generation sync, list/stats/
+graph read the verified immutable projection; they do not reparse the vault on each
+request. A missing or corrupt projection is reported as an explicit degraded or
+fail-closed result, never as healthy fake metadata. `source.read` reads one bounded
+file directly; stem lookup reports deterministic ambiguity candidates.
+
+Graph `focus_path` and `max_depth` are real bounded BFS parameters. Search and graph
+responses expose `actual_capability`, `source_revision`, and `degraded_reason` when
+available. GUI mutation remains proposal/apply-by-ID only and returns redacted typed
+errors with an `X-Request-ID`; note content, absolute paths, and secrets are not part
+of the public error contract.
 
 ---
 
@@ -382,7 +403,7 @@ description: Production-grade AI-native web cockpit and decision center for Obsi
 applicationCategory: WebApplication
 applicationSubCategory: KnowledgeManagement
 operatingSystem: Linux
-softwareVersion: 0.7.1
+softwareVersion: 0.7.3
 keywords: second-brain, obsidian, power-framework, fastapi, web-ui, knowledge-graph, ai-cockpit
 author: Weby Homelab (https://github.com/weby-homelab)
 codeRepository: https://github.com/weby-homelab/ai-second-brain-gui

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.3 — 2026-08-20
+
+### Contract and Security
+
+- Aligned the local GUI candidate with the POWER 3.6.5 `power.application.v2` contract; public dependency publication remains pending.
+- Offloaded blocking POWER calls through a bounded worker limiter, including bounded SSE polling.
+- Added redacted typed errors with request correlation IDs; stable A2A and multi-writer Federation remain unsupported.
+
 ## 0.7.1 — 2026-08-19
 
 ### Fixed

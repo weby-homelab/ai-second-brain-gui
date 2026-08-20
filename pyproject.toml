@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "power-gui"
-version = "0.7.1"
+version = "0.7.3"
 description = "Secure, accessible, local-first web cockpit and decision center for P.O.W.E.R."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.15"
 license = { text = "MIT" }
 authors = [{ name = "Weby Homelab", email = "rekvizitor.ua@gmail.com" }]
 dependencies = [
@@ -21,6 +21,8 @@ dependencies = [
     "markdown>=3.6.0",
     "pygments>=2.18.0",
     "itsdangerous>=2.2.0",
+    "anyio>=4.4.0",
+    "power-framework @ git+https://github.com/weby-homelab/power-framework.git@v3.6.5",
 ]
 
 [project.optional-dependencies]
@@ -28,6 +30,7 @@ dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "httpx>=0.27.0",
+    "requests>=2.31.0",
     "ruff>=0.5.0",
 ]
 

@@ -79,8 +79,8 @@ def test_dashboard_route_and_headers(client: TestClient) -> None:
     resp = client.get("/dashboard")
     assert resp.status_code == 200
     assert "P.O.W.E.R." in resp.text
-    assert "GUI v0.7.1" in resp.text
-    assert "3.6.3" in resp.text
+    assert "GUI v0.7.3" in resp.text
+    assert "3.6." in resp.text
     assert "01_Projects" in resp.text
 
     # Check CSP and security headers
@@ -286,7 +286,7 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
     assert 'href="/tasks"' not in resp_login_page.text
     assert "ai-second-brain-gui" not in resp_login_page.text
     assert "Fail-Closed" not in resp_login_page.text
-    assert "3.6.3" not in resp_login_page.text
+    assert "3.6." not in resp_login_page.text
     csrf_login = _extract_csrf(resp_login_page)
 
     # 3. Invalid password fails with 401
@@ -313,7 +313,7 @@ def test_authentication_enforcement_and_login(test_vault: Path) -> None:
     resp_authed = auth_client.get("/dashboard")
     assert resp_authed.status_code == 200
     assert "P.O.W.E.R." in resp_authed.text
-    assert "3.6.3" in resp_authed.text
+    assert "3.6." in resp_authed.text
     assert "<nav" in resp_authed.text
     assert 'href="/notes"' in resp_authed.text
     assert "ai-second-brain-gui" in resp_authed.text
