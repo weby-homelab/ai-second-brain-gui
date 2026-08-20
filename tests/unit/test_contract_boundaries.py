@@ -112,13 +112,11 @@ def test_manifest_is_machine_readable_and_records_published_digest() -> None:
         "source.read",
         "source.graph",
     ]
-    assert manifest["power_gui"]["version"] == "0.7.3"
+    assert manifest["power_gui"]["version"] == "0.7.4"
     assert manifest["runtime"]["python"] == ">=3.11,<3.15"
-    assert manifest["status"] == "published"
-    assert manifest["power_gui"]["release_tag"] == "v0.7.3"
-    assert manifest["container"]["digest"] == (
-        "sha256:cc7bf2605961243acda4a612ea38dffe0e91cd195e855a8631fa5ffe0be962d0"
-    )
+    assert manifest["status"] == "candidate_not_published"
+    assert manifest["power_gui"]["release_tag"] is None
+    assert manifest["container"]["digest"] is None
     assert {item["name"] for item in manifest["capabilities"]["disabled"]} >= {
         "a2a.stable",
         "federation.multi_writer",

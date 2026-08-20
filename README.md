@@ -16,7 +16,7 @@
 
 **P.O.W.E.R-GUI** is the production-grade, AI-native web cockpit and decision center for your personal [Obsidian](https://obsidian.md) knowledge base (Second Brain). Designed as a **Docker-First** application with a documented native profile, it bridges human operators and autonomous AI agents through the **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
-**Published baseline:** GUI `0.7.3` against the immutable public POWER `v3.6.5` `power.application.v2` contract (Python `>=3.11,<3.15`). The published Docker image digest, SBOM/provenance and live E2E readback are recorded in [`compatibility.json`](compatibility.json). The public discovery surface remains experimental custom discovery; stable A2A and multi-writer Federation are not supported claims.
+**Release candidate:** GUI `0.7.4` against the immutable public POWER `v3.6.5` `power.application.v2` contract (Python `>=3.11,<3.15`). The Docker image digest, SBOM/provenance and live E2E readback will be recorded in [`compatibility.json`](compatibility.json) after the `v0.7.4` tag workflow completes. The public discovery surface remains experimental custom discovery; stable A2A and multi-writer Federation are not supported claims.
 
 ---
 
@@ -172,7 +172,7 @@ docker run -d \
   -e POWER_GUI_SECRET_KEY="${POWER_GUI_SECRET_KEY}" \
   -e POWER_GUI_COOKIE_SECURE=true \
   -v /path/to/your/obsidian/brain:/brain:rw \
-  webyhomelab/power-gui:0.7.3
+  webyhomelab/power-gui:0.7.4
 ```
 
 
@@ -187,7 +187,7 @@ Create a `docker-compose.yml` file:
 ```yaml
 services:
   power-gui:
-    image: webyhomelab/power-gui:0.7.3
+    image: webyhomelab/power-gui:0.7.4
     container_name: power-gui
     restart: unless-stopped
     init: true
@@ -267,7 +267,7 @@ Set `POWER_GUI_BIND_ADDRESS` to the LXC interface reachable by a host-level reve
      -e POWER_GUI_COOKIE_SECURE=true \
      -v /mnt/brain:/brain:rw \
      -v power_cache:/data \
-      webyhomelab/power-gui:0.7.3
+      webyhomelab/power-gui:0.7.4
    ```
 
 ---
@@ -403,7 +403,7 @@ description: Production-grade AI-native web cockpit and decision center for Obsi
 applicationCategory: WebApplication
 applicationSubCategory: KnowledgeManagement
 operatingSystem: Linux
-softwareVersion: 0.7.3
+softwareVersion: 0.7.4
 keywords: second-brain, obsidian, power-framework, fastapi, web-ui, knowledge-graph, ai-cockpit
 author: Weby Homelab (https://github.com/weby-homelab)
 codeRepository: https://github.com/weby-homelab/ai-second-brain-gui
