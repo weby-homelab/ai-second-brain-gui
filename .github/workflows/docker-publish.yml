@@ -41,6 +41,7 @@ jobs:
             | awk -F: '$1 == "fpr" {print $10; exit}' \
             | grep -Fxq '7AF1EDA195FE29FF093FB1CA2D49E810C7F2527E'
           gpg --batch --import "$key_file"
+          git fetch --force origin "refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"
           git verify-tag "$GITHUB_REF_NAME"
 
       - name: Set up Python
