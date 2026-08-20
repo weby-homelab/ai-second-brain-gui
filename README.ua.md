@@ -44,7 +44,7 @@ flowchart TD
         subgraph SEC_GATE ["🛡️ Шлюз Безпеки та Харденінгу"]
             AUTH["🔑 Session Auth Guard<br/>(power_gui_session)"]:::security
             CSRF["⚡ HMAC-SHA256 CSRF Guard<br/>(power_gui_csrf)"]:::security
-            CSP["🛑 Суворий CSP & HSTS<br/>(read-only rootfs + tmpfs)"]:::security
+            CSP["🛑 Укріплений CSP & HSTS<br/>(read-only rootfs + tmpfs)"]:::security
         end
 
         subgraph BFF_ROUTERS ["🎛️ Модулі та Роути FastAPI BFF"]
@@ -117,10 +117,10 @@ flowchart TD
 - **Константний час перевірки та сучасне хешування:** Підтримка константного часу порівняння через `secrets.compare_digest` та криптографічних хешів (PBKDF2-HMAC-SHA256, Argon2id, Bcrypt).
 - **Захист від підбору (Brute-Force Lockout):** Обмеження невдалих спроб входу (ліміт 5 спроб у вікні часу) з прогресивним експоненційним блокуванням та моніторингом.
 - **CSRF-захист на рівні запитів:** Double-submit / session-bound HMAC-SHA256 CSRF токени на всіх мутаційних POST-роутах (`/notes/propose`, `/notes/apply`, `/tasks/new`, `/tasks/{id}/transition`, `/decisions/{id}/resolve`, `/logout`, `/login`).
-- **Ізольований контейнер та суворий CSP:** Запуск під виділеним користувачем `10001:10001` зі скиданням прав `cap_drop: [ALL]`, `read_only` rootfs та суворою політикою Content-Security-Policy без інлайн-скриптів.
+- **Ізольований контейнер та укріплений CSP:** Запуск під виділеним користувачем `10001:10001` зі скиданням прав `cap_drop: [ALL]`, `read_only` rootfs та політикою Content-Security-Policy, що замикає скрипти на `'self'` (без інлайн-скриптів), водночас дозволяючи інлайн-стилі через `'unsafe-inline'`.
 
 ### 3. 📋 Канонічний Task Manager v2 Cockpit
-- **Інтерактивна Канбан-дошка:** Візуальне відстеження завдань по станах: `backlog` ➔ `ready` ➔ `in-progress` ➔ `blocked` / `input-required` / `auth-required` ➔ `completed` / `failed`.
+- **Інтерактивна Канбан-дошка:** Візуальне відстеження завдань по станах: `backlog` ➔ `ready` ➔ `working` ➔ `blocked` / `input-required` / `auth-required` ➔ `completed` / `failed`.
 - **Монотонний контроль ревізій:** Захист від втрати паралельних оновлень за допомогою перевірки `expected_revision`.
 - **Append-Only журнал подій:** Кожна зміна стану формує незмінну подію з хешем корисного навантаження (SHA-256).
 - **Живий стрімінг у реальному часі:** Миттєва доставка подій у браузер через Server-Sent Events (`/tasks/api/events/stream`).
