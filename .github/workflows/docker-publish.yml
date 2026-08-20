@@ -160,7 +160,7 @@ jobs:
   live-e2e:
     name: Live Docker E2E
     needs: build-and-push
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.image_version != '')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -184,7 +184,7 @@ jobs:
 
       - name: Run mandatory live two-browser E2E
         env:
-          IMAGE_VERSION: ${{ github.ref_name }}
+          IMAGE_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.image_version }}
         run: |
           set -euo pipefail
           image_tag="${IMAGE_VERSION#v}"
@@ -204,6 +204,7 @@ jobs:
 
           # Live E2E fixture
           EOF
+          chmod -R a+rwX "$vault"
           password="$(python -c 'import secrets; print(secrets.token_urlsafe(24))')"
           secret_key="$(python -c 'import secrets; print(secrets.token_hex(32))')"
           docker volume create power-gui-live-e2e-cache >/dev/null
