@@ -26,7 +26,7 @@
     "name": "power-gui",
     "version": "0.7.4",
     "base_revision": "7add6b489b25545cfc26eaf06f560ea1b7ab730d",
-    "release_tag": "v0.7.3",
+    "release_tag": null,
     "revision_strategy": "Record the immutable build commit or release tag at build time."
   },
   "runtime": {
