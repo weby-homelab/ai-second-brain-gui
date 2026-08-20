@@ -6,7 +6,8 @@
 
 - Patch release from the final POWER 3.6.5-aligned mainline: immutable image
   readback naming, live Docker E2E fixture permissions, and release metadata are
-  consistent for the new tag.
+  consistent for the published tag. Docker digest and live E2E receipt are recorded
+  in `compatibility.json`.
 
 ## 0.7.3 — 2026-08-20
 
