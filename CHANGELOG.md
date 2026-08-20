@@ -1,10 +1,18 @@
 # Changelog
 
+## 0.7.4 — 2026-08-20
+
+### Release
+
+- Patch release from the final POWER 3.6.5-aligned mainline: immutable image
+  readback naming, live Docker E2E fixture permissions, and release metadata are
+  consistent for the new tag.
+
 ## 0.7.3 — 2026-08-20
 
 ### Contract and Security
 
-- Published GUI `0.7.3` against immutable POWER `v3.6.5` `power.application.v2`; Docker digest, SBOM/provenance, and live E2E readback are recorded in `compatibility.json`.
+- Aligned the GUI candidate with immutable POWER `v3.6.5` `power.application.v2`; final publication evidence is recorded by the subsequent `0.7.4` release.
 - Offloaded blocking POWER calls through a bounded worker limiter, including bounded SSE polling.
 - Added redacted typed errors with request correlation IDs; stable A2A and multi-writer Federation remain unsupported.
 

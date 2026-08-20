@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       image_version:
-        description: "Optional image tag to publish (for example, 0.7.3)"
+        description: "Optional image tag to publish (for example, 0.7.4)"
         required: false
         type: string
 

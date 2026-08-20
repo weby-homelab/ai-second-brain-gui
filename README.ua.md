@@ -16,7 +16,7 @@
 
 **P.O.W.E.R-GUI** — це виробничий, AI-native веб-кокпіт та центр прийняття рішень для вашої персональної бази знань [Obsidian](https://obsidian.md) (Second Brain). Додаток розроблено за стандартом **Docker-First** із документованим native-профілем, він поєднує оператора-людину та автономних ШІ-агентів через екосистему **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
-**Опублікований baseline:** GUI `0.7.3` проти immutable public POWER `v3.6.5` контракту `power.application.v2` (Python `>=3.11,<3.15`). Digest опублікованого Docker image, SBOM/provenance та live E2E readback записані у [`compatibility.json`](compatibility.json). Публічна discovery-поверхня залишається experimental custom discovery; стабільні claims A2A та multi-writer Federation не підтримуються.
+**Release candidate:** GUI `0.7.4` проти immutable public POWER `v3.6.5` контракту `power.application.v2` (Python `>=3.11,<3.15`). Digest Docker image, SBOM/provenance та live E2E readback будуть записані у [`compatibility.json`](compatibility.json) після завершення workflow тега `v0.7.4`. Публічна discovery-поверхня залишається experimental custom discovery; стабільні claims A2A та multi-writer Federation не підтримуються.
 
 ---
 
@@ -172,7 +172,7 @@ docker run -d \
   -e POWER_GUI_SECRET_KEY="${POWER_GUI_SECRET_KEY}" \
   -e POWER_GUI_COOKIE_SECURE=true \
   -v /path/to/your/obsidian/brain:/brain:rw \
-  webyhomelab/power-gui:0.7.3
+  webyhomelab/power-gui:0.7.4
 ```
 
 
@@ -187,7 +187,7 @@ docker run -d \
 ```yaml
 services:
   power-gui:
-    image: webyhomelab/power-gui:0.7.3
+    image: webyhomelab/power-gui:0.7.4
     container_name: power-gui
     restart: unless-stopped
     init: true
@@ -267,7 +267,7 @@ docker compose up -d
      -e POWER_GUI_COOKIE_SECURE=true \
      -v /mnt/brain:/brain:rw \
      -v power_cache:/data \
-      webyhomelab/power-gui:0.7.3
+      webyhomelab/power-gui:0.7.4
    ```
 
 ---
@@ -403,7 +403,7 @@ description: Виробничий AI-native веб-кокпіт та центр 
 applicationCategory: WebApplication
 applicationSubCategory: KnowledgeManagement
 operatingSystem: Linux
-softwareVersion: 0.7.3
+softwareVersion: 0.7.4
 keywords: second-brain, obsidian, power-framework, fastapi, web-ui, knowledge-graph, ai-cockpit
 author: Weby Homelab (https://github.com/weby-homelab)
 codeRepository: https://github.com/weby-homelab/ai-second-brain-gui

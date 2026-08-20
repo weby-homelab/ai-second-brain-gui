@@ -1,7 +1,7 @@
 # 🤖 P.O.W.E.R-GUI — Operations & Deployment Guide for AI Agents
 
 > **Scope:** Operations / deployment playbook (not an A2A 1.0 or AAIF conformance claim)  
-> **Target Application:** `power-gui` (P.O.W.E.R-GUI v0.7.3)
+> **Target Application:** `power-gui` (P.O.W.E.R-GUI v0.7.4)
 > **Audience:** Autonomous AI Agents (Claude, Gemini, Antigravity, OpenCode, Codex, Cursor, AutoGPT, LangChain, FastMCP)
 
 This document provides a deterministic, machine-actionable playbook for any AI agent tasked with deploying, configuring, verifying, or programmatically interacting with the **P.O.W.E.R-GUI Web Cockpit**. Runtime discovery metadata uses **`experimental/custom-discovery`** only.
@@ -14,7 +14,7 @@ This document provides a deterministic, machine-actionable playbook for any AI a
 {
   "protocol": "experimental/custom-discovery",
   "name": "power-gui",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Production-grade, AI-native web cockpit and decision center for Obsidian Second Brain",
   "runtime": "FastAPI BFF / Python 3.11-3.14",
   "security_model": {
@@ -63,7 +63,7 @@ When deploying via Docker Compose, follow this exact sequence:
    ```yaml
    services:
      power-gui:
-       image: webyhomelab/power-gui:0.7.3
+       image: webyhomelab/power-gui:0.7.4
        container_name: power-gui
        restart: unless-stopped
        init: true
@@ -140,7 +140,7 @@ When executing inside an unprivileged Proxmox LXC container:
      -e POWER_GUI_COOKIE_SECURE=true \
      -v /mnt/brain:/brain:rw \
      -v power_cache:/data \
-     webyhomelab/power-gui:0.7.3
+      webyhomelab/power-gui:0.7.4
    ```
 
 ---
