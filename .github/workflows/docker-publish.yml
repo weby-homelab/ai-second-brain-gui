@@ -127,11 +127,12 @@ jobs:
       - name: Read back immutable image digest
         env:
           BUILD_DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.image_version || github.ref_name }}
         run: |
           set -euo pipefail
           test -n "$BUILD_DIGEST"
-          image_tag="${GITHUB_REF_NAME#v}"
-          if [ "$GITHUB_REF_NAME" = "main" ]; then
+          image_tag="${IMAGE_VERSION#v}"
+          if [ "$IMAGE_VERSION" = "main" ]; then
             image_tag="latest"
           fi
           image="webyhomelab/power-gui:${image_tag}"

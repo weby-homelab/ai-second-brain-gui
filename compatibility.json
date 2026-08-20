@@ -1,6 +1,6 @@
 {
   "manifest_schema": "power-gui.compatibility.v2",
-  "status": "gui_candidate_not_published",
+  "status": "published",
   "power_core": {
     "candidate_version": "3.6.5",
     "package_version_at_public_revision": "3.6.5",
@@ -26,7 +26,7 @@
     "name": "power-gui",
     "version": "0.7.3",
     "base_revision": "7add6b489b25545cfc26eaf06f560ea1b7ab730d",
-    "release_tag": null,
+    "release_tag": "v0.7.3",
     "revision_strategy": "Record the immutable build commit or release tag at build time."
   },
   "runtime": {
@@ -59,11 +59,11 @@
   },
   "container": {
     "image": "webyhomelab/power-gui:0.7.3",
-    "digest": null,
-    "digest_status": "not_published"
+    "digest": "sha256:cc7bf2605961243acda4a612ea38dffe0e91cd195e855a8631fa5ffe0be962d0",
+    "digest_status": "published_readback"
   },
   "verification": {
-    "local_candidate_core": "validated in a separate local worktree only",
-    "clean_install_pair": "public POWER 3.6.5 available; GUI publication remains pending"
+    "local_candidate_core": "published immutable POWER v3.6.5",
+    "clean_install_pair": "verified against public POWER v3.6.5 wheel and GUI v0.7.3 image"
   }
 }

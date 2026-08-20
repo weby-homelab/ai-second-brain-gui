@@ -16,7 +16,7 @@
 
 **P.O.W.E.R-GUI** — це виробничий, AI-native веб-кокпіт та центр прийняття рішень для вашої персональної бази знань [Obsidian](https://obsidian.md) (Second Brain). Додаток розроблено за стандартом **Docker-First** із документованим native-профілем, він поєднує оператора-людину та автономних ШІ-агентів через екосистему **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
-**Підтримуваний candidate baseline:** GUI `0.7.3` проти immutable public POWER `v3.6.5` контракту `power.application.v2` (Python `>=3.11,<3.15`). GUI image/release залишається candidate-only до завершення власного tag, digest, SBOM/provenance та live E2E readback. Пара сумісності та вимкнені можливості описані машинно-читабельно у [`compatibility.json`](compatibility.json). Публічна discovery-поверхня залишається experimental custom discovery; стабільні claims A2A та multi-writer Federation не підтримуються.
+**Опублікований baseline:** GUI `0.7.3` проти immutable public POWER `v3.6.5` контракту `power.application.v2` (Python `>=3.11,<3.15`). Digest опублікованого Docker image, SBOM/provenance та live E2E readback записані у [`compatibility.json`](compatibility.json). Публічна discovery-поверхня залишається experimental custom discovery; стабільні claims A2A та multi-writer Federation не підтримуються.
 
 ---
 
