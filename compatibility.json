@@ -1,14 +1,69 @@
 {
+  "manifest_schema": "power-gui.compatibility.v2",
+  "status": "gui_candidate_not_published",
   "power_core": {
-    "tag": "v3.6.3",
-    "commit": "467ca4f5f6471eb51a63a5c917e2833c63c66eac"
+    "candidate_version": "3.6.5",
+    "package_version_at_public_revision": "3.6.5",
+    "schema_version": "power.application.v2",
+    "version_strategy": "The application schema is the compatibility contract; the package version must be 3.6.5 when the candidate is published.",
+    "dependency": {
+      "strategy": "exact-public-release-tag",
+      "repository": "https://github.com/weby-homelab/power-framework.git",
+      "revision": "c9bd6d299a244ab899cd87336d82ed27597380cc",
+      "tag": "v3.6.5",
+      "tag_commit": "c9bd6d299a244ab899cd87336d82ed27597380cc"
+    },
+    "candidate_revision": null,
+    "candidate_publication_required": false,
+    "source_inventory": [
+      "source.list",
+      "source.stats",
+      "source.read",
+      "source.graph"
+    ]
   },
   "power_gui": {
-    "version": "0.7.1",
-    "git_sha": "62960b74ed3fde531d79857ef1d67aef68b2dc7f",
-    "tag": "v0.7.1"
+    "name": "power-gui",
+    "version": "0.7.3",
+    "base_revision": "7add6b489b25545cfc26eaf06f560ea1b7ab730d",
+    "release_tag": null,
+    "revision_strategy": "Record the immutable build commit or release tag at build time."
   },
-  "python": ">=3.11",
-  "container_digest": "sha256:ddcb7ad33805ae067891c8a9c180fc6f54676fadf3030992442432bfed309306",
-  "docker_image": "webyhomelab/power-gui:0.7.1"
+  "runtime": {
+    "python": ">=3.11,<3.15",
+    "supported_profiles": ["docker", "native"]
+  },
+  "capabilities": {
+    "enabled": [
+      "source.list",
+      "source.stats",
+      "source.read",
+      "source.graph",
+      "task.v2",
+      "experimental.custom-discovery"
+    ],
+    "disabled": [
+      {
+        "name": "a2a.stable",
+        "reason": "No stable A2A conformance claim is shipped."
+      },
+      {
+        "name": "federation.multi_writer",
+        "reason": "Federation routes are read-only discovery and probing only."
+      },
+      {
+        "name": "power.fleet_status",
+        "reason": "The optional fleet capability is unavailable in the local profile."
+      }
+    ]
+  },
+  "container": {
+    "image": "webyhomelab/power-gui:0.7.3",
+    "digest": null,
+    "digest_status": "not_published"
+  },
+  "verification": {
+    "local_candidate_core": "validated in a separate local worktree only",
+    "clean_install_pair": "public POWER 3.6.5 available; GUI publication remains pending"
+  }
 }

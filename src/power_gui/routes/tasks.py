@@ -14,6 +14,8 @@ from ..auth.csrf import validate_csrf
 from ..clients.idempotency import key_for
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings, require_mutation_enabled
+from ..errors import public_error_details, request_id_for
+from ..offload import run_power_call
 
 if TYPE_CHECKING:
     from fastapi.templating import Jinja2Templates
@@ -33,7 +35,14 @@ async def tasks_board_view(
     """Render Task Manager v2 board with status swimlanes."""
     templates: Jinja2Templates = request.app.state.templates
 
-    tasks = client.list_tasks(state=state, owner=owner, limit=200)
+    tasks = await run_power_call(
+        request,
+        settings,
+        client.list_tasks,
+        state=state,
+        owner=owner,
+        limit=200,
+    )
 
     # Group tasks by state for Kanban columns
     lanes = {
@@ -84,28 +93,29 @@ async def create_task_action(
     priority: str = Form("normal", max_length=16),
     authority: str = Form("read-only", max_length=16),
     client: PowerClient = Depends(get_client),
+    settings: Settings = Depends(get_settings),
 ) -> RedirectResponse:
     """Create a new PowerTask v2."""
-    try:
-        client.create_task(
+    await run_power_call(
+        request,
+        settings,
+        client.create_task,
+        task_id=task_id.strip(),
+        title=title.strip(),
+        objective=objective.strip(),
+        owner=owner.strip(),
+        priority=priority,  # type: ignore[arg-type]
+        authority=authority,  # type: ignore[arg-type]
+        idempotency_key=key_for(
+            "create",
             task_id=task_id.strip(),
             title=title.strip(),
             objective=objective.strip(),
             owner=owner.strip(),
-            priority=priority,  # type: ignore[arg-type]
-            authority=authority,  # type: ignore[arg-type]
-            idempotency_key=key_for(
-                "create",
-                task_id=task_id.strip(),
-                title=title.strip(),
-                objective=objective.strip(),
-                owner=owner.strip(),
-                priority=priority,
-                authority=authority,
-            ),
-        )
-    except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+            priority=priority,
+            authority=authority,
+        ),
+    )
 
     return RedirectResponse(url=f"/tasks/{task_id.strip()}", status_code=303)
 
@@ -120,11 +130,10 @@ async def task_detail_view(
     """Render task detail page with timeline, events journal, and actions."""
     templates: Jinja2Templates = request.app.state.templates
 
-    try:
-        task = client.get_task(task_id)
-        events = client.get_task_events(task_id)
-    except Exception as exc:
-        raise HTTPException(status_code=404, detail=f"Task {task_id} not found") from exc
+    task, events = await asyncio.gather(
+        run_power_call(request, settings, client.get_task, task_id),
+        run_power_call(request, settings, client.get_task_events, task_id),
+    )
 
     return templates.TemplateResponse(
         request=request,
@@ -150,26 +159,27 @@ async def transition_task_action(
     completion_postcondition: str | None = Form(None, max_length=4096),
     completion_artifact_refs: list[str] = Form([]),
     client: PowerClient = Depends(get_client),
+    settings: Settings = Depends(get_settings),
 ) -> RedirectResponse:
     """Advance task state machine."""
-    try:
-        client.transition_task(
-            task_id,
+    await run_power_call(
+        request,
+        settings,
+        client.transition_task,
+        task_id,
+        new_state=new_state,
+        expected_revision=expected_revision,
+        next_action=next_action,
+        completion_postcondition=completion_postcondition,
+        completion_artifact_refs=completion_artifact_refs or None,
+        idempotency_key=key_for(
+            "transition",
+            task_id=task_id,
             new_state=new_state,
             expected_revision=expected_revision,
             next_action=next_action,
-            completion_postcondition=completion_postcondition,
-            completion_artifact_refs=completion_artifact_refs or None,
-            idempotency_key=key_for(
-                "transition",
-                task_id=task_id,
-                new_state=new_state,
-                expected_revision=expected_revision,
-                next_action=next_action,
-            ),
-        )
-    except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        ),
+    )
 
     return RedirectResponse(url=f"/tasks/{task_id}", status_code=303)
 
@@ -178,6 +188,7 @@ async def transition_task_action(
 async def sse_task_events_stream(
     request: Request,
     task_id: str | None = Query(None, max_length=128),
+    since_sequence: int = Query(0, ge=0),
     client: PowerClient = Depends(get_client),
     settings: Settings = Depends(get_settings),
 ) -> StreamingResponse:
@@ -190,26 +201,50 @@ async def sse_task_events_stream(
     started_at = time.monotonic()
 
     async def event_generator():
-        last_seen_seq = 0
+        last_seen_seq = since_sequence
         try:
             while time.monotonic() - started_at < settings.sse_max_lifetime_seconds:
                 if await request.is_disconnected():
                     break
+                remaining = settings.sse_max_lifetime_seconds - (time.monotonic() - started_at)
+                if remaining <= 0:
+                    break
 
                 if task_id:
-                    events = client.get_task_events(task_id, since_sequence=last_seen_seq)
+                    events = await run_power_call(
+                        request,
+                        settings,
+                        client.get_task_events,
+                        task_id,
+                        since_sequence=last_seen_seq,
+                        timeout_seconds=min(settings.power_call_timeout_seconds, remaining),
+                    )
                     for ev in events:
                         last_seen_seq = max(last_seen_seq, ev.sequence)
                         yield f"event: task_event\ndata: {json.dumps(ev.model_dump())}\n\n"
                 else:
-                    tasks = client.list_tasks(limit=10)
+                    tasks = await run_power_call(
+                        request,
+                        settings,
+                        client.list_tasks,
+                        limit=10,
+                        timeout_seconds=min(settings.power_call_timeout_seconds, remaining),
+                    )
                     summary = [
                         {"id": t.task_id, "state": t.state, "revision": t.revision} for t in tasks
                     ]
                     yield f"event: tasks_summary\ndata: {json.dumps(summary)}\n\n"
 
                 yield ": heartbeat\n\n"
-                await asyncio.sleep(2)
+                await asyncio.sleep(min(2, max(0, remaining)))
+        except Exception as exc:
+            code, message = public_error_details(exc)
+            error_payload = {
+                "code": code,
+                "message": message,
+                "request_id": request_id_for(request),
+            }
+            yield f"event: error\ndata: {json.dumps(error_payload)}\n\n"
         finally:
             limiter.release()
 

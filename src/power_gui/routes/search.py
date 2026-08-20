@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse
 
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings
+from ..offload import run_power_call
 
 if TYPE_CHECKING:
     from fastapi.templating import Jinja2Templates
@@ -26,37 +27,14 @@ def _normalize_search_results(data: dict[str, Any]) -> dict[str, Any]:
             source = item.get("source") if isinstance(item.get("source"), dict) else {}
             metadata = item.get("metadata") if isinstance(item.get("metadata"), dict) else {}
 
-            path = (
-                source.get("path")
-                or item.get("path")
-                or item.get("rel_path")
-                or ""
-            )
+            path = source.get("path") or item.get("path") or item.get("rel_path") or ""
             title = (
-                metadata.get("title")
-                or item.get("title")
-                or (Path(path).stem if path else "Note")
+                metadata.get("title") or item.get("title") or (Path(path).stem if path else "Note")
             )
-            description = (
-                metadata.get("description")
-                or item.get("description")
-                or ""
-            )
-            note_type = (
-                metadata.get("note_type")
-                or item.get("note_type")
-                or ""
-            )
-            tags = (
-                metadata.get("tags")
-                or item.get("tags")
-                or []
-            )
-            snippet = (
-                item.get("snippet")
-                or item.get("matched_text")
-                or description
-            )
+            description = metadata.get("description") or item.get("description") or ""
+            note_type = metadata.get("note_type") or item.get("note_type") or ""
+            tags = metadata.get("tags") or item.get("tags") or []
+            snippet = item.get("snippet") or item.get("matched_text") or description
             score = item.get("score", 0.0)
 
             normalized_items.append(
@@ -84,7 +62,9 @@ def _normalize_search_results(data: dict[str, Any]) -> dict[str, Any]:
 async def search_view(
     request: Request,
     q: str = Query("", max_length=512, description="Search query"),
-    mode: str = Query("auto", max_length=16, description="Retrieval mode: auto, fts, semantic, reranked"),
+    mode: str = Query(
+        "auto", max_length=16, description="Retrieval mode: auto, fts, semantic, reranked"
+    ),
     limit: int = Query(20, ge=1, le=100),
     client: PowerClient = Depends(get_client),
     settings: Settings = Depends(get_settings),
@@ -94,11 +74,15 @@ async def search_view(
 
     results_data: dict[str, Any] = {}
     if q.strip():
-        try:
-            env = client.search(q, mode=mode, max_results=limit)
-            results_data = _normalize_search_results(env.data)
-        except Exception as exc:
-            results_data = {"error": str(exc), "items": [], "results": []}
+        env = await run_power_call(
+            request,
+            settings,
+            client.search,
+            q,
+            mode=mode,
+            max_results=limit,
+        )
+        results_data = _normalize_search_results(env.data)
 
     return templates.TemplateResponse(
         request=request,

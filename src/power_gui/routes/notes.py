@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
 from ..auth.csrf import validate_csrf
 from ..clients.idempotency import key_for
 from ..clients.power import PowerClient
 from ..config import Settings, get_client, get_settings, require_mutation_enabled
+from ..offload import run_power_call
 from ..view_models.markdown_render import render_markdown
 
 if TYPE_CHECKING:
@@ -33,14 +35,19 @@ async def list_notes_view(
     """Render notes list with category filtering, search chips, and pagination."""
     templates: Jinja2Templates = request.app.state.templates
 
-    source_list = client.list_sources(
-        prefix=prefix,
-        category=category,
-        tag=tag,
-        limit=limit,
-        cursor=cursor,
+    source_list, stats = await asyncio.gather(
+        run_power_call(
+            request,
+            settings,
+            client.list_sources,
+            prefix=prefix,
+            category=category,
+            tag=tag,
+            limit=limit,
+            cursor=cursor,
+        ),
+        run_power_call(request, settings, client.get_source_stats),
     )
-    stats = client.get_source_stats()
 
     return templates.TemplateResponse(
         request=request,
@@ -71,14 +78,7 @@ async def read_note_view(
     if not clean_path:
         return RedirectResponse(url="/notes", status_code=303)
 
-    try:
-        source_data = client.read_source(clean_path)
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=f"Note '{clean_path}' not found") from exc
-    except PermissionError as exc:
-        raise HTTPException(status_code=403, detail="Path traversal forbidden") from exc
-    except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    source_data = await run_power_call(request, settings, client.read_source, clean_path)
 
     rendered_html = render_markdown(source_data.content)
 
@@ -107,10 +107,7 @@ async def edit_note_view(
     if not clean_path:
         return RedirectResponse(url="/notes", status_code=303)
 
-    try:
-        source_data = client.read_source(clean_path)
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=f"Note '{clean_path}' not found") from exc
+    source_data = await run_power_call(request, settings, client.read_source, clean_path)
 
     return templates.TemplateResponse(
         request=request,
@@ -137,14 +134,14 @@ async def propose_note_view(
     """Create a structured, reviewable proposal without directly mutating source."""
     templates: Jinja2Templates = request.app.state.templates
 
-    try:
-        proposal_env = client.propose(
-            path,
-            content,
-            idempotency_key=key_for("propose", path=path, content=content),
-        )
-    except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    proposal_env = await run_power_call(
+        request,
+        settings,
+        client.propose,
+        path,
+        content,
+        idempotency_key=key_for("propose", path=path, content=content),
+    )
 
     return templates.TemplateResponse(
         request=request,
@@ -169,14 +166,14 @@ async def apply_note_view(
     client: PowerClient = Depends(get_client),
 ) -> RedirectResponse:
     """Apply an approved proposal with explicit authority and postcondition check."""
-    try:
-        envelope = client.apply(
-            proposal_id,
-            approved=approved,
-            idempotency_key=key_for("apply", proposal_id=proposal_id),
-        )
-    except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    settings = get_settings(request)
+    envelope = await run_power_call(
+        request,
+        settings,
+        client.apply,
+        proposal_id,
+        approved=approved,
+    )
 
     path = envelope.data.get("path", "") if isinstance(envelope.data, dict) else ""
     return RedirectResponse(url=f"/notes/read?path={path}", status_code=303)

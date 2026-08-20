@@ -3,20 +3,31 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import threading
+import uuid
 from pathlib import Path
 
+import anyio
 import power_framework
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jinja2 import pass_context
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import __version__ as GUI_VERSION
 from .auth.csrf import get_csrf_token
 from .auth.session import SessionManager
 from .config import Settings, get_global_settings
+from .errors import (
+    http_exception_handler,
+    make_public_error_response,
+    request_validation_handler,
+    unhandled_exception_handler,
+)
 from .i18n import get_request_lang, get_request_theme, jinja_translate
 from .routes import (
     auth_router,
@@ -30,7 +41,8 @@ from .routes import (
     tasks_router,
 )
 
-POWER_VERSION = getattr(power_framework, "__version__", "3.6.0")
+POWER_VERSION = getattr(power_framework, "__version__", "3.6.5")
+ERROR_LOGGER = logging.getLogger("power_gui.errors")
 
 
 def jinja_csrf_token(context: dict) -> str:
@@ -92,10 +104,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.templates = templates
     app.state.settings = app_settings
     app.state.sse_connections = threading.BoundedSemaphore(app_settings.sse_max_connections)
+    app.state.power_call_limiter = anyio.CapacityLimiter(app_settings.power_call_max_concurrency)
+    app.state.error_logger = ERROR_LOGGER
+
+    app.add_exception_handler(RequestValidationError, request_validation_handler)
+    app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+    app.add_exception_handler(Exception, unhandled_exception_handler)
 
     # Mount static assets
     if static_dir.is_dir():
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+    @app.middleware("http")
+    async def request_id_middleware(request: Request, call_next) -> Response:
+        """Attach a non-sensitive correlation ID to every request."""
+        request.state.request_id = uuid.uuid4().hex
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request.state.request_id
+        return response
 
     @app.middleware("http")
     async def request_size_middleware(request: Request, call_next) -> Response:
@@ -104,16 +130,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if content_length:
             try:
                 if int(content_length) > app_settings.max_upload_bytes:
-                    return Response(
-                        content="Request body too large",
-                        status_code=413,
-                        media_type="text/plain",
+                    return make_public_error_response(
+                        request,
+                        413,
+                        "request_too_large",
+                        "The request is too large.",
                     )
             except ValueError:
-                return Response(
-                    content="Invalid Content-Length",
-                    status_code=400,
-                    media_type="text/plain",
+                return make_public_error_response(
+                    request,
+                    400,
+                    "invalid_request",
+                    "The request is invalid.",
                 )
         return await call_next(request)
 
@@ -141,7 +169,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if app_settings.auth_enabled:
             path = request.url.path
             # Allow public assets, login, language switch, theme switch, and healthcheck
-            if path in {"/login", "/healthz", "/set-lang", "/set-theme"} or path.startswith("/static/"):
+            if path in {"/login", "/healthz", "/set-lang", "/set-theme"} or path.startswith(
+                "/static/"
+            ):
                 response = await call_next(request)
                 _maybe_set_csrf_cookie(request, response, app_settings)
                 return response
@@ -177,7 +207,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
         return response
 
-
     # Register Routers
     app.include_router(dashboard_router)
     app.include_router(notes_router)
@@ -195,7 +224,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"status": "ok", "version": POWER_VERSION}
 
     return app
-
 
 
 def main() -> None:

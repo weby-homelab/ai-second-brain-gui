@@ -261,6 +261,37 @@ def test_task_completion_evidence_creates_canonical_tcr_receipt(hermetic_vault: 
     assert artifact_rel in receipt.artifact_digests
 
 
+def test_task_sse_resume_cursor_starts_after_requested_sequence(
+    hermetic_vault: Path,
+) -> None:
+    """SSE resumes from the caller cursor instead of replaying the full journal."""
+    svc = ApplicationService(hermetic_vault)
+    svc.task_create(
+        "sse_cursor_01",
+        "SSE cursor task",
+        context=RequestContext(actor="seed", authority="propose"),
+    )
+    svc.task_transition(
+        "sse_cursor_01",
+        new_state="ready",
+        expected_revision=1,
+        context=RequestContext(actor="seed", authority="apply"),
+    )
+
+    settings = Settings(
+        vault_path=hermetic_vault,
+        auth_enabled=False,
+        cookie_secure=False,
+        sse_max_lifetime_seconds=60,
+    ).model_copy(update={"sse_max_lifetime_seconds": 0.01})
+    client = TestClient(create_app(settings))
+    response = client.get("/tasks/api/events/stream?task_id=sse_cursor_01&since_sequence=1")
+
+    assert response.status_code == 200
+    assert '"sequence": 1' not in response.text
+    assert '"sequence": 2' in response.text
+
+
 def test_decision_resolve_via_gui_updates_canonical_decision(hermetic_vault: Path) -> None:
     """Phase F/J: GUI resolve delegates to DecisionService; no local decision state."""
     svc = ApplicationService(hermetic_vault)
@@ -312,6 +343,6 @@ def test_claims_files_do_not_advertise_a2a_agent_ready() -> None:
         assert "A2A-Agent_Ready" not in text
         assert "A2A/2026.1" not in text
     compat = (root / "compatibility.json").read_text(encoding="utf-8")
-    assert "467ca4f5f6471eb51a63a5c917e2833c63c66eac" in compat
-    assert "467ca4f7f52c6c21b2b5a4d35b3e148c8a55b1b0" not in compat
-    assert "ddcb7ad33805ae067891c8a9c180fc6f54676fadf3030992442432bfed309306" in compat
+    assert "c9bd6d299a244ab899cd87336d82ed27597380cc" in compat
+    assert "container_digest" not in compat
+    assert '"digest": null' in compat

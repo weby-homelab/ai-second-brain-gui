@@ -65,6 +65,8 @@ class Settings(BaseSettings):
     cookie_samesite: str = "lax"
     session_max_age_seconds: int = Field(default=86400, ge=300, le=604800)
     max_upload_bytes: int = Field(default=5_000_000, ge=1024, le=50_000_000)
+    power_call_timeout_seconds: float = Field(default=30.0, ge=0.1, le=300.0)
+    power_call_max_concurrency: int = Field(default=8, ge=1, le=128)
     sse_max_lifetime_seconds: int = Field(default=3600, ge=60, le=86400)
     sse_max_connections: int = Field(default=16, ge=1, le=1000)
     hsts_enabled: bool = True

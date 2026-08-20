@@ -1,7 +1,7 @@
 # 🤖 P.O.W.E.R-GUI — Operations & Deployment Guide for AI Agents
 
 > **Scope:** Operations / deployment playbook (not an A2A 1.0 or AAIF conformance claim)  
-> **Target Application:** `ai-second-brain-gui` (P.O.W.E.R-GUI v0.7.1)  
+> **Target Application:** `power-gui` (P.O.W.E.R-GUI v0.7.3)
 > **Audience:** Autonomous AI Agents (Claude, Gemini, Antigravity, OpenCode, Codex, Cursor, AutoGPT, LangChain, FastMCP)
 
 This document provides a deterministic, machine-actionable playbook for any AI agent tasked with deploying, configuring, verifying, or programmatically interacting with the **P.O.W.E.R-GUI Web Cockpit**. Runtime discovery metadata uses **`experimental/custom-discovery`** only.
@@ -14,9 +14,9 @@ This document provides a deterministic, machine-actionable playbook for any AI a
 {
   "protocol": "experimental/custom-discovery",
   "name": "power-gui",
-  "version": "0.7.1",
+  "version": "0.7.3",
   "description": "Production-grade, AI-native web cockpit and decision center for Obsidian Second Brain",
-  "runtime": "FastAPI BFF / Python 3.11+",
+  "runtime": "FastAPI BFF / Python 3.11-3.14",
   "security_model": {
     "user_id": "10001:10001 (non-root)",
     "capabilities": "cap_drop: [ALL]",
@@ -63,7 +63,7 @@ When deploying via Docker Compose, follow this exact sequence:
    ```yaml
    services:
      power-gui:
-       image: webyhomelab/power-gui:0.7.1
+       image: webyhomelab/power-gui:0.7.3
        container_name: power-gui
        restart: unless-stopped
        init: true
@@ -140,7 +140,7 @@ When executing inside an unprivileged Proxmox LXC container:
      -e POWER_GUI_COOKIE_SECURE=true \
      -v /mnt/brain:/brain:rw \
      -v power_cache:/data \
-     webyhomelab/power-gui:0.7.1
+     webyhomelab/power-gui:0.7.3
    ```
 
 ---
@@ -234,19 +234,19 @@ AI agents interacting with P.O.W.E.R-GUI must use the following structured endpo
 | :--- | :---: | :--- | :--- |
 | `/search` | `GET` | Multimodal Knowledge Search | `?q=<query>&mode=auto\|fts\|semantic\|rerank` |
 | `/notes` | `GET` | List vault notes & metadata | `?folder=01_Projects` |
-| `/notes/view/{path:path}` | `GET` | Read note content & parsed OKF | Returns sanitized HTML & raw content |
+| `/notes/read?path=<path>` | `GET` | Read note content & parsed OKF | Returns sanitized HTML & raw content |
 | `/notes/propose` | `POST` | Propose note creation or modification | Form: `path`, `content`, `expected_revision`, `csrf_token` |
 | `/decisions` | `GET` | List pending human approval requests | Returns list of pending proposals |
 | `/decisions/{id}/resolve`| `POST` | Approve/reject pending proposal | Form: `action=approve\|reject`, `csrf_token` |
-| `/tasks` | `GET` | Kanban board & task list | Filter by status (`backlog`, `ready`, `in-progress`) |
+| `/tasks` | `GET` | Kanban board & task list | Filter by state (`backlog`, `ready`, `working`) |
 | `/tasks/new` | `POST` | Create new v2 task | Form: `title`, `description`, `category`, `csrf_token` |
-| `/tasks/{id}/transition` | `POST` | Move task across state machine | Form: `target_state`, `expected_revision`, `csrf_token` |
-| `/tasks/api/events/stream`| `GET` | Real-time SSE event stream | Header: `Accept: text/event-stream` |
+| `/tasks/{id}/transition` | `POST` | Move task across state machine | Form: `new_state`, `expected_revision`, `csrf_token` |
+| `/tasks/api/events/stream`| `GET` | Real-time SSE event stream | Header: `Accept: text/event-stream`; optional `task_id` and `since_sequence` cursor |
 | `/federation` | `GET` | Fleet probe latencies & health | Returns node latency telemetry |
 
 ### Safe Note Mutation Protocol for AI Agents:
 Agents **must never** write directly to `.md` files on disk. Always submit through the proposal workflow:
-1. `GET /notes/view/<path>` to obtain `expected_revision` and `csrf_token`.
+1. `GET /notes/read?path=<path>` to obtain the current note and `csrf_token`.
 2. `POST /notes/propose` with proposed changes.
 3. If human-in-the-loop is enabled, wait for decision resolution via `/decisions`.
 4. Check `/receipts` for the immutable SHA-256 execution audit receipt.
