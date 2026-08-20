@@ -44,7 +44,7 @@ flowchart TD
         subgraph SEC_GATE ["🛡️ Security & Hardening Gateway"]
             AUTH["🔑 Session Auth Guard<br/>(power_gui_session)"]:::security
             CSRF["⚡ HMAC-SHA256 CSRF Guard<br/>(power_gui_csrf)"]:::security
-            CSP["🛑 Strict CSP & HSTS<br/>(read-only rootfs + tmpfs)"]:::security
+            CSP["🛑 Hardened CSP & HSTS<br/>(read-only rootfs + tmpfs)"]:::security
         end
 
         subgraph BFF_ROUTERS ["🎛️ FastAPI BFF Modules & Routes"]
@@ -117,10 +117,10 @@ flowchart TD
 - **Constant-Time Verification & Modern Hashing:** Supports plaintext constant-time comparison via `secrets.compare_digest` as well as secure password hashes (PBKDF2-HMAC-SHA256, Argon2id, and Bcrypt).
 - **Login Throttling & Exponential Lockout:** Brute-force protection limits failed login attempts (5 attempts window) and enforces progressive lockout delays with failed-attempt monitoring.
 - **Request-Bound CSRF Defense:** Double-submit / session-bound HMAC-SHA256 CSRF protection on all state-changing endpoints (`/notes/propose`, `/notes/apply`, `/tasks/new`, `/tasks/{id}/transition`, `/decisions/{id}/resolve`, `/logout`, `/login`).
-- **Hardened Container & Strict CSP:** Runs as dedicated non-root user `10001:10001` with `cap_drop: [ALL]`, `read_only` rootfs, and strict Content-Security-Policy without inline scripts.
+- **Hardened Container & CSP:** Runs as dedicated non-root user `10001:10001` with `cap_drop: [ALL]`, `read_only` rootfs, and a Content-Security-Policy that locks scripts to `'self'` (no inline scripts) while allowing inline styles via `'unsafe-inline'`.
 
 ### 3. 📋 Canonical Task Manager v2 Cockpit
-- **Interactive Kanban Swimlanes:** Track tasks across lifecycle states: `backlog` ➔ `ready` ➔ `in-progress` ➔ `blocked` / `input-required` / `auth-required` ➔ `completed` / `failed`.
+- **Interactive Kanban Swimlanes:** Track tasks across lifecycle states: `backlog` ➔ `ready` ➔ `working` ➔ `blocked` / `input-required` / `auth-required` ➔ `completed` / `failed`.
 - **Monotonic Revision Control:** Concurrency is protected via `expected_revision` checks to eliminate lost updates.
 - **Append-Only Event Ledger:** Every task transition produces an immutable audit event with a SHA-256 payload digest.
 - **Real-Time SSE Streaming:** Live status updates streamed directly to the browser via Server-Sent Events (`/tasks/api/events/stream`).
