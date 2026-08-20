@@ -345,4 +345,7 @@ def test_claims_files_do_not_advertise_a2a_agent_ready() -> None:
     compat = (root / "compatibility.json").read_text(encoding="utf-8")
     assert "c9bd6d299a244ab899cd87336d82ed27597380cc" in compat
     assert "container_digest" not in compat
-    assert '"digest": null' in compat
+    assert (
+        '"digest": "sha256:7a1cbbcc21a05bf32c704e091534a23445d0bb6b27953a938ab684119f0e7241"'
+        in compat
+    )
