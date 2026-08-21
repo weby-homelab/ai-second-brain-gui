@@ -107,7 +107,6 @@ def verify_password(
     if admin_password and secrets.compare_digest(plain_password, admin_password):
         return True
 
-
     # Check hashed password if set
     if admin_password_hash:
         clean_hash = admin_password_hash.strip()

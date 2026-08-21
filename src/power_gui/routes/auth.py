@@ -71,8 +71,14 @@ async def login_action(
         )
 
     # Validate CSRF token for login
-    session_id = request.cookies.get(settings.session_cookie_name) or request.cookies.get(settings.csrf_cookie_name)
-    if not session_id or not csrf_token or not verify_csrf_token(settings.secret_key, session_id, csrf_token):
+    session_id = request.cookies.get(settings.session_cookie_name) or request.cookies.get(
+        settings.csrf_cookie_name
+    )
+    if (
+        not session_id
+        or not csrf_token
+        or not verify_csrf_token(settings.secret_key, session_id, csrf_token)
+    ):
         logger.warning("Login CSRF verification failed from client %s", client_ip)
         return templates.TemplateResponse(
             request=request,
@@ -99,7 +105,9 @@ async def login_action(
 
     # Constant-time verification against plain password or hash
     if not verify_password(password, settings.admin_password, settings.admin_password_hash):
-        failure_count, is_now_locked, lockout_dur = global_login_rate_limiter.record_failure(client_ip)
+        failure_count, is_now_locked, lockout_dur = global_login_rate_limiter.record_failure(
+            client_ip
+        )
         if is_now_locked:
             return templates.TemplateResponse(
                 request=request,
@@ -119,7 +127,6 @@ async def login_action(
             },
             status_code=401,
         )
-
 
     # Successful authentication
     global_login_rate_limiter.record_success(client_ip)

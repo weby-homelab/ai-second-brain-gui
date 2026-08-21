@@ -5,7 +5,7 @@
 [![Docker Image](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/webyhomelab/power-gui)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
 [![Python](https://img.shields.io/badge/Python-3.11--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.5--candidate-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
+[![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.6--candidate-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Discovery](https://img.shields.io/badge/discovery-experimental%2Fcustom--discovery-8B5CF6?style=for-the-badge)](AGENTS.md)
@@ -16,7 +16,7 @@
 
 **P.O.W.E.R-GUI** is the production-grade, AI-native web cockpit and decision center for your personal [Obsidian](https://obsidian.md) knowledge base (Second Brain). Designed as a **Docker-First** application with a documented native profile, it bridges human operators and autonomous AI agents through the **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
-**Published baseline:** GUI `0.7.4` against the immutable public POWER `v3.6.5` `power.application.v2` contract (Python `>=3.11,<3.15`). The Docker image digest, SBOM/provenance and live E2E readback are recorded in [`compatibility.json`](compatibility.json). The public discovery surface remains experimental custom discovery; stable A2A and multi-writer Federation are not supported claims.
+**Suite candidate:** GUI `0.7.4` against the source-pinned POWER `v3.6.6` `power.application.v2` contract (Python `>=3.11,<3.15`). This worktree is a candidate: container digest, SBOM/provenance, publication and live E2E readback remain explicit release gates in [`compatibility.json`](compatibility.json). The public discovery surface remains experimental custom discovery; stable A2A and multi-writer Federation are not supported claims.
 
 ---
 
@@ -36,7 +36,7 @@ flowchart TD
 
     subgraph CLIENTS ["👤 Operator & Agent Interfaces"]
         USER["🖥️ Desktop & Mobile Web<br/>(WCAG 2.2 AA / Dark & Light)"]:::client
-        AGENT["🤖 Autonomous AI Agents<br/>(OpenCode / Gemini / FastMCP)"]:::client
+        AGENT["🤖 Autonomous AI Agents<br/>(OpenCode / Gemini / official MCP SDK)"]:::client
         TS["🔒 Tailscale Encrypted Mesh / LAN Proxy<br/>(Port 8008:8080)"]:::client
     end
 
@@ -153,7 +153,8 @@ flowchart TD
 
 ## 🐳 Docker Deployment (Standard & Recommended)
 
-P.O.W.E.R-GUI is designed to run exclusively in Docker.
+P.O.W.E.R-GUI is Docker-first and has a supported native Linux user-service
+profile backed by the POWER-managed venv and `power-gui` launcher.
 
 ### 1. One-Line Quickstart
 
@@ -276,36 +277,37 @@ Set `POWER_GUI_BIND_ADDRESS` to the LXC interface reachable by a host-level reve
 
 To run POWER-GUI directly as a managed systemd service:
 
-Create `/etc/systemd/system/power-gui.service`:
+Create `~/.config/systemd/user/power-gui.service`:
 
 ```ini
 [Unit]
 Description=P.O.W.E.R. GUI Web Cockpit
-After=network.target
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
 Type=simple
-User=root
-WorkingDirectory=/root/geminicli/projects/ai-second-brain-gui
-ExecStart=/root/geminicli/projects/ai-second-brain-gui/venv/bin/power-gui --host 127.0.0.1 --port 8008
-Restart=always
+WorkingDirectory=%h/.local/share/power
+ExecStart=%h/.local/bin/power-gui --host 127.0.0.1 --port 8080 --vault %h/brain
+Restart=on-failure
 RestartSec=3
-Environment=POWER_GUI_VAULT_PATH=/root/geminicli/brain
+EnvironmentFile=-%h/.config/power-gui.env
+Environment=POWER_GUI_VAULT_PATH=%h/brain
 Environment=POWER_GUI_HOST=127.0.0.1
-Environment=POWER_GUI_PORT=8008
+Environment=POWER_GUI_PORT=8080
 Environment=POWER_GUI_AUTH_ENABLED=true
-Environment=POWER_GUI_ADMIN_PASSWORD="<admin-password>"
-Environment=POWER_GUI_SECRET_KEY="<secret-key>"
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 ```
 
 Enable and start the service:
 
 ```bash
-systemctl daemon-reload
-systemctl enable power-gui --now
+systemctl --user daemon-reload
+systemctl --user enable --now power-gui.service
 ```
 
 ---
@@ -351,7 +353,7 @@ Configuration is managed entirely via environment variables (with the `POWER_GUI
 | `POWER_GUI_HSTS_ENABLED` | `bool` | `true` | Enable HTTP Strict Transport Security header in responses. |
 | `POWER_GUI_FEDERATION_NODES` | `str` | `""` | Optional JSON string of custom federated nodes to monitor and probe. |
 
-### POWER 3.6.5 read-model contract
+### POWER 3.6.6 read-model contract
 
 The GUI consumes `source.list`, `source.stats`, `source.read`, and `source.graph`
 through `PowerClient` only. After a successful POWER generation sync, list/stats/

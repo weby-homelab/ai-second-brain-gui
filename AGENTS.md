@@ -2,7 +2,7 @@
 
 > **Scope:** Operations / deployment playbook (not an A2A 1.0 or AAIF conformance claim)  
 > **Target Application:** `power-gui` (P.O.W.E.R-GUI v0.7.4)
-> **Audience:** Autonomous AI Agents (Claude, Gemini, Antigravity, OpenCode, Codex, Cursor, AutoGPT, LangChain, FastMCP)
+> **Audience:** Autonomous AI Agents (Claude, Gemini, Antigravity, OpenCode, Codex, Cursor, AutoGPT, LangChain, official MCP SDK clients)
 
 This document provides a deterministic, machine-actionable playbook for any AI agent tasked with deploying, configuring, verifying, or programmatically interacting with the **P.O.W.E.R-GUI Web Cockpit**. Runtime discovery metadata uses **`experimental/custom-discovery`** only.
 
@@ -145,45 +145,52 @@ When executing inside an unprivileged Proxmox LXC container:
 
 ---
 
-### Playbook C: Native Python Systemd Service
+### Playbook C: Native Linux systemd-user Service
 
 When deploying directly on bare-metal or a VM:
 
-1. **Environment & Dependencies:**
+1. **Install the exact suite wheel pair into the managed profile:**
    ```bash
-   python3 -m venv venv
-   ./venv/bin/pip install -U pip setuptools wheel
-   ./venv/bin/pip install -e ".[dev]"
+   power integrations install \
+     --power-wheel /path/to/power_framework-3.6.6-py3-none-any.whl \
+     --gui-wheel /path/to/power_gui-0.7.4-py3-none-any.whl
+   power integrations install \
+     --power-wheel /path/to/power_framework-3.6.6-py3-none-any.whl \
+     --gui-wheel /path/to/power_gui-0.7.4-py3-none-any.whl \
+     --apply --approved
    ```
+   Planning is read-only; the managed venv is
+   `~/.local/share/power/venv` and launchers are under `~/.local/bin`.
 
-2. **Systemd Service Setup (`/etc/systemd/system/power-gui.service`):**
+2. **Systemd user service setup (`~/.config/systemd/user/power-gui.service`):**
    ```ini
    [Unit]
    Description=P.O.W.E.R. GUI Web Cockpit
-   After=network.target
+   After=network-online.target
+   Wants=network-online.target
+   StartLimitIntervalSec=60
+   StartLimitBurst=5
 
    [Service]
    Type=simple
-   User=root
-   WorkingDirectory=/path/to/ai-second-brain-gui
-   ExecStart=/path/to/ai-second-brain-gui/venv/bin/power-gui --host 127.0.0.1 --port 8008
-   Restart=always
+   WorkingDirectory=%h/.local/share/power
+   ExecStart=%h/.local/bin/power-gui --host 127.0.0.1 --port 8080 --vault %h/brain
+   Restart=on-failure
    RestartSec=3
-   Environment=POWER_GUI_VAULT_PATH=/path/to/brain
+   EnvironmentFile=-%h/.config/power-gui.env
+   Environment=POWER_GUI_VAULT_PATH=%h/brain
    Environment=POWER_GUI_HOST=127.0.0.1
-   Environment=POWER_GUI_PORT=8008
+   Environment=POWER_GUI_PORT=8080
    Environment=POWER_GUI_AUTH_ENABLED=true
-   Environment=POWER_GUI_ADMIN_PASSWORD="<admin-password>"
-   Environment=POWER_GUI_SECRET_KEY="<secret-key>"
 
    [Install]
-   WantedBy=multi-user.target
+   WantedBy=default.target
    ```
 
 3. **Start Service:**
    ```bash
-   systemctl daemon-reload
-   systemctl enable power-gui --now
+   systemctl --user daemon-reload
+   systemctl --user enable --now power-gui.service
    ```
 
 ---

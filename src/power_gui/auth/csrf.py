@@ -62,6 +62,7 @@ async def validate_csrf(request: Request) -> None:
     settings: Settings = getattr(request.app.state, "settings", None)
     if not settings:
         from ..config import get_global_settings
+
         settings = get_global_settings()
 
     # Try header first (for API / fetch requests)
@@ -71,7 +72,10 @@ async def validate_csrf(request: Request) -> None:
     # If not in header and content type is form, parse form body
     if not header_csrf:
         content_type = request.headers.get("content-type", "")
-        if "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
+        if (
+            "application/x-www-form-urlencoded" in content_type
+            or "multipart/form-data" in content_type
+        ):
             try:
                 form = await request.form()
                 form_csrf = form.get("csrf_token")  # type: ignore[assignment]
@@ -79,9 +83,15 @@ async def validate_csrf(request: Request) -> None:
                 logger.warning("Failed to parse form for CSRF token: %s", exc)
 
     extracted_csrf = header_csrf or form_csrf
-    session_id = request.cookies.get(settings.session_cookie_name) or request.cookies.get(settings.csrf_cookie_name)
+    session_id = request.cookies.get(settings.session_cookie_name) or request.cookies.get(
+        settings.csrf_cookie_name
+    )
 
-    if not extracted_csrf or not session_id or not verify_csrf_token(settings.secret_key, session_id, str(extracted_csrf)):
+    if (
+        not extracted_csrf
+        or not session_id
+        or not verify_csrf_token(settings.secret_key, session_id, str(extracted_csrf))
+    ):
         logger.warning(
             "CSRF validation failed for path=%s method=%s (has_token=%s, has_cookie=%s)",
             request.url.path,
@@ -93,5 +103,3 @@ async def validate_csrf(request: Request) -> None:
             status_code=403,
             detail="CSRF token validation failed. Please refresh the page and try again.",
         )
-
-

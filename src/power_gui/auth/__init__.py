@@ -17,4 +17,3 @@ __all__ = [
     "verify_csrf_token",
     "verify_password",
 ]
-

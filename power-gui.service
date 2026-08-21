@@ -1,19 +1,22 @@
 [Unit]
 Description=P.O.W.E.R. GUI Web Cockpit
-After=network.target
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
 Type=simple
-User=www-data
-Group=www-data
-WorkingDirectory=/opt/power-gui
-ExecStart=/usr/local/bin/power-gui --host 127.0.0.1 --port 8080
-Restart=always
+WorkingDirectory=%h/.local/share/power
+ExecStart=%h/.local/bin/power-gui --host 127.0.0.1 --port 8080 --vault %h/brain
+Restart=on-failure
 RestartSec=3
-Environment=POWER_GUI_VAULT_PATH=/var/lib/power/vault
+EnvironmentFile=-%h/.config/power-gui.env
+Environment=POWER_GUI_VAULT_PATH=%h/brain
 Environment=POWER_GUI_HOST=127.0.0.1
 Environment=POWER_GUI_PORT=8080
 Environment=POWER_GUI_AUTH_ENABLED=true
+Environment=XDG_CACHE_HOME=%h/.cache/power
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

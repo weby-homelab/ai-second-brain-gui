@@ -97,4 +97,3 @@ def test_get_request_theme() -> None:
     req3.query_params = {}
     req3.cookies = {}
     assert get_request_theme(req3) == "dark"
-
