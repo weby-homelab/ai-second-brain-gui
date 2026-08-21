@@ -343,6 +343,6 @@ def test_claims_files_do_not_advertise_a2a_agent_ready() -> None:
         assert "A2A-Agent_Ready" not in text
         assert "A2A/2026.1" not in text
     compat = (root / "compatibility.json").read_text(encoding="utf-8")
-    assert "527cc8a77187e9fa6d724b604d1a6634545da575" in compat
+    assert "d53cd8e9b718009f393dec03c54e4451e78853bb" in compat
     assert "container_digest" not in compat
     assert '"digest": null' in compat

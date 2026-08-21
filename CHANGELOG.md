@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.5 — 2026-08-21
+
+### Release
+
+- Raised the supported runtime and CI/E2E validation boundary to Python 3.13
+  and 3.14 only (`>=3.13,<3.15`).
+- Aligned the GUI with the published POWER `v3.6.7` release and pinned its
+  immutable merge commit for native and Docker installation.
+
 ## 0.7.4 — 2026-08-20
 
 ### Release
