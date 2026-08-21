@@ -7,7 +7,7 @@ name = "power-gui"
 version = "0.7.4"
 description = "Secure, accessible, local-first web cockpit and decision center for P.O.W.E.R."
 readme = "README.md"
-requires-python = ">=3.11,<3.15"
+requires-python = ">=3.13,<3.15"
 license = { text = "MIT" }
 authors = [{ name = "Weby Homelab", email = "rekvizitor.ua@gmail.com" }]
 dependencies = [
@@ -53,7 +53,7 @@ power_gui = [
 [tool.ruff]
 
 line-length = 100
-target-version = "py311"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = [

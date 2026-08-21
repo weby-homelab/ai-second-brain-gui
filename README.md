@@ -4,7 +4,7 @@
 
 [![Docker Image](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/webyhomelab/power-gui)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Python](https://img.shields.io/badge/Python-3.11--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![Python](https://img.shields.io/badge/Python-3.13--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
 [![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.6--candidate-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
@@ -16,7 +16,7 @@
 
 **P.O.W.E.R-GUI** is the production-grade, AI-native web cockpit and decision center for your personal [Obsidian](https://obsidian.md) knowledge base (Second Brain). Designed as a **Docker-First** application with a documented native profile, it bridges human operators and autonomous AI agents through the **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
-**Suite candidate:** GUI `0.7.4` against the source-pinned POWER `v3.6.6` `power.application.v2` contract (Python `>=3.11,<3.15`). This worktree is a candidate: container digest, SBOM/provenance, publication and live E2E readback remain explicit release gates in [`compatibility.json`](compatibility.json). The public discovery surface remains experimental custom discovery; stable A2A and multi-writer Federation are not supported claims.
+**Suite candidate:** GUI `0.7.4` against the source-pinned POWER `v3.6.6` `power.application.v2` contract (Python `>=3.13,<3.15`). This worktree is a candidate: container digest, SBOM/provenance, publication and live E2E readback remain explicit release gates in [`compatibility.json`](compatibility.json). The public discovery surface remains experimental custom discovery; stable A2A and multi-writer Federation are not supported claims.
 
 ---
 

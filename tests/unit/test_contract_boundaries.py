@@ -113,7 +113,7 @@ def test_manifest_is_machine_readable_and_does_not_claim_unpublished_artifacts()
         "source.graph",
     ]
     assert manifest["power_gui"]["version"] == "0.7.4"
-    assert manifest["runtime"]["python"] == ">=3.11,<3.15"
+    assert manifest["runtime"]["python"] == ">=3.13,<3.15"
     assert manifest["status"] == "candidate"
     assert manifest["power_gui"]["release_tag"] == "v0.7.4"
     assert manifest["container"]["digest"] is None
