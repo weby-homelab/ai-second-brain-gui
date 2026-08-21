@@ -9,5 +9,5 @@ markdown>=3.6.0
 pygments>=2.18.0
 itsdangerous>=2.2.0
 anyio>=4.4.0
-power-framework @ git+https://github.com/weby-homelab/power-framework.git@527cc8a77187e9fa6d724b604d1a6634545da575
+power-framework @ git+https://github.com/weby-homelab/power-framework.git@d53cd8e9b718009f393dec03c54e4451e78853bb
 python-dotenv>=1.0.0

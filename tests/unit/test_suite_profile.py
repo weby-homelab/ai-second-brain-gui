@@ -6,9 +6,8 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[2]
-POWER_SHA = "527cc8a77187e9fa6d724b604d1a6634545da575"
-POWER_TAG_COMMIT = "6c6b6ae52f4b29382f0d2ec82fbb4e75ba1f471a"
-GUI_TAG_COMMIT = "f1c918c7a8c6de011ff0553f08d00675ad296f59"
+POWER_SHA = "d53cd8e9b718009f393dec03c54e4451e78853bb"
+POWER_TAG_COMMIT = "d53cd8e9b718009f393dec03c54e4451e78853bb"
 
 
 def test_native_service_is_user_scoped_loopback_and_opt_in() -> None:
@@ -36,12 +35,13 @@ def test_container_profile_is_pinned_non_root_and_health_checked() -> None:
 
 def test_compatibility_manifest_does_not_claim_unpublished_digest() -> None:
     manifest = json.loads((ROOT / "compatibility.json").read_text(encoding="utf-8"))
-    assert manifest["power_core"]["candidate_version"] == "3.6.6"
+    assert manifest["power_core"]["candidate_version"] == "3.6.7"
     assert manifest["power_core"]["dependency"]["revision"] == POWER_SHA
     assert manifest["power_core"]["dependency"]["tag_commit"] == POWER_TAG_COMMIT
-    assert manifest["power_gui"]["release_tag_commit"] == GUI_TAG_COMMIT
+    assert manifest["power_gui"]["version"] == "0.7.5"
+    assert manifest["power_gui"]["release_tag"] is None
     assert manifest["container"]["digest"] is None
-    assert manifest["container"]["digest_status"] == "not_published_candidate"
+    assert manifest["container"]["digest_status"] == "not_published"
 
 
 def test_accessibility_profile_has_focus_motion_and_form_guardrails() -> None:

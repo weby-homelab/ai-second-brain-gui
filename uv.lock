@@ -348,8 +348,8 @@ wheels = [
 
 [[package]]
 name = "power-framework"
-version = "3.6.6"
-source = { git = "https://github.com/weby-homelab/power-framework.git?rev=527cc8a77187e9fa6d724b604d1a6634545da575#527cc8a77187e9fa6d724b604d1a6634545da575" }
+version = "3.6.7"
+source = { git = "https://github.com/weby-homelab/power-framework.git?rev=d53cd8e9b718009f393dec03c54e4451e78853bb#d53cd8e9b718009f393dec03c54e4451e78853bb" }
 dependencies = [
     { name = "defusedxml" },
     { name = "pathspec" },
@@ -359,7 +359,7 @@ dependencies = [
 
 [[package]]
 name = "power-gui"
-version = "0.7.4"
+version = "0.7.5"
 source = { editable = "." }
 dependencies = [
     { name = "anyio" },
@@ -394,7 +394,7 @@ requires-dist = [
     { name = "itsdangerous", specifier = ">=2.2.0" },
     { name = "jinja2", specifier = ">=3.1.4" },
     { name = "markdown", specifier = ">=3.6.0" },
-    { name = "power-framework", git = "https://github.com/weby-homelab/power-framework.git?rev=527cc8a77187e9fa6d724b604d1a6634545da575" },
+    { name = "power-framework", git = "https://github.com/weby-homelab/power-framework.git?rev=d53cd8e9b718009f393dec03c54e4451e78853bb" },
     { name = "pydantic", specifier = ">=2.7.0" },
     { name = "pydantic-settings", specifier = ">=2.2.0" },
     { name = "pygments", specifier = ">=2.18.0" },
