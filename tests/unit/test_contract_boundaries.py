@@ -102,7 +102,7 @@ async def test_offload_never_exceeds_shared_worker_bound() -> None:
     assert peak == 1
 
 
-def test_manifest_is_machine_readable_and_records_published_digest() -> None:
+def test_manifest_is_machine_readable_and_does_not_claim_unpublished_artifacts() -> None:
     manifest = json.loads((Path(__file__).parents[2] / "compatibility.json").read_text())
     assert manifest["manifest_schema"] == "power-gui.compatibility.v2"
     assert manifest["power_core"]["schema_version"] == "power.application.v2"
@@ -114,11 +114,10 @@ def test_manifest_is_machine_readable_and_records_published_digest() -> None:
     ]
     assert manifest["power_gui"]["version"] == "0.7.4"
     assert manifest["runtime"]["python"] == ">=3.11,<3.15"
-    assert manifest["status"] == "published"
+    assert manifest["status"] == "candidate"
     assert manifest["power_gui"]["release_tag"] == "v0.7.4"
-    assert manifest["container"]["digest"] == (
-        "sha256:7a1cbbcc21a05bf32c704e091534a23445d0bb6b27953a938ab684119f0e7241"
-    )
+    assert manifest["container"]["digest"] is None
+    assert manifest["container"]["digest_status"] == "not_published_candidate"
     assert {item["name"] for item in manifest["capabilities"]["disabled"]} >= {
         "a2a.stable",
         "federation.multi_writer",

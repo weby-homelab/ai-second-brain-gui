@@ -87,7 +87,12 @@ class LoginRateLimiter:
                 )
                 return failure_count, True, int(lockout_duration)
 
-            logger.info("Failed login attempt recorded for key=%s (%d/%d)", key, failure_count, self.max_attempts)
+            logger.info(
+                "Failed login attempt recorded for key=%s (%d/%d)",
+                key,
+                failure_count,
+                self.max_attempts,
+            )
             return failure_count, False, 0
 
     def record_success(self, key: str) -> None:

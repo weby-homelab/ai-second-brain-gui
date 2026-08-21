@@ -141,7 +141,6 @@ def test_hashed_password_authentication(test_vault: Path) -> None:
     assert resp_good.cookies.get("power_gui_session") is not None
 
 
-
 def test_csrf_rejection_on_missing_or_tampered_token(test_vault: Path) -> None:
     """Ensure state-changing POST routes strictly reject missing or forged CSRF tokens."""
     settings = Settings(vault_path=test_vault, auth_enabled=False, cookie_secure=False)
@@ -160,7 +159,11 @@ def test_csrf_rejection_on_missing_or_tampered_token(test_vault: Path) -> None:
     csrf = _extract_csrf(resp_edit)
     resp_bad_csrf = client.post(
         "/notes/propose",
-        data={"path": "01_Projects/TestDoc.md", "content": "# Updated", "csrf_token": csrf + "forged"},
+        data={
+            "path": "01_Projects/TestDoc.md",
+            "content": "# Updated",
+            "csrf_token": csrf + "forged",
+        },
     )
     assert resp_bad_csrf.status_code == 403
 
@@ -230,8 +233,7 @@ def test_logout_requires_csrf_token(test_vault: Path) -> None:
 
     assert client.post("/logout").status_code == 403
     assert (
-        client.post("/logout", data={"csrf_token": csrf}, follow_redirects=False).status_code
-        == 303
+        client.post("/logout", data={"csrf_token": csrf}, follow_redirects=False).status_code == 303
     )
 
 

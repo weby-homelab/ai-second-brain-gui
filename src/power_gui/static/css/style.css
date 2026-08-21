@@ -107,11 +107,10 @@ body {
     color: #f3f4f6;
     font-size: 14px;
     font-family: 'Inter', sans-serif;
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .search-box input:focus {
-    outline: none;
     border-color: #6366f1;
     background: rgba(255, 255, 255, 0.05);
     box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
@@ -145,7 +144,7 @@ body {
     color: #9ca3af;
     text-decoration: none;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .nav-item:hover {
@@ -417,7 +416,7 @@ body {
     border-radius: 10px;
     color: #f3f4f6;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .recent-item:hover {
@@ -504,7 +503,7 @@ body {
     text-decoration: none;
     font-size: 12px;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .category-btn:hover {
@@ -572,7 +571,7 @@ body {
     color: #818cf8;
     text-decoration: none;
     border-bottom: 1px dashed rgba(129, 140, 248, 0.4);
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, border-bottom-color 0.2s ease;
 }
 
 .note-content a:hover {
@@ -739,7 +738,7 @@ body {
     background: rgba(255, 255, 255, 0.01);
     border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: 12px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .search-item:hover {
@@ -762,7 +761,7 @@ body {
     color: #ffffff;
     text-decoration: none;
     border-bottom: 1px solid transparent;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, border-bottom-color 0.2s ease;
     word-break: break-word;
     overflow-wrap: anywhere;
 }
@@ -847,7 +846,7 @@ body {
     padding: 8px 12px;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
     line-height: 1;
 }
 
@@ -1146,12 +1145,11 @@ body {
     font-size: 15px;
     line-height: 1.6;
     resize: vertical;
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
     backdrop-filter: blur(5px);
 }
 
 .editor-textarea:focus {
-    outline: none;
     border-color: #6366f1;
     background: rgba(255, 255, 255, 0.03);
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
@@ -1171,7 +1169,7 @@ body {
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
     box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
     display: inline-flex;
     align-items: center;
@@ -1191,7 +1189,7 @@ body {
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
     text-decoration: none;
     text-align: center;
     display: inline-flex;
@@ -1204,5 +1202,27 @@ body {
     border-color: rgba(255, 255, 255, 0.15);
 }
 
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
 
 
