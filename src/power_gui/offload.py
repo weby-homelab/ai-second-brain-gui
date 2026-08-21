@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Callable
 from functools import partial
-from typing import TYPE_CHECKING, ParamSpec, TypeVar
+from typing import TYPE_CHECKING
 
 import anyio
 from fastapi import Request
@@ -15,11 +15,8 @@ from .errors import PowerCallTimeoutError, public_http_exception
 if TYPE_CHECKING:
     from .config import Settings
 
-P = ParamSpec("P")
-R = TypeVar("R")
 
-
-async def run_power_call(
+async def run_power_call[**P, R](
     request: Request,
     settings: Settings,
     function: Callable[P, R],

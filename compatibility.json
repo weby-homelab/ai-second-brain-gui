@@ -33,7 +33,7 @@
     "revision_strategy": "Record the immutable candidate base and release-tag commit separately until suite publication."
   },
   "runtime": {
-    "python": ">=3.11,<3.15",
+    "python": ">=3.13,<3.15",
     "supported_profiles": ["docker", "native"]
   },
   "capabilities": {

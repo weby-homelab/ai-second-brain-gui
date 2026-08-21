@@ -16,7 +16,7 @@ This document provides a deterministic, machine-actionable playbook for any AI a
   "name": "power-gui",
   "version": "0.7.4",
   "description": "Production-grade, AI-native web cockpit and decision center for Obsidian Second Brain",
-  "runtime": "FastAPI BFF / Python 3.11-3.14",
+  "runtime": "FastAPI BFF / Python 3.13-3.14",
   "security_model": {
     "user_id": "10001:10001 (non-root)",
     "capabilities": "cap_drop: [ALL]",
