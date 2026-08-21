@@ -42,3 +42,20 @@ def test_compatibility_manifest_does_not_claim_unpublished_digest() -> None:
     assert manifest["power_gui"]["release_tag_commit"] == GUI_TAG_COMMIT
     assert manifest["container"]["digest"] is None
     assert manifest["container"]["digest_status"] == "not_published_candidate"
+
+
+def test_accessibility_profile_has_focus_motion_and_form_guardrails() -> None:
+    css = (ROOT / "src/power_gui/static/css/style.css").read_text(encoding="utf-8")
+    base = (ROOT / "src/power_gui/templates/base.html").read_text(encoding="utf-8")
+    graph = (ROOT / "src/power_gui/templates/graph.html").read_text(encoding="utf-8")
+    search = (ROOT / "src/power_gui/templates/search.html").read_text(encoding="utf-8")
+    decisions = (ROOT / "src/power_gui/templates/decisions.html").read_text(encoding="utf-8")
+
+    assert "transition: all" not in css
+    assert "prefers-reduced-motion: reduce" in css
+    assert ".skip-link" in base and 'id="main-content" tabindex="-1"' in base
+    assert "outline: none" not in base
+    for control_id in ("graphSearchInput", "graphCategorySelect", "graphDegreeSelect"):
+        assert f'for="{control_id}"' in graph
+    assert 'for="searchQuery"' in search and 'id="searchQuery"' in search
+    assert 'for="decisionInputValue"' in decisions and 'id="decisionInputValue"' in decisions

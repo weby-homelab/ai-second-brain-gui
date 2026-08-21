@@ -82,12 +82,14 @@ content %}
       action="/decisions/{{ d.decision_id if d is mapping else d.get('decision_id') }}/resolve"
       method="POST"
       style="display: flex; gap: 12px; align-items: center"
-    >
+      >
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <label class="sr-only" for="decisionInputValue">Відповідь або значення рішення</label>
       <input
         type="text"
+        id="decisionInputValue"
         name="input_value"
-        placeholder="Введіть відповідь / значення (опціонально)..."
+        placeholder="Введіть відповідь / значення (опціонально)…"
         style="
           flex: 1;
           padding: 8px 12px;

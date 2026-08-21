@@ -20,16 +20,19 @@
 <!-- Graph Filter Controls Toolbar -->
 <div class="card" style="margin-bottom: 16px; padding: 12px 16px; background: var(--bg-surface-elevated); border: 1px solid var(--border);">
     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
-        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; flex: 1; min-width: 280px;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; flex: 1; min-width: 280px;">
             <div style="position: relative; flex: 1; min-width: 180px; max-width: 320px;">
-                <input type="text" id="graphSearchInput" placeholder="🔍 Фільтр за назвою чи шляхом..." class="form-control" style="width: 100%; padding: 6px 12px; font-size: 0.85rem; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px;">
+                <label class="sr-only" for="graphSearchInput">Фільтр графа за назвою або шляхом</label>
+                <input type="text" id="graphSearchInput" placeholder="🔍 Фільтр за назвою чи шляхом…" class="form-control" style="width: 100%; padding: 6px 12px; font-size: 0.85rem; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px;">
             </div>
             <div style="min-width: 150px;">
+                <label class="sr-only" for="graphCategorySelect">Категорія графа</label>
                 <select id="graphCategorySelect" class="form-control" style="width: 100%; padding: 6px 10px; font-size: 0.85rem; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px;">
                     <option value="">Усі категорії (All)</option>
                 </select>
             </div>
             <div style="min-width: 160px;">
+                <label class="sr-only" for="graphDegreeSelect">Мінімальний ступінь зв’язку</label>
                 <select id="graphDegreeSelect" class="form-control" style="width: 100%; padding: 6px 10px; font-size: 0.85rem; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px;">
                     <option value="0">Всі вузли (разом із сиротами)</option>
                     <option value="1">Тільки зв'язані (Degree ≥ 1)</option>
