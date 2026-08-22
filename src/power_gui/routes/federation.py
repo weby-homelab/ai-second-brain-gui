@@ -142,7 +142,7 @@ async def a2a_agent_card(
         run_power_call(request, settings, client.get_source_stats),
         run_power_call(request, settings, client.discover),
     )
-    power_version = getattr(power_framework, "__version__", "3.7.2")
+    power_version = getattr(power_framework, "__version__", "3.7.3")
 
     card = {
         "schema_version": "custom-discovery.v1",
