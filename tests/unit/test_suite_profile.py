@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[2]
-POWER_SHA = "7cd0b624cdac71d4d137c8b2ce53b299863512f7"
+POWER_SHA = "be1496ae067ee66075a969335afafe315a4ac669"
 
 
 def test_native_service_is_user_scoped_loopback_and_opt_in() -> None:
