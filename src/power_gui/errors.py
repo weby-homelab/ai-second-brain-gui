@@ -14,7 +14,7 @@ try:
 except ImportError:  # Compatibility with older POWER baselines.
 
     class ConflictError(ValueError, RuntimeError):
-        """Local compatibility type for the POWER 3.7.1 core error boundary."""
+        """Local compatibility type for the POWER 3.7.2 core error boundary."""
 
         code = "conflict"
         status_code = 409

@@ -1,5 +1,11 @@
 # Changelog
 
+# 0.7.8 — POWER 3.7.2 corrective suite
+
+- Pin the GUI package and multi-arch container build to POWER `v3.7.2`.
+- Carry the shared exact constraints digest for the corrected native installer
+  and retain candidate wording until public release readback completes.
+
 ## 0.7.7 — POWER 3.7.1 constraints-bound patch
 
 - Consume the shared exact suite constraints in the Docker build and verify
