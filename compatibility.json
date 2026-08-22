@@ -2,19 +2,19 @@
   "manifest_schema": "power-gui.compatibility.v2",
   "status": "candidate_not_published",
   "power_core": {
-    "candidate_version": "3.7.1",
-    "package_version_at_public_revision": "3.6.7",
+    "candidate_version": "3.7.2",
+    "package_version_at_public_revision": "3.7.2",
     "schema_version": "power.application.v2",
-    "version_strategy": "The application schema is the compatibility contract; public readback remains 3.6.7 until the 3.7.1 candidate is released.",
+    "version_strategy": "The application schema is the compatibility contract; public v3.7.2 core readback is complete while the compatible GUI candidate remains unpublished.",
     "dependency": {
       "strategy": "exact-candidate-source-commit",
       "repository": "https://github.com/weby-homelab/power-framework.git",
-      "revision": "8e172b82b98c8980a83e433744ea2ed6cdedce82",
-      "revision_ref": "POWER v3.7.1 signed release tag; public asset readback pending",
-      "tag": "v3.7.1",
-      "tag_commit": "8e172b82b98c8980a83e433744ea2ed6cdedce82"
+      "revision": "a70ecbba880a3e9d13e7cdac3b729987169a8d13",
+      "revision_ref": "POWER v3.7.2 signed release tag; GUI pair publication pending",
+      "tag": "v3.7.2",
+      "tag_commit": "a70ecbba880a3e9d13e7cdac3b729987169a8d13"
     },
-    "candidate_revision": "8e172b82b98c8980a83e433744ea2ed6cdedce82",
+    "candidate_revision": "a70ecbba880a3e9d13e7cdac3b729987169a8d13",
     "candidate_publication_required": true,
     "source_inventory": [
       "source.list",
@@ -25,11 +25,11 @@
   },
   "power_gui": {
     "name": "power-gui",
-    "version": "0.7.7",
+    "version": "0.7.8",
     "base_revision": "17bca13c455079c886940fa47465b16c529eaaf1",
     "base_revision_ref": "origin/main merged Python 3.13/3.14 support",
-    "candidate_revision": "e2a1f34b4fbb45f84ecd2cbe1b58cc3c06ae96c4",
-    "candidate_revision_ref": "fix/power-gui-0.7.7-constraints constraints-bound patch commit; public GUI tag pending",
+    "candidate_revision": "fd4e67c9db559a07dbefb57cf187f06e0532ecd4",
+    "candidate_revision_ref": "release/power-gui-0.7.8-correction candidate base; public GUI tag pending",
     "release_tag": null,
     "revision_strategy": "Record the immutable candidate base and release-tag commit separately until suite publication."
   },
@@ -62,15 +62,15 @@
     ]
   },
   "container": {
-    "image": "webyhomelab/power-gui:0.7.7",
+    "image": "webyhomelab/power-gui:0.7.8",
     "constraints": "release/power-suite.constraints.txt",
-    "constraints_sha256": "e0ded6bc17bbbfc38a0834dcd32fad50e2fc3a2d23b03145deca76920e948898",
+    "constraints_sha256": "7f44b449a46b784083ded0b7b94c99c6a26f090759a6ae5a12674146982a7eca",
     "digest": null,
     "digest_status": "not_published"
   },
   "verification": {
-    "local_candidate_core": "POWER v3.7.1 source revision 8e172b82b98c8980a83e433744ea2ed6cdedce82; public asset readback pending",
-    "local_candidate_gui": "GUI 0.7.7 release candidate with shared constraints from source revision pending; tag and image readback remain release gates",
-    "clean_install_pair": "POWER v3.7.1 is tagged; the constraints-bound 3.7.1/0.7.7 public pair is not yet published"
+    "local_candidate_core": "POWER v3.7.2 source revision a70ecbba880a3e9d13e7cdac3b729987169a8d13; public asset readback pending",
+    "local_candidate_gui": "GUI 0.7.8 release candidate with shared constraints; tag and image readback remain release gates",
+    "clean_install_pair": "POWER v3.7.2 is tagged; the constraints-bound 3.7.2/0.7.8 public pair is not yet published"
   }
 }
