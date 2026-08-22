@@ -50,7 +50,35 @@ jobs:
         run: echo "SOURCE_DATE_EPOCH=$(git show -s --format=%ct "$GITHUB_SHA")" >> "$GITHUB_ENV"
 
       - name: Build wheel and sdist
-        run: python -m build --outdir dist
+        run: |
+          set -euo pipefail
+          build_root="$RUNNER_TEMP/power-gui-repro-build"
+          source_one="$build_root/source-one"
+          source_two="$build_root/source-two"
+          dist_one="$build_root/dist-one"
+          dist_two="$build_root/dist-two"
+          mkdir -p "$source_one" "$source_two" "$dist_one" "$dist_two"
+          git archive --format=tar HEAD | tar -xf - -C "$source_one"
+          git archive --format=tar HEAD | tar -xf - -C "$source_two"
+
+          python -m build --outdir "$dist_one" "$source_one"
+          python scripts/normalize_sdist.py "$dist_one"/*.tar.gz
+          python -m build --outdir "$dist_two" "$source_two"
+          python scripts/normalize_sdist.py "$dist_two"/*.tar.gz
+
+          mapfile -t wheels_one < <(find "$dist_one" -maxdepth 1 -type f -name '*.whl' -print)
+          mapfile -t wheels_two < <(find "$dist_two" -maxdepth 1 -type f -name '*.whl' -print)
+          mapfile -t sdists_one < <(find "$dist_one" -maxdepth 1 -type f -name '*.tar.gz' -print)
+          mapfile -t sdists_two < <(find "$dist_two" -maxdepth 1 -type f -name '*.tar.gz' -print)
+          test "${#wheels_one[@]}" -eq 1
+          test "${#wheels_two[@]}" -eq 1
+          test "${#sdists_one[@]}" -eq 1
+          test "${#sdists_two[@]}" -eq 1
+          cmp -- "${wheels_one[0]}" "${wheels_two[0]}"
+          cmp -- "${sdists_one[0]}" "${sdists_two[0]}"
+
+          mkdir -p dist
+          cp -- "${wheels_one[0]}" "${sdists_one[0]}" dist/
 
       - name: Generate SPDX SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
@@ -67,7 +95,7 @@ jobs:
           PYTHONPATH="$smoke_dir" python - <<'PY'
           import power_gui
 
-          assert power_gui.__version__ == "0.7.9"
+          assert power_gui.__version__ == "0.7.10"
           print("GUI wheel smoke passed")
           PY
 
@@ -79,7 +107,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
         with:
-          body_path: release/release-0.7.9.md
+          body_path: release/release-0.7.10.md
           generate_release_notes: false
           files: |
             dist/power_gui-*.whl
@@ -155,7 +183,7 @@ jobs:
           release = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
           assets_dir = pathlib.Path(sys.argv[2])
           receipt = json.loads((assets_dir / "power-gui.release-receipt.json").read_text(encoding="utf-8"))
-          notes = pathlib.Path("release/release-0.7.9.md").read_text(encoding="utf-8")
+          notes = pathlib.Path("release/release-0.7.10.md").read_text(encoding="utf-8")
           assert release["tagName"] == receipt["release"]["tag"]
           assert release["body"] == notes
           public_names = {asset["name"] for asset in release["assets"]}

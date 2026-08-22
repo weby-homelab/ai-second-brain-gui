@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "power-gui"
-version = "0.7.9"
+version = "0.7.10"
 description = "Secure, accessible, local-first web cockpit and decision center for P.O.W.E.R."
 readme = "README.md"
 requires-python = ">=3.13,<3.15"
@@ -22,7 +22,7 @@ dependencies = [
     "pygments>=2.18.0",
     "itsdangerous>=2.2.0",
     "anyio>=4.4.0",
-    "power-framework @ git+https://github.com/weby-homelab/power-framework.git@925f490aefbffff72ed92fd736210262ed445160",
+    "power-framework==3.7.4",
 ]
 
 [project.optional-dependencies]
@@ -36,6 +36,9 @@ dev = [
 
 [project.scripts]
 power-gui = "power_gui.app:main"
+
+[tool.uv.sources]
+power-framework = { git = "https://github.com/weby-homelab/power-framework.git", rev = "eb8afbfdc9f067e7b11b8679390e1327a9becf6c" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -70,4 +73,4 @@ ignore = ["E501", "B008", "RUF001", "RUF002", "RUF003"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]

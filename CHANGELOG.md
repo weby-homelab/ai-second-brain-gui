@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.10 — POWER 3.7.4 final-slot corrective suite
+
+- Bind the GUI package, native candidate, and container build to the exact
+  POWER `3.7.4` corrective source revision.
+- Exercise the GUI through the managed final-location release slot and keep
+  publication, immutable image digest, and public readback as release gates.
+
 # 0.7.9 — POWER 3.7.3 corrective suite
 
 - Pin the GUI package and multi-arch container build to POWER `v3.7.3`.
