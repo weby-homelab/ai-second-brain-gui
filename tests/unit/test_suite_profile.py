@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -24,6 +25,10 @@ def test_native_service_is_user_scoped_loopback_and_opt_in() -> None:
 def test_container_profile_is_pinned_non_root_and_health_checked() -> None:
     dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
     assert f"ARG POWER_FRAMEWORK_COMMIT={POWER_SHA}" in dockerfile
+    assert "COPY release/power-suite.constraints.txt /app/power-suite.constraints.txt" in dockerfile
+    assert "--constraint /app/power-suite.constraints.txt" in dockerfile
+    constraints = (ROOT / "release" / "power-suite.constraints.txt").read_bytes()
+    assert hashlib.sha256(constraints).hexdigest() == "e0ded6bc17bbbfc38a0834dcd32fad50e2fc3a2d23b03145deca76920e948898"
     assert "USER 10001:10001" in dockerfile
     assert "HEALTHCHECK" in dockerfile
     assert "POWER_GUI_HOST=0.0.0.0" in dockerfile
@@ -39,7 +44,7 @@ def test_compatibility_manifest_does_not_claim_unpublished_digest() -> None:
     assert manifest["power_core"]["dependency"]["revision"] == POWER_SHA
     assert manifest["power_core"]["dependency"]["tag"] == "v3.7.1"
     assert manifest["power_core"]["candidate_publication_required"] is True
-    assert manifest["power_gui"]["version"] == "0.7.6"
+    assert manifest["power_gui"]["version"] == "0.7.7"
     assert manifest["power_gui"]["release_tag"] is None
     assert manifest["container"]["digest"] is None
     assert manifest["container"]["digest_status"] == "not_published"
