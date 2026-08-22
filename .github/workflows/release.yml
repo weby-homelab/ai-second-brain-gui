@@ -67,7 +67,7 @@ jobs:
           PYTHONPATH="$smoke_dir" python - <<'PY'
           import power_gui
 
-          assert power_gui.__version__ == "0.7.9"
+          assert power_gui.__version__ == "0.7.10"
           print("GUI wheel smoke passed")
           PY
 
@@ -79,7 +79,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
         with:
-          body_path: release/release-0.7.9.md
+          body_path: release/release-0.7.10.md
           generate_release_notes: false
           files: |
             dist/power_gui-*.whl
@@ -155,7 +155,7 @@ jobs:
           release = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
           assets_dir = pathlib.Path(sys.argv[2])
           receipt = json.loads((assets_dir / "power-gui.release-receipt.json").read_text(encoding="utf-8"))
-          notes = pathlib.Path("release/release-0.7.9.md").read_text(encoding="utf-8")
+          notes = pathlib.Path("release/release-0.7.10.md").read_text(encoding="utf-8")
           assert release["tagName"] == receipt["release"]["tag"]
           assert release["body"] == notes
           public_names = {asset["name"] for asset in release["assets"]}

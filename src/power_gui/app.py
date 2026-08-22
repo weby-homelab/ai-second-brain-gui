@@ -42,7 +42,7 @@ from .routes import (
     tasks_router,
 )
 
-POWER_VERSION = getattr(power_framework, "__version__", "3.7.3")
+POWER_VERSION = getattr(power_framework, "__version__", "3.7.4")
 APPLICATION_SCHEMA = "power.application.v2"
 ERROR_LOGGER = logging.getLogger("power_gui.errors")
 
