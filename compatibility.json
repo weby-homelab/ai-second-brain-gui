@@ -5,17 +5,19 @@
     "candidate_version": "3.7.4",
     "package_version_at_public_revision": "3.7.4",
     "schema_version": "power.application.v2",
-    "version_strategy": "The application schema is the compatibility contract; the signed POWER 3.7.4 source commit is merged while component tags and the compatible GUI remain unpublished.",
+    "version_strategy": "Exact-pair binding: GUI 0.7.11 binds immutable final public POWER 3.7.4 tag v3.7.4 commit 13dd835 and wheel f12ad02. No candidate source commit.",
     "dependency": {
-      "strategy": "exact-candidate-source-commit",
-      "repository": "https://github.com/weby-homelab/power-framework.git",
-      "revision": "eb8afbfdc9f067e7b11b8679390e1327a9becf6c",
-      "revision_ref": "signed POWER 3.7.4 candidate commit merged by PR #355; tag and component publication pending",
-      "tag": null,
-      "tag_commit": null
+      "strategy": "exact-public-wheel",
+      "repository": "https://github.com/weby-homelab/power-framework",
+      "revision": "13dd835be5f5a03b13cad4a627b0445b2451acf0",
+      "revision_ref": "immutable final public POWER 3.7.4 tag v3.7.4 commit 13dd835, verified wheel f12ad02097448cd1b7663fc79681481013637d011ecde25a9085a899beb547e2",
+      "tag": "v3.7.4",
+      "tag_commit": "13dd835be5f5a03b13cad4a627b0445b2451acf0",
+      "wheel_filename": "power_framework-3.7.4-py3-none-any.whl",
+      "wheel_sha256": "f12ad02097448cd1b7663fc79681481013637d011ecde25a9085a899beb547e2"
     },
-    "candidate_revision": "eb8afbfdc9f067e7b11b8679390e1327a9becf6c",
-    "candidate_publication_required": true,
+    "candidate_revision": "13dd835be5f5a03b13cad4a627b0445b2451acf0",
+    "candidate_publication_required": false,
     "source_inventory": [
       "source.list",
       "source.stats",
@@ -25,13 +27,13 @@
   },
   "power_gui": {
     "name": "power-gui",
-    "version": "0.7.10",
-    "base_revision": "a78d213987c2d71b0b64e414f985ede945eeb444",
-    "base_revision_ref": "public v0.7.9 signed release and current origin/main",
-    "candidate_revision": null,
-    "candidate_revision_ref": "POWER 3.7.4-bound GUI worktree; signed commit, PR, and public tag pending",
+    "version": "0.7.11",
+    "base_revision": "7acefe86c0f154f348ee86cee1530bdb1516d660",
+    "base_revision_ref": "public v0.7.10 signed release and current origin/main",
+    "candidate_revision": "13dd835be5f5a03b13cad4a627b0445b2451acf0",
+    "candidate_revision_ref": "POWER 3.7.4 exact-pair corrective patch; exact final POWER wheel f12ad02 binding",
     "release_tag": null,
-    "revision_strategy": "Record the immutable candidate base and release-tag commit separately until suite publication."
+    "revision_strategy": "Candidate binds exact final POWER wheel hash; tag published only after P14 GO."
   },
   "runtime": {
     "python": ">=3.13,<3.15",
@@ -62,15 +64,15 @@
     ]
   },
   "container": {
-    "image": "webyhomelab/power-gui:0.7.10",
+    "image": "webyhomelab/power-gui:0.7.11",
     "constraints": "release/power-suite.constraints.txt",
-    "constraints_sha256": "d809192f411ead741c3dad5ab5d477ba7ccf37e73d58beedb486cd75ac5fa649",
+    "constraints_sha256": "ec26ef4c3bb8c43e41fe07f7b448631fe694fb58fd972f425f02b7be53ddfa5f",
     "digest": null,
     "digest_status": "not_published"
   },
   "verification": {
-    "local_candidate_core": "POWER 3.7.4 signed source revision eb8afbfdc9f067e7b11b8679390e1327a9becf6c is merged; tag and public assets remain release gates",
-    "local_candidate_gui": "GUI 0.7.10 worktree candidate with shared constraints; signed commit, tag, and image readback remain release gates",
-    "clean_install_pair": "The source-bound 3.7.4/0.7.10 candidate pair requires exact wheel, native, container, and public readback before Suite Stable"
+    "local_candidate_core": "POWER 3.7.4 immutable final public tag v3.7.4 commit 13dd835 wheel f12ad02 verified",
+    "local_candidate_gui": "GUI 0.7.11 corrective patch binds exact final POWER wheel; signed commit, tag, and image digest readback remain release gates",
+    "clean_install_pair": "Exact-pair 3.7.4/0.7.11 requires exact wheel hashes, native matrix, container digest, and public readback before Suite Stable"
   }
 }

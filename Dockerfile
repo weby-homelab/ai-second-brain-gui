@@ -1,7 +1,8 @@
 FROM python:3.13.15-slim-bookworm@sha256:00faa2debb87529f9f0764e9491d8ba400a3678976616c3bd7cb193745ac20d1
 
-ARG POWER_FRAMEWORK_COMMIT=eb8afbfdc9f067e7b11b8679390e1327a9becf6c
-ARG SUITE_CONSTRAINTS_SHA256=d809192f411ead741c3dad5ab5d477ba7ccf37e73d58beedb486cd75ac5fa649
+ARG POWER_FRAMEWORK_COMMIT=13dd835be5f5a03b13cad4a627b0445b2451acf0
+ARG POWER_FRAMEWORK_WHEEL_SHA256=f12ad02097448cd1b7663fc79681481013637d011ecde25a9085a899beb547e2
+ARG SUITE_CONSTRAINTS_SHA256=ec26ef4c3bb8c43e41fe07f7b448631fe694fb58fd972f425f02b7be53ddfa5f
 
 WORKDIR /app
 
@@ -11,10 +12,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install the exact suite-reviewed dependency set with semantic dense embeddings.
+# Stable container must verify exact final public POWER wheel hash before installation.
 COPY release/power-suite.constraints.txt /app/power-suite.constraints.txt
 RUN test "$(sha256sum /app/power-suite.constraints.txt | awk '{print $1}')" = "$SUITE_CONSTRAINTS_SHA256" && \
-    pip install --no-cache-dir --constraint /app/power-suite.constraints.txt \
-    "power-framework[semantic] @ git+https://github.com/weby-homelab/power-framework.git@${POWER_FRAMEWORK_COMMIT}"
+    pip download --no-deps --dest /tmp/wheels "power-framework[semantic] @ https://github.com/weby-homelab/power-framework/releases/download/v3.7.4/power_framework-3.7.4-py3-none-any.whl" && \
+    echo "${POWER_FRAMEWORK_WHEEL_SHA256}  /tmp/wheels/power_framework-3.7.4-py3-none-any.whl" | sha256sum -c - && \
+    pip install --no-cache-dir --constraint /app/power-suite.constraints.txt /tmp/wheels/power_framework-3.7.4-py3-none-any.whl && \
+    rm -rf /tmp/wheels && \
+    test "$(python3 -c 'import importlib.metadata; print(importlib.metadata.version("power-framework"))')" = "3.7.4"
 
 COPY pyproject.toml .
 COPY src/ ./src/

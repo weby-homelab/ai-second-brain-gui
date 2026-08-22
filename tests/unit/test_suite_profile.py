@@ -7,7 +7,9 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[2]
-POWER_SHA = "eb8afbfdc9f067e7b11b8679390e1327a9becf6c"
+POWER_SHA = "13dd835be5f5a03b13cad4a627b0445b2451acf0"
+POWER_WHEEL_SHA = "f12ad02097448cd1b7663fc79681481013637d011ecde25a9085a899beb547e2"
+CONSTRAINTS_SHA = "ec26ef4c3bb8c43e41fe07f7b448631fe694fb58fd972f425f02b7be53ddfa5f"
 
 
 def test_native_service_is_user_scoped_loopback_and_opt_in() -> None:
@@ -25,13 +27,12 @@ def test_native_service_is_user_scoped_loopback_and_opt_in() -> None:
 def test_container_profile_is_pinned_non_root_and_health_checked() -> None:
     dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
     assert f"ARG POWER_FRAMEWORK_COMMIT={POWER_SHA}" in dockerfile
+    assert f"ARG POWER_FRAMEWORK_WHEEL_SHA256={POWER_WHEEL_SHA}" in dockerfile
     assert "COPY release/power-suite.constraints.txt /app/power-suite.constraints.txt" in dockerfile
     assert "--constraint /app/power-suite.constraints.txt" in dockerfile
+    assert "pip download" in dockerfile or "power_framework-3.7.4-py3-none-any.whl" in dockerfile
     constraints = (ROOT / "release" / "power-suite.constraints.txt").read_bytes()
-    assert (
-        hashlib.sha256(constraints).hexdigest()
-        == "d809192f411ead741c3dad5ab5d477ba7ccf37e73d58beedb486cd75ac5fa649"
-    )
+    assert hashlib.sha256(constraints).hexdigest() == CONSTRAINTS_SHA
     assert "USER 10001:10001" in dockerfile
     assert "HEALTHCHECK" in dockerfile
     assert "POWER_GUI_HOST=0.0.0.0" in dockerfile
@@ -45,12 +46,23 @@ def test_compatibility_manifest_does_not_claim_unpublished_digest() -> None:
     manifest = json.loads((ROOT / "compatibility.json").read_text(encoding="utf-8"))
     assert manifest["power_core"]["candidate_version"] == "3.7.4"
     assert manifest["power_core"]["dependency"]["revision"] == POWER_SHA
-    assert manifest["power_core"]["dependency"]["tag"] is None
-    assert manifest["power_core"]["candidate_publication_required"] is True
-    assert manifest["power_gui"]["version"] == "0.7.10"
+    assert manifest["power_core"]["dependency"]["tag"] == "v3.7.4"
+    assert manifest["power_core"]["dependency"]["wheel_sha256"] == POWER_WHEEL_SHA
+    assert manifest["power_core"]["candidate_publication_required"] is False
+    assert manifest["power_gui"]["version"] == "0.7.11"
     assert manifest["power_gui"]["release_tag"] is None
     assert manifest["container"]["digest"] is None
     assert manifest["container"]["digest_status"] == "not_published"
+    assert manifest["container"]["constraints_sha256"] == CONSTRAINTS_SHA
+    suite_input = json.loads(
+        (ROOT / "release" / "power.gui.suite-input.json").read_text(encoding="utf-8")
+    )
+    assert suite_input["schema"] == "power.gui.suite-input.v1"
+    assert suite_input["power"]["source_sha"] == POWER_SHA
+    assert suite_input["power"]["wheel_sha256"] == POWER_WHEEL_SHA
+    assert suite_input["gui"]["version"] == "0.7.11"
+    assert suite_input["constraints"]["sha256"] == CONSTRAINTS_SHA
+    assert POWER_SHA not in ("eb8afbfdc9f067e7b11b8679390e1327a9becf6c", "main", "latest")
 
 
 def test_accessibility_profile_has_focus_motion_and_form_guardrails() -> None:

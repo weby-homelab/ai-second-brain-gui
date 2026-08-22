@@ -112,12 +112,17 @@ def test_manifest_is_machine_readable_and_does_not_claim_unpublished_artifacts()
         "source.read",
         "source.graph",
     ]
-    assert manifest["power_gui"]["version"] == "0.7.10"
+    assert manifest["power_gui"]["version"] == "0.7.11"
     assert manifest["runtime"]["python"] == ">=3.13,<3.15"
     assert manifest["status"] == "candidate_not_published"
     assert manifest["power_gui"]["release_tag"] is None
     assert manifest["container"]["digest"] is None
     assert manifest["container"]["digest_status"] == "not_published"
+    assert (
+        manifest["power_core"]["dependency"]["revision"]
+        == "13dd835be5f5a03b13cad4a627b0445b2451acf0"
+    )
+    assert manifest["power_core"]["dependency"]["tag"] == "v3.7.4"
     assert {item["name"] for item in manifest["capabilities"]["disabled"]} >= {
         "a2a.stable",
         "federation.multi_writer",

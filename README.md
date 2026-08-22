@@ -16,7 +16,7 @@
 
 **P.O.W.E.R-GUI** is a security-focused, AI-native web cockpit and decision center for your personal [Obsidian](https://obsidian.md) knowledge base (Second Brain). Designed as a **Docker-First** candidate with a documented native profile, it bridges human operators and autonomous AI agents through the **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
-**Suite candidate:** GUI `0.7.10` against POWER `3.7.4` at signed merged source commit `eb8afbfdc9f067e7b11b8679390e1327a9becf6c` and the `power.application.v2` contract (Python `>=3.13,<3.15`). This worktree is a candidate: signed tags, container digest, SBOM/provenance, publication and live E2E readback remain explicit release gates in [`compatibility.json`](compatibility.json). The public discovery surface remains experimental custom discovery; stable A2A and multi-writer Federation are not supported claims.
+**Suite candidate:** GUI `0.7.11` against POWER `3.7.4` at immutable final public tag `v3.7.4` commit `13dd835be5f5a03b13cad4a627b0445b2451acf0` wheel `f12ad02097448cd1b7663fc79681481013637d011ecde25a9085a899beb547e2` and the `power.application.v2` contract (Python `>=3.13,<3.15`). This worktree is a candidate: signed tags, container digest, SBOM/provenance, publication and live E2E readback remain explicit release gates in [`compatibility.json`](compatibility.json). The public discovery surface remains experimental custom discovery; stable A2A and multi-writer Federation are not supported claims.
 
 ---
 

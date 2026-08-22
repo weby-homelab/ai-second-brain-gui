@@ -1,0 +1,22 @@
+{
+  "schema": "power.gui.suite-input.v1",
+  "generated_at_utc": "2026-08-22T22:00:00Z",
+  "power": {
+    "version": "3.7.4",
+    "tag": "v3.7.4",
+    "source_sha": "13dd835be5f5a03b13cad4a627b0445b2451acf0",
+    "wheel_filename": "power_framework-3.7.4-py3-none-any.whl",
+    "wheel_sha256": "f12ad02097448cd1b7663fc79681481013637d011ecde25a9085a899beb547e2",
+    "sdist_filename": "power_framework-3.7.4.tar.gz",
+    "sdist_sha256": "6592789b6d603b39764e7127b62323966807a6c41385cf7a3024a154a197395f",
+    "application_schema": "power.application.v2",
+    "python_range": ">=3.13,<3.15"
+  },
+  "gui": {
+    "version": "0.7.11"
+  },
+  "constraints": {
+    "filename": "release/power-suite.constraints.txt",
+    "sha256": "ec26ef4c3bb8c43e41fe07f7b448631fe694fb58fd972f425f02b7be53ddfa5f"
+  }
+}
