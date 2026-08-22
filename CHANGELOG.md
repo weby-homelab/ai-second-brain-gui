@@ -1,8 +1,8 @@
 # Changelog
 
-# 0.7.8 — POWER 3.7.2 corrective suite
+# 0.7.9 — POWER 3.7.3 corrective suite
 
-- Pin the GUI package and multi-arch container build to POWER `v3.7.2`.
+- Pin the GUI package and multi-arch container build to POWER `v3.7.3`.
 - Carry the shared exact constraints digest for the corrected native installer
   and retain candidate wording until public release readback completes.
 

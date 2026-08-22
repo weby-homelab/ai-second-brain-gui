@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[2]
-POWER_SHA = "a70ecbba880a3e9d13e7cdac3b729987169a8d13"
+POWER_SHA = "925f490aefbffff72ed92fd736210262ed445160"
 
 
 def test_native_service_is_user_scoped_loopback_and_opt_in() -> None:
@@ -28,7 +28,7 @@ def test_container_profile_is_pinned_non_root_and_health_checked() -> None:
     assert "COPY release/power-suite.constraints.txt /app/power-suite.constraints.txt" in dockerfile
     assert "--constraint /app/power-suite.constraints.txt" in dockerfile
     constraints = (ROOT / "release" / "power-suite.constraints.txt").read_bytes()
-    assert hashlib.sha256(constraints).hexdigest() == "7f44b449a46b784083ded0b7b94c99c6a26f090759a6ae5a12674146982a7eca"
+    assert hashlib.sha256(constraints).hexdigest() == "92e6b654434cc25c54dc047273ef27ce1491860442b1f40ac53395ea68836e60"
     assert "USER 10001:10001" in dockerfile
     assert "HEALTHCHECK" in dockerfile
     assert "POWER_GUI_HOST=0.0.0.0" in dockerfile
@@ -40,11 +40,11 @@ def test_container_profile_is_pinned_non_root_and_health_checked() -> None:
 
 def test_compatibility_manifest_does_not_claim_unpublished_digest() -> None:
     manifest = json.loads((ROOT / "compatibility.json").read_text(encoding="utf-8"))
-    assert manifest["power_core"]["candidate_version"] == "3.7.2"
+    assert manifest["power_core"]["candidate_version"] == "3.7.3"
     assert manifest["power_core"]["dependency"]["revision"] == POWER_SHA
-    assert manifest["power_core"]["dependency"]["tag"] == "v3.7.2"
+    assert manifest["power_core"]["dependency"]["tag"] == "v3.7.3"
     assert manifest["power_core"]["candidate_publication_required"] is True
-    assert manifest["power_gui"]["version"] == "0.7.8"
+    assert manifest["power_gui"]["version"] == "0.7.9"
     assert manifest["power_gui"]["release_tag"] is None
     assert manifest["container"]["digest"] is None
     assert manifest["container"]["digest_status"] == "not_published"
