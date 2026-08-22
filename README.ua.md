@@ -16,7 +16,7 @@
 
 **P.O.W.E.R-GUI** — це security-focused, AI-native веб-кокпіт та центр прийняття рішень для вашої персональної бази знань [Obsidian](https://obsidian.md) (Second Brain). Додаток розроблено як **Docker-First** candidate із документованим native-профілем, він поєднує оператора-людину та автономних ШІ-агентів через екосистему **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
-**Кандидат suite:** GUI `0.7.10` проти POWER `3.7.4` у підписаному merged source commit `eb8afbfdc9f067e7b11b8679390e1327a9becf6c` та контракту `power.application.v2` (Python `>=3.13,<3.15`). Це candidate worktree: signed tags, digest контейнера, SBOM/provenance, publication і live E2E readback залишаються явними release gates у [`compatibility.json`](compatibility.json). Публічна discovery-поверхня залишається experimental custom discovery; стабільні claims A2A та multi-writer Federation не підтримуються.
+**Кандидат suite:** GUI `0.7.11` проти POWER `3.7.4` у immutable фінальному public тегу `v3.7.4` коміт `13dd835be5f5a03b13cad4a627b0445b2451acf0` wheel `f12ad02097448cd1b7663fc79681481013637d011ecde25a9085a899beb547e2` та контракту `power.application.v2` (Python `>=3.13,<3.15`). Це candidate worktree: signed tags, digest контейнера, SBOM/provenance, publication і live E2E readback залишаються явними release gates у [`compatibility.json`](compatibility.json). Публічна discovery-поверхня залишається experimental custom discovery; стабільні claims A2A та multi-writer Federation не підтримуються.
 
 ---
 
