@@ -10,7 +10,7 @@
       "strategy": "exact-candidate-source-commit",
       "repository": "https://github.com/weby-homelab/power-framework.git",
       "revision": "be1496ae067ee66075a969335afafe315a4ac669",
-      "revision_ref": "stabilize/power-3.7.1 candidate commit; no public tag yet",
+      "revision_ref": "POWER 3.7.1 candidate source commit; no public tag yet",
       "tag": null,
       "tag_commit": null
     },
@@ -28,6 +28,8 @@
     "version": "0.7.6",
     "base_revision": "17bca13c455079c886940fa47465b16c529eaaf1",
     "base_revision_ref": "origin/main merged Python 3.13/3.14 support",
+    "candidate_revision": "334d7b388b9ed33a2881f1aecd494ef567975ac2",
+    "candidate_revision_ref": "stabilize/power-gui-3.7.1 candidate source commit; no public tag yet",
     "release_tag": null,
     "revision_strategy": "Record the immutable candidate base and release-tag commit separately until suite publication."
   },
@@ -66,7 +68,7 @@
   },
   "verification": {
     "local_candidate_core": "candidate POWER 3.7.1 source revision be1496ae067ee66075a969335afafe315a4ac669; public tag/readback pending",
-    "local_candidate_gui": "GUI 0.7.6 release candidate from origin/main 17bca13c455079c886940fa47465b16c529eaaf1; tag and image readback remain release gates",
+    "local_candidate_gui": "GUI 0.7.6 release candidate from source revision 334d7b388b9ed33a2881f1aecd494ef567975ac2; tag and image readback remain release gates",
     "clean_install_pair": "public POWER 3.6.7 remains the latest public core; the 3.7.1/0.7.6 pair is not published"
   }
 }
