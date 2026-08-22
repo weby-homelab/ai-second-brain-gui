@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.7 — POWER 3.7.1 constraints-bound patch
+
+- Consume the shared exact suite constraints in the Docker build and verify
+  the constraints digest before installing core and GUI dependencies.
+- Keep the GUI independently versioned while preserving the signed POWER
+  `v3.7.1` source pin.
+
 ## 0.7.6 — candidate for POWER 3.7.1
 
 ### Contract and operations

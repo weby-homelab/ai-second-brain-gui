@@ -1,6 +1,7 @@
 FROM python:3.13.15-slim-bookworm@sha256:00faa2debb87529f9f0764e9491d8ba400a3678976616c3bd7cb193745ac20d1
 
 ARG POWER_FRAMEWORK_COMMIT=8e172b82b98c8980a83e433744ea2ed6cdedce82
+ARG SUITE_CONSTRAINTS_SHA256=e0ded6bc17bbbfc38a0834dcd32fad50e2fc3a2d23b03145deca76920e948898
 
 WORKDIR /app
 
@@ -9,14 +10,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install the exact suite-reviewed POWER revision with semantic dense embeddings.
-RUN pip install --no-cache-dir "power-framework[semantic] @ git+https://github.com/weby-homelab/power-framework.git@${POWER_FRAMEWORK_COMMIT}"
+# Install the exact suite-reviewed dependency set with semantic dense embeddings.
+COPY release/power-suite.constraints.txt /app/power-suite.constraints.txt
+RUN test "$(sha256sum /app/power-suite.constraints.txt | awk '{print $1}')" = "$SUITE_CONSTRAINTS_SHA256" && \
+    pip install --no-cache-dir --constraint /app/power-suite.constraints.txt \
+    "power-framework[semantic] @ git+https://github.com/weby-homelab/power-framework.git@${POWER_FRAMEWORK_COMMIT}"
 
 COPY pyproject.toml .
 COPY src/ ./src/
 COPY entrypoint.sh /app/entrypoint.sh
 
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir --constraint /app/power-suite.constraints.txt .
 
 
 # Create dedicated non-root application user, group, and cache directories
