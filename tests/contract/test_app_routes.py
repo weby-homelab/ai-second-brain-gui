@@ -82,6 +82,9 @@ def test_dashboard_route_and_headers(client: TestClient) -> None:
     assert "GUI v0.7.10" in resp.text
     assert "3.7.4" in resp.text
     assert "01_Projects" in resp.text
+    assert 'class="lang-switcher" role="group"' in resp.text
+    assert 'id="liveClock" class="live-clock" role="status"' in resp.text
+    assert "text-decoration: underline" in resp.text
 
     # Check CSP and security headers
     assert resp.headers.get("X-Frame-Options") == "SAMEORIGIN"

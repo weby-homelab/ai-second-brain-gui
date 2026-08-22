@@ -482,13 +482,13 @@
                 <span style="color: var(--border);">|</span>
                 <a href="/set-theme?theme=light&next={{ request.url.path if request is defined else '/dashboard' }}" class="theme-btn {% if current_theme == 'light' %}active{% endif %}" title="{{ t('theme_light', current_lang) }}" id="themeLightBtn" aria-label="Switch to light theme">☀️</a>
             </div>
-            <div class="lang-switcher" aria-label="Language selection">
+            <div class="lang-switcher" role="group" aria-label="Language selection">
                 <a href="/set-lang?lang=en&next={{ request.url.path if request is defined else '/dashboard' }}" class="lang-btn {% if current_lang == 'en' %}active{% endif %}" title="English">ENG</a>
                 <span style="color: var(--border);">|</span>
                 <a href="/set-lang?lang=uk&next={{ request.url.path if request is defined else '/dashboard' }}" class="lang-btn {% if current_lang == 'uk' %}active{% endif %}" title="Українська">UKR</a>
             </div>
             {% if is_authed %}
-            <span id="liveClock" class="live-clock" aria-label="Current UTC Time" aria-live="polite">--:--:-- UTC</span>
+            <span id="liveClock" class="live-clock" role="status" aria-label="Current UTC Time" aria-live="polite">--:--:-- UTC</span>
             <form action="/logout" method="POST" style="display: inline; margin: 0;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.8rem; min-height: 34px;">{{ t('logout', current_lang) }}</button>
@@ -560,7 +560,7 @@
 
     <footer>
         {% if is_authed %}
-        <div>P.O.W.E.R. {{ power_version }} &mdash; GUI v{{ gui_version }} &middot; Local-First Knowledge Cockpit &middot; <a href="https://github.com/weby-homelab/ai-second-brain-gui" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none;">GitHub</a></div>
+        <div>P.O.W.E.R. {{ power_version }} &mdash; GUI v{{ gui_version }} &middot; Local-First Knowledge Cockpit &middot; <a href="https://github.com/weby-homelab/ai-second-brain-gui" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline; text-underline-offset: 0.15em;">GitHub</a></div>
         <div>Audited &middot; Fail-Closed Security Plane</div>
         {% else %}
         <div>&copy; Knowledge Cockpit &middot; Protected System</div>
