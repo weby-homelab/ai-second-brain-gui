@@ -1,0 +1,172 @@
+name: GUI Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Verify signed release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          key_file="$RUNNER_TEMP/power-gui-release-signing-key.asc"
+          gh api users/weby-homelab/gpg_keys \
+            --jq '.[] | select(.key_id == "2D49E810C7F2527E") | .raw_key' \
+            > "$key_file"
+          test -s "$key_file"
+          gpg --batch --with-colons --show-keys "$key_file" \
+            | awk -F: '$1 == "fpr" {print $10; exit}' \
+            | grep -Fxq '7AF1EDA195FE29FF093FB1CA2D49E810C7F2527E'
+          gpg --batch --import "$key_file"
+          git fetch --force origin "refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"
+          git verify-tag "$GITHUB_REF_NAME"
+
+      - name: Set up Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade "pip>=26.2"
+          python -m pip install build
+
+      - name: Pin reproducible build timestamp
+        run: echo "SOURCE_DATE_EPOCH=$(git show -s --format=%ct "$GITHUB_SHA")" >> "$GITHUB_ENV"
+
+      - name: Build wheel and sdist
+        run: python -m build --outdir dist
+
+      - name: Generate SPDX SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          path: .
+          format: spdx-json
+          output-file: dist/power-gui.spdx.json
+
+      - name: Smoke-test the built wheel outside checkout
+        run: |
+          set -euo pipefail
+          smoke_dir="$RUNNER_TEMP/power-gui-wheel-smoke"
+          python -m pip install --no-deps --target "$smoke_dir" dist/power_gui-*.whl
+          PYTHONPATH="$smoke_dir" python - <<'PY'
+          import power_gui
+
+          assert power_gui.__version__ == "0.7.6"
+          print("GUI wheel smoke passed")
+          PY
+
+      - name: Attest release artifacts
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: "dist/*"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
+        with:
+          body_path: release/release-0.7.6.md
+          generate_release_notes: false
+          files: |
+            dist/power_gui-*.whl
+            dist/power_gui-*.tar.gz
+            dist/power-gui.spdx.json
+
+      - name: Generate release receipt
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import subprocess
+
+          dist = pathlib.Path("dist")
+          assets = []
+          for path in sorted(dist.iterdir()):
+              if path.is_file() and path.name != "power-gui.release-receipt.json":
+                  if path.suffix in {".whl", ".gz", ".json"}:
+                      assets.append({
+                          "name": path.name,
+                          "size_bytes": path.stat().st_size,
+                          "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                      })
+          assert assets
+          commit = subprocess.check_output(
+              ["git", "rev-parse", "--verify", f"refs/tags/{os.environ['GITHUB_REF_NAME']}^{{commit}}"],
+              text=True,
+          ).strip()
+          tree = subprocess.check_output(["git", "show", "-s", "--format=%T", commit], text=True).strip()
+          receipt = {
+              "schema": "power.gui.release-receipt.v1",
+              "release": {
+                  "repository": os.environ["GITHUB_REPOSITORY"],
+                  "tag": os.environ["GITHUB_REF_NAME"],
+                  "commit": commit,
+                  "tree": tree,
+              },
+              "workflow": {
+                  "run_id": os.environ["GITHUB_RUN_ID"],
+                  "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              },
+              "assets": assets,
+          }
+          pathlib.Path("dist/power-gui.release-receipt.json").write_text(
+              json.dumps(receipt, indent=2) + "\n", encoding="utf-8"
+          )
+          PY
+
+      - name: Upload release receipt
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: dist/power-gui.release-receipt.json
+
+      - name: Read back public release and verify asset hashes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          readback_dir="$RUNNER_TEMP/power-gui-release-readback"
+          mkdir -p "$readback_dir"
+          gh release view "$GITHUB_REF_NAME" --json tagName,body,assets \
+            > "$readback_dir/release.json"
+          gh release download "$GITHUB_REF_NAME" --dir "$readback_dir/assets" --clobber
+          python - "$readback_dir/release.json" "$readback_dir/assets" <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import sys
+
+          release = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+          assets_dir = pathlib.Path(sys.argv[2])
+          receipt = json.loads((assets_dir / "power-gui.release-receipt.json").read_text(encoding="utf-8"))
+          notes = pathlib.Path("release/release-0.7.6.md").read_text(encoding="utf-8")
+          assert release["tagName"] == receipt["release"]["tag"]
+          assert release["body"] == notes
+          public_names = {asset["name"] for asset in release["assets"]}
+          expected_names = {item["name"] for item in receipt["assets"]}
+          expected_names.add("power-gui.release-receipt.json")
+          assert expected_names <= public_names
+          for item in receipt["assets"]:
+              path = assets_dir / item["name"]
+              assert path.is_file()
+              assert path.stat().st_size == item["size_bytes"]
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == item["sha256"]
+          print("GUI public release readback verified")
+          PY
+
