@@ -9,7 +9,9 @@ import pytest
 from scripts.normalize_sdist import normalize_sdist, source_date_epoch
 
 
-def _write_archive(path: Path, members: list[tuple[tarfile.TarInfo, bytes | None]], gzip_mtime: int) -> None:
+def _write_archive(
+    path: Path, members: list[tuple[tarfile.TarInfo, bytes | None]], gzip_mtime: int
+) -> None:
     with (
         path.open("wb") as raw,
         gzip.GzipFile(fileobj=raw, mode="wb", filename="", mtime=gzip_mtime) as compressed,
@@ -71,7 +73,10 @@ def test_normalize_sdist_is_order_and_metadata_independent(tmp_path: Path) -> No
 
     assert first.read_bytes() == second.read_bytes()
     assert struct.unpack("<L", first.read_bytes()[4:8])[0] == 1_700_000_000
-    with gzip.open(first, "rb") as compressed, tarfile.open(fileobj=compressed, mode="r:") as archive:
+    with (
+        gzip.open(first, "rb") as compressed,
+        tarfile.open(fileobj=compressed, mode="r:") as archive,
+    ):
         normalized = archive.getmembers()
         assert [member.name for member in normalized] == [
             "pkg",
@@ -95,7 +100,9 @@ def test_normalize_sdist_is_order_and_metadata_independent(tmp_path: Path) -> No
         assert archive.extractfile(normalized[3]).read() == b"hello"
 
 
-def test_normalize_sdist_defaults_to_epoch_zero(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_normalize_sdist_defaults_to_epoch_zero(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     member = _member(
         "pkg/file.txt",
         tarfile.REGTYPE,
@@ -114,9 +121,10 @@ def test_normalize_sdist_defaults_to_epoch_zero(tmp_path: Path, monkeypatch: pyt
     assert source_date_epoch() == 0
     normalize_sdist(archive_path)
 
-    with gzip.open(archive_path, "rb") as compressed, tarfile.open(
-        fileobj=compressed, mode="r:"
-    ) as archive:
+    with (
+        gzip.open(archive_path, "rb") as compressed,
+        tarfile.open(fileobj=compressed, mode="r:") as archive,
+    ):
         assert archive.next().mtime == 0
 
 

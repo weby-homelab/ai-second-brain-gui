@@ -115,16 +115,21 @@ def _normalize_tar(source: BinaryIO, destination: BinaryIO, timestamp: int) -> N
 def normalize_sdist(path: Path, *, timestamp: int | None = None) -> None:
     """Normalize *path* in place, replacing it atomically on success."""
 
-    resolved_timestamp = source_date_epoch() if timestamp is None else source_date_epoch(str(timestamp))
+    resolved_timestamp = (
+        source_date_epoch() if timestamp is None else source_date_epoch(str(timestamp))
+    )
     original_mode = stat.S_IMODE(path.stat().st_mode)
     temporary_path: Path | None = None
     try:
-        with path.open("rb") as source, tempfile.NamedTemporaryFile(
-            dir=path.parent,
-            prefix=f".{path.name}.",
-            suffix=".tmp",
-            delete=False,
-        ) as temporary:
+        with (
+            path.open("rb") as source,
+            tempfile.NamedTemporaryFile(
+                dir=path.parent,
+                prefix=f".{path.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as temporary,
+        ):
             temporary_path = Path(temporary.name)
             _normalize_tar(source, temporary, resolved_timestamp)
             temporary.flush()
