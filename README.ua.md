@@ -5,7 +5,7 @@
 [![Docker Image](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/webyhomelab/power-gui)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
 [![Python](https://img.shields.io/badge/Python-3.13--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.6.7--candidate-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
+[![P.O.W.E.R](https://img.shields.io/badge/P.O.W.E.R-3.7.1--candidate-FF6B6B?style=for-the-badge)](https://github.com/weby-homelab/power-framework)
 [![Tailscale](https://img.shields.io/badge/Tailscale-5F259F?style=for-the-badge&logo=tailscale&logoColor=white)](https://tailscale.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Discovery](https://img.shields.io/badge/discovery-experimental%2Fcustom--discovery-8B5CF6?style=for-the-badge)](AGENTS.md)
@@ -14,9 +14,9 @@
 ![P.O.W.E.R-GUI Демонстрація](POWER-GUI_ua.gif)
 
 
-**P.O.W.E.R-GUI** — це виробничий, AI-native веб-кокпіт та центр прийняття рішень для вашої персональної бази знань [Obsidian](https://obsidian.md) (Second Brain). Додаток розроблено за стандартом **Docker-First** із документованим native-профілем, він поєднує оператора-людину та автономних ШІ-агентів через екосистему **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
+**P.O.W.E.R-GUI** — це security-focused, AI-native веб-кокпіт та центр прийняття рішень для вашої персональної бази знань [Obsidian](https://obsidian.md) (Second Brain). Додаток розроблено як **Docker-First** candidate із документованим native-профілем, він поєднує оператора-людину та автономних ШІ-агентів через екосистему **P.O.W.E.R Framework (P.A.R.A. + OKF v0.1 + Graph RAG + LLM-Wiki)**.
 
-**Кандидат suite:** GUI `0.7.5` проти source-pinned POWER `v3.6.7` контракту `power.application.v2` (Python `>=3.13,<3.15`). Це candidate worktree: digest контейнера, SBOM/provenance, publication і live E2E readback залишаються явними release gates у [`compatibility.json`](compatibility.json). Публічна discovery-поверхня залишається experimental custom discovery; стабільні claims A2A та multi-writer Federation не підтримуються.
+**Кандидат suite:** GUI `0.7.6` проти source-pinned POWER `v3.7.1` контракту `power.application.v2` (Python `>=3.13,<3.15`). Це candidate worktree: digest контейнера, SBOM/provenance, publication і live E2E readback залишаються явними release gates у [`compatibility.json`](compatibility.json). Публічна discovery-поверхня залишається experimental custom discovery; стабільні claims A2A та multi-writer Federation не підтримуються.
 
 ---
 
@@ -173,7 +173,7 @@ docker run -d \
   -e POWER_GUI_SECRET_KEY="${POWER_GUI_SECRET_KEY}" \
   -e POWER_GUI_COOKIE_SECURE=true \
   -v /path/to/your/obsidian/brain:/brain:rw \
-  webyhomelab/power-gui:0.7.5
+  webyhomelab/power-gui:0.7.6
 ```
 
 
@@ -188,7 +188,7 @@ docker run -d \
 ```yaml
 services:
   power-gui:
-    image: webyhomelab/power-gui:0.7.5
+    image: webyhomelab/power-gui:0.7.6
     container_name: power-gui
     restart: unless-stopped
     init: true
@@ -268,7 +268,7 @@ docker compose up -d
      -e POWER_GUI_COOKIE_SECURE=true \
      -v /mnt/brain:/brain:rw \
      -v power_cache:/data \
-      webyhomelab/power-gui:0.7.5
+      webyhomelab/power-gui:0.7.6
    ```
 
 ---
@@ -278,6 +278,16 @@ docker compose up -d
 Для прямого запуску POWER-GUI як керованої системної служби systemd:
 
 Створіть файл `~/.config/systemd/user/power-gui.service`:
+
+Налаштуйте vault і bind у `~/.config/power-gui.env`; unit залишається
+переносимим для custom-шляхів, зокрема зі пробілами та non-ASCII символами:
+
+```dotenv
+POWER_GUI_VAULT_PATH=/absolute/path/to/brain
+POWER_GUI_HOST=127.0.0.1
+POWER_GUI_PORT=8080
+POWER_GUI_AUTH_ENABLED=true
+```
 
 ```ini
 [Unit]
@@ -290,14 +300,10 @@ StartLimitBurst=5
 [Service]
 Type=simple
 WorkingDirectory=%h/.local/share/power
-ExecStart=%h/.local/bin/power-gui --host 127.0.0.1 --port 8080 --vault %h/brain
+ExecStart=%h/.local/bin/power-gui
 Restart=on-failure
 RestartSec=3
 EnvironmentFile=-%h/.config/power-gui.env
-Environment=POWER_GUI_VAULT_PATH=%h/brain
-Environment=POWER_GUI_HOST=127.0.0.1
-Environment=POWER_GUI_PORT=8080
-Environment=POWER_GUI_AUTH_ENABLED=true
 
 [Install]
 WantedBy=default.target
@@ -353,7 +359,7 @@ systemctl --user enable --now power-gui.service
 | `POWER_GUI_HSTS_ENABLED` | `bool` | `true` | Увімкнення HTTP Strict Transport Security заголовка у відповідях. |
 | `POWER_GUI_FEDERATION_NODES` | `str` | `""` | Опціональний JSON-рядок із переліком додаткових нод для зондування. |
 
-### Контракт read model POWER 3.6.7
+### Контракт read model POWER 3.7.1
 
 GUI споживає `source.list`, `source.stats`, `source.read` та `source.graph`
 виключно через `PowerClient`. Після успішної синхронізації generation list/stats/
@@ -405,7 +411,7 @@ description: Виробничий AI-native веб-кокпіт та центр 
 applicationCategory: WebApplication
 applicationSubCategory: KnowledgeManagement
 operatingSystem: Linux
-softwareVersion: 0.7.5
+softwareVersion: 0.7.6
 keywords: second-brain, obsidian, power-framework, fastapi, web-ui, knowledge-graph, ai-cockpit
 author: Weby Homelab (https://github.com/weby-homelab)
 codeRepository: https://github.com/weby-homelab/ai-second-brain-gui

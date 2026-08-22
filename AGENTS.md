@@ -1,7 +1,7 @@
 # 🤖 P.O.W.E.R-GUI — Operations & Deployment Guide for AI Agents
 
 > **Scope:** Operations / deployment playbook (not an A2A 1.0 or AAIF conformance claim)  
-> **Target Application:** `power-gui` (P.O.W.E.R-GUI v0.7.5)
+> **Target Application:** `power-gui` (P.O.W.E.R-GUI v0.7.6)
 > **Audience:** Autonomous AI Agents (Claude, Gemini, Antigravity, OpenCode, Codex, Cursor, AutoGPT, LangChain, official MCP SDK clients)
 
 This document provides a deterministic, machine-actionable playbook for any AI agent tasked with deploying, configuring, verifying, or programmatically interacting with the **P.O.W.E.R-GUI Web Cockpit**. Runtime discovery metadata uses **`experimental/custom-discovery`** only.
@@ -14,7 +14,7 @@ This document provides a deterministic, machine-actionable playbook for any AI a
 {
   "protocol": "experimental/custom-discovery",
   "name": "power-gui",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "Production-grade, AI-native web cockpit and decision center for Obsidian Second Brain",
   "runtime": "FastAPI BFF / Python 3.13-3.14",
   "security_model": {
@@ -63,7 +63,7 @@ When deploying via Docker Compose, follow this exact sequence:
    ```yaml
    services:
      power-gui:
-       image: webyhomelab/power-gui:0.7.5
+       image: webyhomelab/power-gui:0.7.6
        container_name: power-gui
        restart: unless-stopped
        init: true
@@ -140,7 +140,7 @@ When executing inside an unprivileged Proxmox LXC container:
      -e POWER_GUI_COOKIE_SECURE=true \
      -v /mnt/brain:/brain:rw \
      -v power_cache:/data \
-      webyhomelab/power-gui:0.7.5
+      webyhomelab/power-gui:0.7.6
    ```
 
 ---
@@ -152,11 +152,11 @@ When deploying directly on bare-metal or a VM:
 1. **Install the exact suite wheel pair into the managed profile:**
    ```bash
    power integrations install \
-     --power-wheel /path/to/power_framework-3.6.7-py3-none-any.whl \
-     --gui-wheel /path/to/power_gui-0.7.5-py3-none-any.whl
+     --power-wheel /path/to/power_framework-3.7.1-py3-none-any.whl \
+     --gui-wheel /path/to/power_gui-0.7.6-py3-none-any.whl
    power integrations install \
-     --power-wheel /path/to/power_framework-3.6.7-py3-none-any.whl \
-     --gui-wheel /path/to/power_gui-0.7.5-py3-none-any.whl \
+     --power-wheel /path/to/power_framework-3.7.1-py3-none-any.whl \
+     --gui-wheel /path/to/power_gui-0.7.6-py3-none-any.whl \
      --apply --approved
    ```
    Planning is read-only; the managed venv is
@@ -174,14 +174,10 @@ When deploying directly on bare-metal or a VM:
    [Service]
    Type=simple
    WorkingDirectory=%h/.local/share/power
-   ExecStart=%h/.local/bin/power-gui --host 127.0.0.1 --port 8080 --vault %h/brain
+   ExecStart=%h/.local/bin/power-gui
    Restart=on-failure
    RestartSec=3
    EnvironmentFile=-%h/.config/power-gui.env
-   Environment=POWER_GUI_VAULT_PATH=%h/brain
-   Environment=POWER_GUI_HOST=127.0.0.1
-   Environment=POWER_GUI_PORT=8080
-   Environment=POWER_GUI_AUTH_ENABLED=true
 
    [Install]
    WantedBy=default.target

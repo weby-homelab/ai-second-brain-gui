@@ -8,15 +8,10 @@ StartLimitBurst=5
 [Service]
 Type=simple
 WorkingDirectory=%h/.local/share/power
-ExecStart=%h/.local/bin/power-gui --host 127.0.0.1 --port 8080 --vault %h/brain
+ExecStart=%h/.local/bin/power-gui
 Restart=on-failure
 RestartSec=3
 EnvironmentFile=-%h/.config/power-gui.env
-Environment=POWER_GUI_VAULT_PATH=%h/brain
-Environment=POWER_GUI_HOST=127.0.0.1
-Environment=POWER_GUI_PORT=8080
-Environment=POWER_GUI_AUTH_ENABLED=true
-Environment=XDG_CACHE_HOME=%h/.cache/power
 
 [Install]
 WantedBy=default.target

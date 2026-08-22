@@ -6,8 +6,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[2]
-POWER_SHA = "d53cd8e9b718009f393dec03c54e4451e78853bb"
-POWER_TAG_COMMIT = "d53cd8e9b718009f393dec03c54e4451e78853bb"
+POWER_SHA = "be1496ae067ee66075a969335afafe315a4ac669"
 
 
 def test_native_service_is_user_scoped_loopback_and_opt_in() -> None:
@@ -16,7 +15,8 @@ def test_native_service_is_user_scoped_loopback_and_opt_in() -> None:
     assert "Group=" not in service
     assert "WantedBy=default.target" in service
     assert "ExecStart=%h/.local/bin/power-gui" in service
-    assert "--host 127.0.0.1" in service
+    assert "--vault" not in service
+    assert "EnvironmentFile=-%h/.config/power-gui.env" in service
     assert "Restart=on-failure" in service
     assert "Restart=always" not in service
 
@@ -35,10 +35,11 @@ def test_container_profile_is_pinned_non_root_and_health_checked() -> None:
 
 def test_compatibility_manifest_does_not_claim_unpublished_digest() -> None:
     manifest = json.loads((ROOT / "compatibility.json").read_text(encoding="utf-8"))
-    assert manifest["power_core"]["candidate_version"] == "3.6.7"
+    assert manifest["power_core"]["candidate_version"] == "3.7.1"
     assert manifest["power_core"]["dependency"]["revision"] == POWER_SHA
-    assert manifest["power_core"]["dependency"]["tag_commit"] == POWER_TAG_COMMIT
-    assert manifest["power_gui"]["version"] == "0.7.5"
+    assert manifest["power_core"]["dependency"]["tag"] is None
+    assert manifest["power_core"]["candidate_publication_required"] is True
+    assert manifest["power_gui"]["version"] == "0.7.6"
     assert manifest["power_gui"]["release_tag"] is None
     assert manifest["container"]["digest"] is None
     assert manifest["container"]["digest_status"] == "not_published"
