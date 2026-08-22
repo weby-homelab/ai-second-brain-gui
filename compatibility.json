@@ -28,8 +28,8 @@
     "version": "0.7.9",
     "base_revision": "17bca13c455079c886940fa47465b16c529eaaf1",
     "base_revision_ref": "origin/main merged Python 3.13/3.14 support",
-    "candidate_revision": "474ed09da8e370cc640b59aa1d4552900e19b604",
-    "candidate_revision_ref": "base revision; corrective candidate commit will be bound after this preparation commit",
+    "candidate_revision": "9b1cceccf25fc6e72d23af7b9f8bd5be0a8c2590",
+    "candidate_revision_ref": "release/power-gui-0.7.9-skill-hash-fix candidate preparation commit; public GUI tag pending",
     "release_tag": null,
     "revision_strategy": "Record the immutable candidate base and release-tag commit separately until suite publication."
   },
