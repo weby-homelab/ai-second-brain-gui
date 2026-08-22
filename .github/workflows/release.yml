@@ -52,17 +52,33 @@ jobs:
       - name: Build wheel and sdist
         run: |
           set -euo pipefail
-          python -m build --outdir dist
-          python - <<'PY'
-          import gzip
-          import pathlib
+          build_root="$RUNNER_TEMP/power-gui-repro-build"
+          source_one="$build_root/source-one"
+          source_two="$build_root/source-two"
+          dist_one="$build_root/dist-one"
+          dist_two="$build_root/dist-two"
+          mkdir -p "$source_one" "$source_two" "$dist_one" "$dist_two"
+          git archive --format=tar HEAD | tar -xf - -C "$source_one"
+          git archive --format=tar HEAD | tar -xf - -C "$source_two"
 
-          sdists = sorted(pathlib.Path("dist").glob("*.tar.gz"))
-          assert len(sdists) == 1, sdists
-          sdist = sdists[0]
-          payload = gzip.decompress(sdist.read_bytes())
-          sdist.write_bytes(gzip.compress(payload, compresslevel=9, mtime=0))
-          PY
+          python -m build --outdir "$dist_one" "$source_one"
+          python scripts/normalize_sdist.py "$dist_one"/*.tar.gz
+          python -m build --outdir "$dist_two" "$source_two"
+          python scripts/normalize_sdist.py "$dist_two"/*.tar.gz
+
+          mapfile -t wheels_one < <(find "$dist_one" -maxdepth 1 -type f -name '*.whl' -print)
+          mapfile -t wheels_two < <(find "$dist_two" -maxdepth 1 -type f -name '*.whl' -print)
+          mapfile -t sdists_one < <(find "$dist_one" -maxdepth 1 -type f -name '*.tar.gz' -print)
+          mapfile -t sdists_two < <(find "$dist_two" -maxdepth 1 -type f -name '*.tar.gz' -print)
+          test "${#wheels_one[@]}" -eq 1
+          test "${#wheels_two[@]}" -eq 1
+          test "${#sdists_one[@]}" -eq 1
+          test "${#sdists_two[@]}" -eq 1
+          cmp -- "${wheels_one[0]}" "${wheels_two[0]}"
+          cmp -- "${sdists_one[0]}" "${sdists_two[0]}"
+
+          mkdir -p dist
+          cp -- "${wheels_one[0]}" "${sdists_one[0]}" dist/
 
       - name: Generate SPDX SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
