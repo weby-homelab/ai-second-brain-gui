@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[2]
-POWER_SHA = "be1496ae067ee66075a969335afafe315a4ac669"
+POWER_SHA = "8e172b82b98c8980a83e433744ea2ed6cdedce82"
 
 
 def test_native_service_is_user_scoped_loopback_and_opt_in() -> None:
@@ -37,7 +37,7 @@ def test_compatibility_manifest_does_not_claim_unpublished_digest() -> None:
     manifest = json.loads((ROOT / "compatibility.json").read_text(encoding="utf-8"))
     assert manifest["power_core"]["candidate_version"] == "3.7.1"
     assert manifest["power_core"]["dependency"]["revision"] == POWER_SHA
-    assert manifest["power_core"]["dependency"]["tag"] is None
+    assert manifest["power_core"]["dependency"]["tag"] == "v3.7.1"
     assert manifest["power_core"]["candidate_publication_required"] is True
     assert manifest["power_gui"]["version"] == "0.7.6"
     assert manifest["power_gui"]["release_tag"] is None

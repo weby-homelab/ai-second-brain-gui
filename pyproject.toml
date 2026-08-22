@@ -22,7 +22,7 @@ dependencies = [
     "pygments>=2.18.0",
     "itsdangerous>=2.2.0",
     "anyio>=4.4.0",
-    "power-framework @ git+https://github.com/weby-homelab/power-framework.git@be1496ae067ee66075a969335afafe315a4ac669",
+    "power-framework @ git+https://github.com/weby-homelab/power-framework.git@8e172b82b98c8980a83e433744ea2ed6cdedce82",
 ]
 
 [project.optional-dependencies]
