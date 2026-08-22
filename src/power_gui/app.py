@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import logging
 import threading
 import uuid
@@ -12,7 +13,7 @@ import anyio
 import power_framework
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import RedirectResponse, Response
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jinja2 import pass_context
@@ -41,7 +42,8 @@ from .routes import (
     tasks_router,
 )
 
-POWER_VERSION = getattr(power_framework, "__version__", "3.6.7")
+POWER_VERSION = getattr(power_framework, "__version__", "3.7.1")
+APPLICATION_SCHEMA = "power.application.v2"
 ERROR_LOGGER = logging.getLogger("power_gui.errors")
 
 
@@ -169,9 +171,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if app_settings.auth_enabled:
             path = request.url.path
             # Allow public assets, login, language switch, theme switch, and healthcheck
-            if path in {"/login", "/healthz", "/set-lang", "/set-theme"} or path.startswith(
-                "/static/"
-            ):
+            if path in {
+                "/login",
+                "/healthz",
+                "/readiness",
+                "/set-lang",
+                "/set-theme",
+            } or path.startswith("/static/"):
                 response = await call_next(request)
                 _maybe_set_csrf_cookie(request, response, app_settings)
                 return response
@@ -222,6 +228,34 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def health_check() -> dict[str, str]:
         """Unauthenticated healthcheck endpoint for load balancers and container probes."""
         return {"status": "ok", "version": POWER_VERSION}
+
+    @app.get("/readiness")
+    async def readiness_check() -> JSONResponse:
+        """Report bounded GUI/core readiness without mutating or indexing the vault."""
+        settings: Settings = app.state.settings
+        issues: list[str] = []
+        if not settings.vault_path.is_dir():
+            issues.append("configured vault is missing")
+        if settings.auth_enabled and not (settings.admin_password or settings.admin_password_hash):
+            issues.append("authentication is enabled without credentials")
+        vault_identity = hashlib.sha256(
+            str(settings.vault_path.expanduser().resolve()).encode("utf-8")
+        ).hexdigest()[:16]
+        payload = {
+            "status": "ready" if not issues else "not_ready",
+            "gui_version": GUI_VERSION,
+            "power_version": POWER_VERSION,
+            "application_schema": APPLICATION_SCHEMA,
+            "vault": {
+                "configured": True,
+                "exists": settings.vault_path.is_dir(),
+                "identity": vault_identity,
+            },
+            "auth_configured": not settings.auth_enabled
+            or bool(settings.admin_password or settings.admin_password_hash),
+            "issues": issues,
+        }
+        return JSONResponse(payload, status_code=200 if not issues else 503)
 
     return app
 

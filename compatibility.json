@@ -2,20 +2,20 @@
   "manifest_schema": "power-gui.compatibility.v2",
   "status": "candidate_not_published",
   "power_core": {
-    "candidate_version": "3.6.7",
+    "candidate_version": "3.7.1",
     "package_version_at_public_revision": "3.6.7",
     "schema_version": "power.application.v2",
-    "version_strategy": "The application schema is the compatibility contract; the package version is the published 3.6.7 release.",
+    "version_strategy": "The application schema is the compatibility contract; public readback remains 3.6.7 until the 3.7.1 candidate is released.",
     "dependency": {
-      "strategy": "exact-public-release-tag",
+      "strategy": "exact-candidate-source-commit",
       "repository": "https://github.com/weby-homelab/power-framework.git",
-      "revision": "d53cd8e9b718009f393dec03c54e4451e78853bb",
-      "revision_ref": "v3.6.7 signed release tag readback",
-      "tag": "v3.6.7",
-      "tag_commit": "d53cd8e9b718009f393dec03c54e4451e78853bb"
+      "revision": "7cd0b624cdac71d4d137c8b2ce53b299863512f7",
+      "revision_ref": "stabilize/power-3.7.1 candidate commit; no public tag yet",
+      "tag": null,
+      "tag_commit": null
     },
-    "candidate_revision": null,
-    "candidate_publication_required": false,
+    "candidate_revision": "7cd0b624cdac71d4d137c8b2ce53b299863512f7",
+    "candidate_publication_required": true,
     "source_inventory": [
       "source.list",
       "source.stats",
@@ -25,7 +25,7 @@
   },
   "power_gui": {
     "name": "power-gui",
-    "version": "0.7.5",
+    "version": "0.7.6",
     "base_revision": "17bca13c455079c886940fa47465b16c529eaaf1",
     "base_revision_ref": "origin/main merged Python 3.13/3.14 support",
     "release_tag": null,
@@ -60,13 +60,13 @@
     ]
   },
   "container": {
-    "image": "webyhomelab/power-gui:0.7.5",
+    "image": "webyhomelab/power-gui:0.7.6",
     "digest": null,
     "digest_status": "not_published"
   },
   "verification": {
-    "local_candidate_core": "published immutable POWER v3.6.7 at d53cd8e9b718009f393dec03c54e4451e78853bb",
-    "local_candidate_gui": "GUI 0.7.5 release candidate from origin/main 17bca13c455079c886940fa47465b16c529eaaf1; tag and image readback remain release gates",
-    "clean_install_pair": "public POWER 3.6.7 available; GUI 0.7.5 publication remains pending"
+    "local_candidate_core": "candidate POWER 3.7.1 source revision 7cd0b624cdac71d4d137c8b2ce53b299863512f7; public tag/readback pending",
+    "local_candidate_gui": "GUI 0.7.6 release candidate from origin/main 17bca13c455079c886940fa47465b16c529eaaf1; tag and image readback remain release gates",
+    "clean_install_pair": "public POWER 3.6.7 remains the latest public core; the 3.7.1/0.7.6 pair is not published"
   }
 }

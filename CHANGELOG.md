@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.6 — candidate for POWER 3.7.1
+
+### Contract and operations
+
+- Added bounded unauthenticated `/readiness` identity checks without vault
+  indexing or mutation.
+- Moved the native service to the canonical `~/.local/share/power/venv`
+  launcher and externalized vault/bind settings through `power-gui.env`.
+- Kept publication, immutable image digest, SBOM/provenance, and live E2E
+  readback as explicit release gates.
+
 ## 0.7.5 — 2026-08-21
 
 ### Release

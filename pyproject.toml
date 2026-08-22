@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "power-gui"
-version = "0.7.5"
+version = "0.7.6"
 description = "Secure, accessible, local-first web cockpit and decision center for P.O.W.E.R."
 readme = "README.md"
 requires-python = ">=3.13,<3.15"
@@ -22,7 +22,7 @@ dependencies = [
     "pygments>=2.18.0",
     "itsdangerous>=2.2.0",
     "anyio>=4.4.0",
-    "power-framework @ git+https://github.com/weby-homelab/power-framework.git@d53cd8e9b718009f393dec03c54e4451e78853bb",
+    "power-framework @ git+https://github.com/weby-homelab/power-framework.git@7cd0b624cdac71d4d137c8b2ce53b299863512f7",
 ]
 
 [project.optional-dependencies]
