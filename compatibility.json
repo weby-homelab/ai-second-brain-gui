@@ -28,8 +28,8 @@
     "version": "0.7.7",
     "base_revision": "17bca13c455079c886940fa47465b16c529eaaf1",
     "base_revision_ref": "origin/main merged Python 3.13/3.14 support",
-    "candidate_revision": "334d7b388b9ed33a2881f1aecd494ef567975ac2",
-    "candidate_revision_ref": "fix/power-gui-0.7.7-constraints source commit; public GUI tag pending",
+    "candidate_revision": "e2a1f34b4fbb45f84ecd2cbe1b58cc3c06ae96c4",
+    "candidate_revision_ref": "fix/power-gui-0.7.7-constraints constraints-bound patch commit; public GUI tag pending",
     "release_tag": null,
     "revision_strategy": "Record the immutable candidate base and release-tag commit separately until suite publication."
   },
